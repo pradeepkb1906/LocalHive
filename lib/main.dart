@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'app_state.dart';
 import 'screens/home_screen.dart';
+import 'services/firebase_service.dart';
 import 'theme.dart';
 
-void main() => runApp(const LocalHiveApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FirebaseService.instance.init();
+  AppState.instance.start();
+  runApp(const LocalHiveApp());
+}
 
 class LocalHiveApp extends StatelessWidget {
   const LocalHiveApp({super.key});

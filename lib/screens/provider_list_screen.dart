@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/data.dart';
+import '../services/firebase_service.dart';
 import '../theme.dart';
 import 'booking_screen.dart';
 import 'catalog_screen.dart';
@@ -10,7 +11,7 @@ class ProviderListScreen extends StatelessWidget {
   final String title;
   const ProviderListScreen({super.key, required this.category, required this.title});
 
-  List<Provider> get _providers => switch (category) {
+  List<Provider> get _mock => switch (category) {
         'home_service' => homeServiceProviders,
         'indian_store' => indianStores,
         _ => foodTrucks,
@@ -26,12 +27,27 @@ class ProviderListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: ListView.separated(
+      // Live Firestore catalog; falls back to the bundled list while
+      // loading or when offline so the screen is never empty.
+      body: StreamBuilder<List<Provider>>(
+        stream: FirebaseService.instance.providersStream(category),
+        builder: (context, snap) {
+          final providers =
+              (snap.hasData && snap.data!.isNotEmpty) ? snap.data! : _mock;
+          return _list(providers);
+        },
+      ),
+    );
+  }
+
+  Widget _list(List<Provider> providers) {
+    return Builder(
+      builder: (context) => ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: _providers.length,
+        itemCount: providers.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, i) {
-          final p = _providers[i];
+          final p = providers[i];
           return Card(
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
@@ -140,3 +156,5 @@ class ProviderListScreen extends StatelessWidget {
     );
   }
 }
+
+// (list body extracted so the StreamBuilder above can reuse it)

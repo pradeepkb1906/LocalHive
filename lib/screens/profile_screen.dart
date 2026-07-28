@@ -30,7 +30,9 @@ class ProfileScreen extends StatelessWidget {
                         radius: 30,
                         backgroundColor: LhColors.navy,
                         child: Text(
-                          s.signedIn ? s.userName!.substring(0, 1).toUpperCase() : '?',
+                          s.signedIn && (s.userName?.isNotEmpty ?? false)
+                              ? s.userName!.substring(0, 1).toUpperCase()
+                              : '?',
                           style: const TextStyle(
                               color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
                         ),
@@ -40,13 +42,13 @@ class ProfileScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(s.signedIn ? s.userName! : 'Guest',
+                            Text(s.signedIn ? (s.userName ?? 'Member') : 'Guest',
                                 style:
                                     const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 2),
                             Text(
                                 s.signedIn
-                                    ? s.userPhone!
+                                    ? (s.userPhone ?? 'Signed in')
                                     : 'Sign in to book services & track orders',
                                 style: const TextStyle(
                                     fontSize: 13, color: LhColors.inkSecondary)),
@@ -114,9 +116,12 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 24),
-              const Center(
-                child: Text('LocalHive 0.1.0 · Made in the USA',
-                    style: TextStyle(fontSize: 12, color: LhColors.inkSecondary)),
+              Center(
+                child: Text(
+                    s.firebaseReady
+                        ? 'LocalHive 0.2.0 · Connected'
+                        : 'LocalHive 0.2.0 · Offline demo mode',
+                    style: const TextStyle(fontSize: 12, color: LhColors.inkSecondary)),
               ),
             ],
           );
@@ -142,8 +147,9 @@ class _LinkTile extends StatelessWidget {
   }
 }
 
-/// Mock phone sign-in. Swapped for Firebase Auth phone verification in the
-/// production milestone; the two-step UX (phone → code) stays identical.
+/// Phone sign-in. With Firebase connected this sends a real SMS via
+/// Firebase Auth (invisible reCAPTCHA on web); offline it falls back to a
+/// demo mode that accepts any 6-digit code.
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -154,11 +160,49 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
-  bool _codeSent = false;
   final _code = TextEditingController();
+  bool _codeSent = false;
+  bool _busy = false;
+
+  void _toast(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+  Future<void> _sendCode() async {
+    if (_name.text.trim().isEmpty || _phone.text.trim().isEmpty) {
+      _toast('Enter your name and phone number.');
+      return;
+    }
+    setState(() => _busy = true);
+    final err = await AppState.instance.sendCode(_phone.text.trim());
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (err != null) {
+      _toast(err);
+    } else {
+      setState(() => _codeSent = true);
+    }
+  }
+
+  Future<void> _verify() async {
+    if (_code.text.trim().length != 6) {
+      _toast('Enter the 6-digit code.');
+      return;
+    }
+    setState(() => _busy = true);
+    final err =
+        await AppState.instance.verifyCode(_code.text.trim(), _name.text.trim());
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (err != null) {
+      _toast(err);
+    } else {
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final connected = AppState.instance.firebaseReady;
     return Scaffold(
       appBar: AppBar(title: const Text('Sign In')),
       body: ListView(
@@ -187,19 +231,22 @@ class _SignInScreenState extends State<SignInScreen> {
             TextField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(hintText: 'Mobile number'),
+              decoration:
+                  const InputDecoration(hintText: 'US mobile number, e.g. 732 555 0123'),
             ),
+            const SizedBox(height: 8),
+            Text(
+                connected
+                    ? 'We’ll text you a 6-digit verification code.'
+                    : 'Offline demo — any 6-digit code will be accepted.',
+                style: const TextStyle(fontSize: 12, color: LhColors.inkSecondary)),
             const SizedBox(height: 20),
             FilledButton(
-              onPressed: () {
-                if (_name.text.trim().isEmpty || _phone.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Enter your name and phone number.')));
-                  return;
-                }
-                setState(() => _codeSent = true);
-              },
-              child: const Text('Continue'),
+              onPressed: _busy ? null : _sendCode,
+              child: _busy
+                  ? const SizedBox(
+                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Send Code'),
             ),
           ] else ...[
             Text('Enter the 6-digit code sent to ${_phone.text}',
@@ -211,21 +258,17 @@ class _SignInScreenState extends State<SignInScreen> {
               maxLength: 6,
               decoration: const InputDecoration(hintText: '••••••', counterText: ''),
             ),
-            const SizedBox(height: 8),
-            const Text('Demo: any 6 digits work. Real SMS verification arrives with Firebase.',
-                style: TextStyle(fontSize: 12, color: LhColors.inkSecondary)),
             const SizedBox(height: 20),
             FilledButton(
-              onPressed: () {
-                if (_code.text.trim().length != 6) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('Enter the 6-digit code.')));
-                  return;
-                }
-                AppState.instance.signIn(_name.text.trim(), _phone.text.trim());
-                Navigator.pop(context);
-              },
-              child: const Text('Verify & Sign In'),
+              onPressed: _busy ? null : _verify,
+              child: _busy
+                  ? const SizedBox(
+                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Verify & Sign In'),
+            ),
+            TextButton(
+              onPressed: _busy ? null : () => setState(() => _codeSent = false),
+              child: const Text('Change number'),
             ),
           ],
         ],
