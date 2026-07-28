@@ -13,6 +13,8 @@ class Provider {
   final String city;
   final bool verified;
   final String emoji;
+  final double lat; // 0 = unknown
+  final double lng;
 
   const Provider({
     required this.id,
@@ -25,7 +27,11 @@ class Provider {
     required this.city,
     this.verified = true,
     required this.emoji,
+    this.lat = 0,
+    this.lng = 0,
   });
+
+  bool get hasLocation => lat != 0 || lng != 0;
 }
 
 class CatalogItem {
@@ -128,7 +134,9 @@ const foodTrucks = [
       rating: 4.9,
       reviews: 310,
       city: 'Near Oak Tree Rd, Edison',
-      emoji: '🚚'),
+      emoji: '🚚',
+      lat: 40.5629,
+      lng: -74.3390),
   Provider(
       id: 'ft2',
       name: 'Hyderabad House on Wheels',
@@ -137,7 +145,9 @@ const foodTrucks = [
       rating: 4.8,
       reviews: 275,
       city: 'Downtown Iselin',
-      emoji: '🍛'),
+      emoji: '🍛',
+      lat: 40.5754,
+      lng: -74.3223),
   Provider(
       id: 'ft3',
       name: 'Chaat Chowk Truck',
@@ -146,7 +156,9 @@ const foodTrucks = [
       rating: 4.7,
       reviews: 142,
       city: 'Menlo Park Mall lot',
-      emoji: '🥟'),
+      emoji: '🥟',
+      lat: 40.5478,
+      lng: -74.3355),
 ];
 
 const storeCatalog = [

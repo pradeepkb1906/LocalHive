@@ -5,6 +5,7 @@ import '../services/firebase_service.dart';
 import '../theme.dart';
 import 'booking_screen.dart';
 import 'catalog_screen.dart';
+import 'truck_map_screen.dart';
 
 class ProviderListScreen extends StatelessWidget {
   final String category;
@@ -25,18 +26,32 @@ class ProviderListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      // Live Firestore catalog; falls back to the bundled list while
-      // loading or when offline so the screen is never empty.
-      body: StreamBuilder<List<Provider>>(
-        stream: FirebaseService.instance.providersStream(category),
-        builder: (context, snap) {
-          final providers =
-              (snap.hasData && snap.data!.isNotEmpty) ? snap.data! : _mock;
-          return _list(providers);
-        },
-      ),
+    // Live Firestore catalog; falls back to the bundled list while
+    // loading or when offline so the screen is never empty.
+    return StreamBuilder<List<Provider>>(
+      stream: FirebaseService.instance.providersStream(category),
+      builder: (context, snap) {
+        final providers =
+            (snap.hasData && snap.data!.isNotEmpty) ? snap.data! : _mock;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+            actions: [
+              if (category == 'food_truck')
+                TextButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => TruckMapScreen(trucks: providers)),
+                  ),
+                  icon: const Icon(CupertinoIcons.map, size: 18),
+                  label: const Text('Map'),
+                ),
+            ],
+          ),
+          body: _list(providers),
+        );
+      },
     );
   }
 

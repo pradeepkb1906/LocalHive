@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
+import '../services/directions.dart';
 import '../theme.dart';
 
 /// Order-ahead catalog for Indian stores and food trucks. Placing an order
@@ -113,6 +114,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.provider.name),
+        actions: [
+          IconButton(
+            tooltip: 'Get directions',
+            icon: const Icon(CupertinoIcons.arrow_turn_up_right, size: 20),
+            onPressed: () => openDirections(widget.provider),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(26),
           child: Padding(

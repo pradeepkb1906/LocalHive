@@ -151,6 +151,8 @@ class FirebaseService {
           city: (m['city'] ?? '') as String,
           verified: (m['verified'] ?? false) as bool,
           emoji: '',
+          lat: ((m['lat'] ?? 0) as num).toDouble(),
+          lng: ((m['lng'] ?? 0) as num).toDouble(),
         );
       }).toList()
         ..sort((a, b) => b.rating.compareTo(a.rating));
