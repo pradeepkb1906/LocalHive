@@ -1,0 +1,237 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import '../app_state.dart';
+import '../models/data.dart';
+import '../theme.dart';
+
+/// Order-ahead catalog for Indian stores and food trucks. Placing an order
+/// records a real booking in AppState.
+class CatalogScreen extends StatefulWidget {
+  final Provider provider;
+  final List<CatalogItem> items;
+  const CatalogScreen({super.key, required this.provider, required this.items});
+
+  @override
+  State<CatalogScreen> createState() => _CatalogScreenState();
+}
+
+class _CatalogScreenState extends State<CatalogScreen> {
+  final Map<CatalogItem, int> _cart = {};
+
+  double get _subtotal => _cart.entries.fold(0, (sum, e) => sum + e.key.price * e.value);
+  double get _fee => _subtotal * platformFeePct;
+  double get _total => _subtotal + _fee;
+  int get _count => _cart.values.fold(0, (a, b) => a + b);
+
+  Color get _tint =>
+      widget.provider.category == 'indian_store' ? LhColors.green : LhColors.orange;
+
+  void _checkout() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: LhColors.background,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Order · ${widget.provider.name}',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 14),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    ..._cart.entries.map((e) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                  child: Text('${e.value} × ${e.key.name}',
+                                      style: const TextStyle(fontSize: 14.5))),
+                              Text('\$${(e.key.price * e.value).toStringAsFixed(2)}',
+                                  style: const TextStyle(fontSize: 14.5)),
+                            ],
+                          ),
+                        )),
+                    const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10), child: Divider()),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Platform fee (12%)', style: TextStyle(fontSize: 14.5)),
+                        Text('\$${_fee.toStringAsFixed(2)}',
+                            style: const TextStyle(fontSize: 14.5)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Total',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                        Text('\$${_total.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 17)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () {
+                AppState.instance.addBooking(Booking(
+                  widget.provider.name,
+                  'Pickup order · $_count item${_count > 1 ? 's' : ''}',
+                  'Preparing',
+                  _total,
+                ));
+                Navigator.pop(ctx);
+                setState(() => _cart.clear());
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text(
+                        'Order placed — see the Bookings tab. (Demo — no real payment.)')));
+              },
+              child: const Text('Place Pickup Order'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.provider.name),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(26),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(CupertinoIcons.location_solid,
+                    size: 12, color: LhColors.inkSecondary),
+                const SizedBox(width: 3),
+                Text('${widget.provider.city}  ·  ',
+                    style: const TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                const Icon(CupertinoIcons.star_fill, size: 12, color: LhColors.amber),
+                const SizedBox(width: 3),
+                Text('${widget.provider.rating}',
+                    style: const TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+              ],
+            ),
+          ),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+        children: [
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < widget.items.length; i++) ...[
+                  _itemRow(widget.items[i]),
+                  if (i != widget.items.length - 1)
+                    const Padding(padding: EdgeInsets.only(left: 66), child: Divider()),
+                ]
+              ],
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: _count == 0
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: FilledButton(
+                  onPressed: _checkout,
+                  child: Text(
+                      'View Cart · $_count item${_count > 1 ? 's' : ''} · \$${_total.toStringAsFixed(2)}'),
+                ),
+              ),
+            ),
+    );
+  }
+
+  Widget _itemRow(CatalogItem item) {
+    final qty = _cart[item] ?? 0;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 19,
+            backgroundColor: _tint.withValues(alpha: 0.14),
+            child: Text(item.name.substring(0, 1),
+                style: TextStyle(color: _tint, fontSize: 15, fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.name,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 2),
+                Text('\$${item.price.toStringAsFixed(2)} / ${item.unit}',
+                    style:
+                        const TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+              ],
+            ),
+          ),
+          if (qty == 0)
+            OutlinedButton(
+              onPressed: () => setState(() => _cart[item] = 1),
+              style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(64, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 16)),
+              child: const Text('Add'),
+            )
+          else
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(CupertinoIcons.minus_circle,
+                      size: 24, color: LhColors.inkSecondary),
+                  onPressed: () => setState(() {
+                    if (qty == 1) {
+                      _cart.remove(item);
+                    } else {
+                      _cart[item] = qty - 1;
+                    }
+                  }),
+                ),
+                SizedBox(
+                    width: 22,
+                    child: Center(
+                        child: Text('$qty',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 16)))),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(CupertinoIcons.plus_circle_fill,
+                      size: 24, color: LhColors.blue),
+                  onPressed: () => setState(() => _cart[item] = qty + 1),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
