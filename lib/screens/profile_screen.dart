@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/location_chip.dart';
 import '../widgets/role_picker.dart';
 import 'provider_onboarding_screen.dart';
+import 'system_check_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -166,6 +167,7 @@ class ProfileScreen extends StatelessWidget {
                   _LinkTile(icon: CupertinoIcons.doc_plaintext, title: 'Terms of Service'),
                   _LinkTile(icon: CupertinoIcons.shield_fill, title: 'Privacy Policy'),
                   _LinkTile(icon: CupertinoIcons.question_circle_fill, title: 'Help & Support'),
+                  _SystemCheckTile(),
                 ],
               ),
               if (s.signedIn) ...[
@@ -476,6 +478,27 @@ class _SignInScreenState extends State<SignInScreen> {
           ],
         ],
       ),
+    );
+  }
+}
+
+
+class _SystemCheckTile extends StatelessWidget {
+  const _SystemCheckTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const IconTile(
+          icon: CupertinoIcons.checkmark_shield, color: LhColors.green, size: 32),
+      title: const Text('System check',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+      subtitle: const Text('Verify the app is connected and every flow works',
+          style: TextStyle(fontSize: 12.5, color: LhColors.inkSecondary)),
+      trailing: const Icon(CupertinoIcons.chevron_right,
+          size: 18, color: LhColors.hairline),
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => const SystemCheckScreen())),
     );
   }
 }
