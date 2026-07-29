@@ -47,13 +47,23 @@ if not API_KEY:
 
 
 def load_secrets():
+    """Returns (account_sid, basic_auth_user, basic_auth_pass, from_number).
+
+    Prefers an API key pair (SK sid + secret); falls back to auth token."""
     creds = _read_env()
-    sid = creds.get("TWILIO_ACCOUNT_SID", "")
+    acct = creds.get("TWILIO_ACCOUNT_SID", "")
+    key_sid = creds.get("TWILIO_API_KEY_SID", "")
+    key_secret = creds.get("TWILIO_API_KEY_SECRET", "")
     tok = creds.get("TWILIO_AUTH_TOKEN", "")
     frm = creds.get("TWILIO_FROM_NUMBER", "")
-    if "PASTE" in sid or "PASTE" in tok or "XXXX" in frm or not sid:
-        sys.exit("Fill in .secrets/twilio.env first (SID, token, from-number).")
-    return sid, tok, frm
+    if "PASTE" in acct or "XXXX" in frm or not acct:
+        sys.exit("Fill in .secrets/twilio.env first (account SID, API key, from-number).")
+    wa_from = creds.get("TWILIO_WHATSAPP_FROM", "")
+    if key_sid and key_secret and "PASTE" not in key_sid and "PASTE" not in key_secret:
+        return acct, key_sid, key_secret, frm, wa_from
+    if tok and "PASTE" not in tok:
+        return acct, acct, tok, frm, wa_from
+    sys.exit("Add a Twilio API key (SID + secret) to .secrets/twilio.env.")
 
 
 def normalize_us(phone: str) -> str | None:
@@ -84,11 +94,11 @@ def fs_patch(doc_path, fields):
     urllib.request.urlopen(req).read()
 
 
-def send_sms(sid, tok, frm, to, body):
-    url = f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json"
+def send_sms(acct, user, secret, frm, to, body):
+    url = f"https://api.twilio.com/2010-04-01/Accounts/{acct}/Messages.json"
     data = urllib.parse.urlencode({"From": frm, "To": to, "Body": body}).encode()
     req = urllib.request.Request(url, data=data)
-    auth = base64.b64encode(f"{sid}:{tok}".encode()).decode()
+    auth = base64.b64encode(f"{user}:{secret}".encode()).decode()
     req.add_header("Authorization", f"Basic {auth}")
     try:
         with urllib.request.urlopen(req) as r:
@@ -103,9 +113,9 @@ def send_sms(sid, tok, frm, to, body):
 
 
 def one_pass(dry: bool):
-    sid = tok = frm = None
+    acct = user = secret = frm = wa_from = None
     if not dry:
-        sid, tok, frm = load_secrets()
+        acct, user, secret, frm, wa_from = load_secrets()
     docs = fs_get("notifications", "&pageSize=100").get("documents", [])
     pending = [
         d for d in docs
@@ -127,10 +137,21 @@ def one_pass(dry: bool):
         if dry:
             print(f"{label} DRY-RUN would text {to}: {msg[:70]}…")
             continue
-        ok, info = send_sms(sid, tok, frm, to, msg)
+        # WhatsApp-first (cheaper, no 10DLC); SMS fallback if it fails
+        # (e.g. recipient hasn't joined the sandbox / has no WhatsApp).
+        if wa_from:
+            ok, info = send_sms(acct, user, secret, wa_from, f"whatsapp:{to}", msg)
+            if ok:
+                print(f"{label} SENT via WhatsApp to {to} (sid {info})")
+                fs_patch(d["name"], {"status": "sent", "channelUsed": "whatsapp",
+                                     "twilioSid": info})
+                continue
+            print(f"{label} WhatsApp failed ({info[:80]}) — falling back to SMS")
+        ok, info = send_sms(acct, user, secret, frm, to, msg)
         if ok:
-            print(f"{label} SENT to {to} (sid {info})")
-            fs_patch(d["name"], {"status": "sent", "twilioSid": info})
+            print(f"{label} SENT via SMS to {to} (sid {info})")
+            fs_patch(d["name"], {"status": "sent", "channelUsed": "sms",
+                                 "twilioSid": info})
         else:
             print(f"{label} FAILED: {info}")
             fs_patch(d["name"], {"status": "failed", "error": info[:400]})
