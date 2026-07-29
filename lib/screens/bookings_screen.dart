@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 
 class BookingsScreen extends StatelessWidget {
   const BookingsScreen({super.key});
@@ -16,9 +17,19 @@ class BookingsScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              Text('Bookings',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700, letterSpacing: -0.5)),
+              Row(
+                children: [
+                  Text('Bookings',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5)),
+                  const Spacer(),
+                  const LocationChip(),
+                ],
+              ),
               const SizedBox(height: 20),
               if (bookings.isEmpty)
                 const Padding(

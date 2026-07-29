@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 import 'delivery_jobs_screen.dart';
 import 'provider_dashboard_screen.dart';
 import 'provider_onboarding_screen.dart';
@@ -19,9 +20,19 @@ class ProfileScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
-              Text('Profile',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700, letterSpacing: -0.5)),
+              Row(
+                children: [
+                  Text('Profile',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5)),
+                  const Spacer(),
+                  const LocationChip(),
+                ],
+              ),
               const SizedBox(height: 20),
               Card(
                 child: Padding(
@@ -268,7 +279,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     final connected = AppState.instance.firebaseReady;
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
+      appBar: AppBar(title: const Text('Sign In'), actions: const [LocationChip()]),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

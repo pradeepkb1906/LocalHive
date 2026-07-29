@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/data.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 
 /// Provider-side interface: incoming job requests with Accept / Decline,
 /// then Mark Complete. Every action queues SMS + email notifications for
@@ -90,6 +91,7 @@ class ProviderDashboardScreen extends StatelessWidget {
             icon: const Icon(CupertinoIcons.speaker_2_fill, size: 20),
             onPressed: () => _announceArrival(context),
           ),
+          const LocationChip(),
         ],
       ),
       body: StreamBuilder<List<Booking>>(

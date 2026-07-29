@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
 /// Books a home-service provider for a 3-4 hour visit with the transparent
@@ -106,7 +107,7 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget build(BuildContext context) {
     final p = widget.provider;
     return Scaffold(
-      appBar: AppBar(title: Text(p.name)),
+      appBar: AppBar(title: Text(p.name), actions: const [LocationChip()]),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

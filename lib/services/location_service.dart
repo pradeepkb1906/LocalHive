@@ -46,23 +46,27 @@ class LocationService extends ChangeNotifier {
       final pos = await Geolocator.getCurrentPosition(
           locationSettings:
               const LocationSettings(accuracy: LocationAccuracy.low));
+      // zoom=14 returns neighbourhood/suburb-level detail when available.
       final resp = await http.get(
         Uri.parse('https://nominatim.openstreetmap.org/reverse'
-            '?lat=${pos.latitude}&lon=${pos.longitude}&format=json&zoom=10'),
+            '?lat=${pos.latitude}&lon=${pos.longitude}&format=json&zoom=14'),
         headers: {'User-Agent': 'LocalHive/0.2 (localhive app)'},
       );
       if (resp.statusCode != 200) return;
       final addr =
           (jsonDecode(resp.body) as Map<String, dynamic>)['address'] ?? {};
+      final area = (addr['suburb'] ?? addr['neighbourhood'] ??
+          addr['quarter'] ?? addr['hamlet'] ?? '') as String;
       final city = (addr['city'] ?? addr['town'] ?? addr['village'] ??
           addr['township'] ?? addr['county'] ?? '') as String;
       final state = (addr['state'] ?? '') as String;
       final abbr = _stateAbbr[state] ?? state;
-      if (city.isNotEmpty && abbr.isNotEmpty) {
-        label = '$city, $abbr';
-      } else if (abbr.isNotEmpty) {
-        label = abbr;
-      }
+      final parts = <String>[
+        if (area.isNotEmpty && area != city) area,
+        if (city.isNotEmpty) city,
+        if (abbr.isNotEmpty) abbr,
+      ];
+      if (parts.isNotEmpty) label = parts.join(', ');
       notifyListeners();
     } catch (e) {
       debugPrint('Location detect failed: $e');

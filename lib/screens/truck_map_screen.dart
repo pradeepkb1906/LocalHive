@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/data.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 import 'catalog_screen.dart';
 
 /// Live food-truck map — OpenStreetMap tiles via flutter_map (free, no API
@@ -23,7 +24,7 @@ class TruckMapScreen extends StatelessWidget {
           );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Food Trucks Near You')),
+      appBar: AppBar(title: const Text('Food Trucks Near You'), actions: const [LocationChip()]),
       body: FlutterMap(
         options: MapOptions(initialCenter: center, initialZoom: 13),
         children: [

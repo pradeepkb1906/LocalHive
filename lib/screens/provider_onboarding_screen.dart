@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
 /// Three-step "Become a provider" wizard: type → business details → KYC.
@@ -83,7 +84,7 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Become a Provider')),
+      appBar: AppBar(title: const Text('Become a Provider'), actions: const [LocationChip()]),
       body: Column(
         children: [
           Padding(

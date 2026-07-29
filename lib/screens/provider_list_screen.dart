@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/data.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 import 'booking_screen.dart';
 import 'catalog_screen.dart';
 import 'truck_map_screen.dart';
@@ -47,6 +48,7 @@ class ProviderListScreen extends StatelessWidget {
                   icon: const Icon(CupertinoIcons.map, size: 18),
                   label: const Text('Map'),
                 ),
+              const LocationChip(),
             ],
           ),
           body: _list(providers),

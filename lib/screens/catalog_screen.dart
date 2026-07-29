@@ -5,6 +5,7 @@ import '../models/data.dart';
 import '../services/directions.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
 /// Order-ahead catalog for Indian stores and food trucks. Placing an order
@@ -265,6 +266,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
             icon: const Icon(CupertinoIcons.arrow_turn_up_right, size: 20),
             onPressed: () => openDirections(widget.provider),
           ),
+          const LocationChip(),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(26),

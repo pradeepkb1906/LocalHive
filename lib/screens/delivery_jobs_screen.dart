@@ -4,6 +4,7 @@ import '../app_state.dart';
 import '../models/data.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
+import '../widgets/location_chip.dart';
 
 /// Delivery-partner interface: open jobs from stores/trucks to claim, then
 /// Picked Up → Delivered. Each step notifies the customer (SMS/WhatsApp).
@@ -14,7 +15,7 @@ class DeliveryJobsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!AppState.instance.signedIn) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Delivery Jobs')),
+        appBar: AppBar(title: const Text('Delivery Jobs'), actions: const [LocationChip()]),
         body: const Center(
             child: Padding(
           padding: EdgeInsets.all(32),
@@ -25,7 +26,7 @@ class DeliveryJobsScreen extends StatelessWidget {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Delivery Jobs')),
+      appBar: AppBar(title: const Text('Delivery Jobs'), actions: const [LocationChip()]),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: FirebaseService.instance.deliveryJobsStream(),
         builder: (context, snap) {
