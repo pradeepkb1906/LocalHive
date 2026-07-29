@@ -24,6 +24,20 @@ class AppState extends ChangeNotifier {
   String? providerBusinessName;
   bool providerKycSubmitted = false;
 
+  /// Account type shapes the whole app: 'customer' | 'provider' | 'delivery'.
+  String role = 'customer';
+
+  Future<void> setRole(String r) async {
+    role = r;
+    notifyListeners();
+    await _fb.setRole(r);
+  }
+
+  Future<void> _loadRole() async {
+    role = await _fb.getRole();
+    notifyListeners();
+  }
+
   bool get firebaseReady => _fb.ready;
   bool get signedIn => _fb.currentUser != null || _localName != null;
   String? get userName =>
@@ -33,8 +47,13 @@ class AppState extends ChangeNotifier {
   /// Called once after Firebase init: react to auth changes + live bookings.
   void start() {
     if (!_fb.ready) return;
-    FirebaseAuth.instance.authStateChanges().listen((_) {
+    FirebaseAuth.instance.authStateChanges().listen((u) {
       _resubscribeBookings();
+      if (u != null) {
+        _loadRole();
+      } else {
+        role = 'customer';
+      }
       notifyListeners();
     });
     _resubscribeBookings();

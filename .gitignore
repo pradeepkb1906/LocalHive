@@ -46,3 +46,5 @@ app.*.map.json
 lib/firebase_config.dart
 tool/seed_providers.py
 .secrets/
+android/key.properties
+android/app/google-services.json

@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
+import 'delivery_jobs_screen.dart';
+import 'provider_dashboard_screen.dart';
 import 'provider_list_screen.dart';
 import 'bookings_screen.dart';
 import 'profile_screen.dart';
@@ -16,27 +19,84 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _tab = 0;
+  String _lastRole = 'customer';
 
   @override
   Widget build(BuildContext context) {
-    final pages = [const HomeTab(), const BookingsScreen(), const ProfileScreen()];
-    return Scaffold(
-      body: pages[_tab],
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Divider(),
-          NavigationBar(
-            selectedIndex: _tab,
-            onDestinationSelected: (i) => setState(() => _tab = i),
-            destinations: const [
-              NavigationDestination(icon: Icon(CupertinoIcons.house), selectedIcon: Icon(CupertinoIcons.house_fill), label: 'Home'),
-              NavigationDestination(icon: Icon(CupertinoIcons.doc_text), selectedIcon: Icon(CupertinoIcons.doc_text_fill), label: 'Bookings'),
-              NavigationDestination(icon: Icon(CupertinoIcons.person), selectedIcon: Icon(CupertinoIcons.person_fill), label: 'Profile'),
+    return ListenableBuilder(
+      listenable: AppState.instance,
+      builder: (context, _) {
+        final role = AppState.instance.role;
+        if (role != _lastRole) {
+          // Business users land on their dashboard; partners on deliveries.
+          _lastRole = role;
+          _tab = role == 'customer' ? 0 : 1;
+        }
+        final pages = switch (role) {
+          'provider' => const [
+              HomeTab(),
+              ProviderDashboardScreen(),
+              BookingsScreen(),
+              ProfileScreen()
+            ],
+          'delivery' => const [
+              HomeTab(),
+              DeliveryJobsScreen(),
+              BookingsScreen(),
+              ProfileScreen()
+            ],
+          _ => const [HomeTab(), BookingsScreen(), ProfileScreen()],
+        };
+        if (_tab >= pages.length) _tab = 0;
+        final roleTab = switch (role) {
+          'provider' => NavigationDestination(
+              icon: StreamBuilder<int>(
+                stream: FirebaseService.instance.pendingOwnerJobsCount(),
+                builder: (context, snap) => Badge(
+                  isLabelVisible: (snap.data ?? 0) > 0,
+                  label: Text('${snap.data ?? 0}'),
+                  child: const Icon(CupertinoIcons.tray_full),
+                ),
+              ),
+              selectedIcon: const Icon(CupertinoIcons.tray_full_fill),
+              label: 'Dashboard',
+            ),
+          'delivery' => const NavigationDestination(
+              icon: Icon(CupertinoIcons.cube_box),
+              selectedIcon: Icon(CupertinoIcons.cube_box_fill),
+              label: 'Deliveries',
+            ),
+          _ => null,
+        };
+        return Scaffold(
+          body: pages[_tab],
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Divider(),
+              NavigationBar(
+                selectedIndex: _tab,
+                onDestinationSelected: (i) => setState(() => _tab = i),
+                destinations: [
+                  const NavigationDestination(
+                      icon: Icon(CupertinoIcons.house),
+                      selectedIcon: Icon(CupertinoIcons.house_fill),
+                      label: 'Home'),
+                  if (roleTab != null) roleTab,
+                  const NavigationDestination(
+                      icon: Icon(CupertinoIcons.doc_text),
+                      selectedIcon: Icon(CupertinoIcons.doc_text_fill),
+                      label: 'Bookings'),
+                  const NavigationDestination(
+                      icon: Icon(CupertinoIcons.person),
+                      selectedIcon: Icon(CupertinoIcons.person_fill),
+                      label: 'Profile'),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -78,7 +138,73 @@ class HomeTab extends StatelessWidget {
             ),
             onTap: () {},
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          // Owner call-to-action: signed-in providers see their live order
+          // count and a one-tap path to the dashboard.
+          StreamBuilder<int>(
+            stream: FirebaseService.instance.pendingOwnerJobsCount(),
+            builder: (context, snap) {
+              final n = snap.data ?? 0;
+              if (n == 0) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: LhColors.navy,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ProviderDashboardScreen())),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: LhColors.orange,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text('$n',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800)),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    n == 1
+                                        ? 'You have 1 order waiting!'
+                                        : 'You have $n orders waiting!',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700)),
+                                const SizedBox(height: 2),
+                                const Text(
+                                    'Tap to open your Provider Dashboard',
+                                    style: TextStyle(
+                                        color: Colors.white70, fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          const Icon(CupertinoIcons.arrow_right_circle_fill,
+                              color: Colors.white, size: 28),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 8),
           _CategoryCard(
             icon: CupertinoIcons.sparkles,
             tint: LhColors.indigo,

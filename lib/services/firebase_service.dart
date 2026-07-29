@@ -21,13 +21,13 @@ class FirebaseService {
   Future<void> init() async {
     try {
       await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: FirebaseConfig.apiKey,
+        options: FirebaseOptions(
+          apiKey: kIsWeb ? FirebaseConfig.apiKey : FirebaseConfig.androidApiKey,
           authDomain: FirebaseConfig.authDomain,
           projectId: FirebaseConfig.projectId,
           storageBucket: FirebaseConfig.storageBucket,
           messagingSenderId: FirebaseConfig.messagingSenderId,
-          appId: FirebaseConfig.appId,
+          appId: kIsWeb ? FirebaseConfig.appId : FirebaseConfig.androidAppId,
         ),
       );
       _auth = FirebaseAuth.instance;
@@ -244,6 +244,13 @@ class FirebaseService {
     await batch.commit();
   }
 
+  /// Count of orders needing the owner's attention (new or in progress).
+  Stream<int> pendingOwnerJobsCount() {
+    const active = {'Placed', 'Requested', 'Preparing', 'Ready'};
+    return providerJobsStream()
+        .map((jobs) => jobs.where((j) => active.contains(j.status)).length);
+  }
+
   /// Incoming jobs/orders for listings owned by the signed-in provider.
   Stream<List<Booking>> providerJobsStream() {
     if (!ready || currentUser == null) return Stream.value(const []);
@@ -282,6 +289,25 @@ class FirebaseService {
       pickupEta: (m['pickupEta'] ?? '') as String,
       otp: (m['otp'] ?? '') as String,
     );
+  }
+
+  // ---- User account type (customer | provider | delivery) ----
+
+  Future<String> getRole() async {
+    if (!ready || currentUser == null) return 'customer';
+    try {
+      final doc = await _db!.collection('users').doc(_uid).get();
+      return (doc.data()?['role'] ?? 'customer') as String;
+    } catch (_) {
+      return 'customer';
+    }
+  }
+
+  Future<void> setRole(String role) async {
+    if (!ready || currentUser == null) return;
+    await _db!.collection('users').doc(_uid).set(
+        {'role': role, 'email': currentUser?.email ?? ''},
+        SetOptions(merge: true));
   }
 
   // ---- Truck arrival alerts ----

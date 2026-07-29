@@ -164,6 +164,7 @@ class _JobCard extends StatelessWidget {
         'Ready' => job.fulfillment == 'delivery'
             ? 'Marked ready — posted to the delivery job board, customer notified.'
             : 'Marked ready — customer notified to come pick it up.',
+        'Delivered' => 'Delivered — customer got their receipt, payout queued.',
         _ => 'Completed — receipt sent to customer, payout queued.',
       })));
     }
@@ -285,9 +286,19 @@ class _JobCard extends StatelessWidget {
             ] else if (job.status == 'Ready' && job.fulfillment != 'delivery') ...[
               const SizedBox(height: 14),
               FilledButton(
-                onPressed: () => _update(context, 'Completed'),
-                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(42)),
-                child: const Text('Customer Picked Up — Complete'),
+                onPressed: () => _update(context, 'Delivered'),
+                style: FilledButton.styleFrom(
+                    backgroundColor: LhColors.green,
+                    minimumSize: const Size.fromHeight(42)),
+                child: const Text('Handed Over — Mark Delivered'),
+              ),
+            ] else if (job.status == 'Ready' && job.fulfillment == 'delivery') ...[
+              const SizedBox(height: 14),
+              OutlinedButton(
+                onPressed: () => _update(context, 'Delivered'),
+                style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(42)),
+                child: const Text('I Delivered It Myself — Mark Delivered'),
               ),
             ],
           ],

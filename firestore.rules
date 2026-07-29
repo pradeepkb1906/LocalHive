@@ -9,6 +9,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // User profile: account type (customer | provider | delivery) and prefs.
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
     // Public marketplace catalog. Only listing owners can create/update
     // their listings; going live (live: true) is admin-only (console).
     match /providers/{providerId} {
