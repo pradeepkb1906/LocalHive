@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import 'delivery_jobs_screen.dart';
 import 'provider_dashboard_screen.dart';
 import 'provider_onboarding_screen.dart';
 
@@ -109,6 +110,23 @@ class ProfileScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (_) => const ProviderDashboardScreen())),
+                  ),
+                  ListTile(
+                    leading: const IconTile(
+                        icon: CupertinoIcons.cube_box_fill,
+                        color: LhColors.orange,
+                        size: 32),
+                    title: const Text('Delivery Jobs',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    subtitle: const Text(
+                        'Earn by delivering orders — claim, pick up, deliver.',
+                        style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                    trailing: const Icon(CupertinoIcons.chevron_right,
+                        size: 18, color: LhColors.hairline),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const DeliveryJobsScreen())),
                   ),
                 ],
               ),

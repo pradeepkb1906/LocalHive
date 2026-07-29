@@ -36,10 +36,33 @@ service cloud.firestore {
       }
       allow create: if signedIn()
         && request.resource.data.userId == request.auth.uid;
+      // The delivery partner assigned via delivery_jobs/{bookingId} may
+      // advance the order status (Out for delivery / Delivered).
+      function isAssignedDeliveryPerson() {
+        return signedIn()
+          && exists(/databases/$(database)/documents/delivery_jobs/$(bookingId))
+          && get(/databases/$(database)/documents/delivery_jobs/$(bookingId))
+               .data.deliveryPersonId == request.auth.uid;
+      }
       allow read: if isCustomer() || isProviderOwner();
-      allow update: if (isCustomer() || isProviderOwner())
+      allow update: if (isCustomer() || isProviderOwner()
+            || isAssignedDeliveryPerson())
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['status']);
+      allow delete: if false;
+    }
+
+    // Delivery job board: store owners post Ready orders here (doc id ==
+    // booking id); any signed-in delivery partner can view and claim an
+    // unassigned job; only the assignee can update it afterwards.
+    match /delivery_jobs/{jobId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.deliveryPersonId == '';
+      allow update: if signedIn()
+        && (resource.data.deliveryPersonId == request.auth.uid
+            || (resource.data.deliveryPersonId == ''
+                && request.resource.data.deliveryPersonId == request.auth.uid));
       allow delete: if false;
     }
 

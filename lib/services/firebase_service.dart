@@ -106,17 +106,24 @@ class FirebaseService {
       'customerName': b.customerName,
       'customerPhone': b.customerPhone,
       'customerEmail': b.customerEmail,
+      'fulfillment': b.fulfillment,
       'createdAt': FieldValue.serverTimestamp(),
     });
+    final isOrder = b.category != 'home_service';
     await _queueNotifications(
-      event: 'booking_requested',
+      event: isOrder ? 'order_placed' : 'booking_requested',
       bookingId: doc.id,
-      customerMsg:
-          'LocalHive: your request to ${b.providerName} (${b.detail}) was sent. '
-          'We will notify you when it is accepted.',
-      providerMsg:
-          'LocalHive: NEW JOB REQUEST — ${b.detail} at ${b.address}. '
-          'Open your Provider Dashboard to accept.',
+      customerMsg: isOrder
+          ? 'LocalHive: your order at ${b.providerName} (${b.detail}) is placed. '
+              'We will notify you as it is prepared.'
+          : 'LocalHive: your request to ${b.providerName} (${b.detail}) was sent. '
+              'We will notify you when it is accepted.',
+      providerMsg: isOrder
+          ? 'LocalHive: NEW ORDER — ${b.detail}'
+              '${b.fulfillment == 'delivery' ? ' (deliver to ${b.address})' : ' (pickup)'}. '
+              'Open your Provider Dashboard.'
+          : 'LocalHive: NEW JOB REQUEST — ${b.detail} at ${b.address}. '
+              'Open your Provider Dashboard to accept.',
       booking: b,
     );
   }
@@ -138,10 +145,29 @@ class FirebaseService {
               'Please pick another provider.',
           null
         ),
+      'Preparing' => (
+          'LocalHive: ${b.providerName} accepted your order and is preparing it now.',
+          null
+        ),
+      'Ready' => (
+          b.fulfillment == 'delivery'
+              ? 'LocalHive: your order at ${b.providerName} is ready — a delivery '
+                  'partner will pick it up shortly.'
+              : 'LocalHive: your order at ${b.providerName} is READY FOR PICKUP!',
+          null
+        ),
+      'Out for delivery' => (
+          'LocalHive: your order from ${b.providerName} is OUT FOR DELIVERY to ${b.address}.',
+          null
+        ),
+      'Delivered' => (
+          'LocalHive: your order from ${b.providerName} was delivered. Enjoy!',
+          'LocalHive: order ${b.detail} was delivered to the customer.'
+        ),
       'Completed' => (
-          'LocalHive: your job with ${b.providerName} is complete. '
-              'Total \$${b.amount.toStringAsFixed(2)}. Thank you!',
-          'LocalHive: job marked complete. Payout of '
+          'LocalHive: your ${b.category == 'home_service' ? 'job' : 'order'} with '
+              '${b.providerName} is complete. Total \$${b.amount.toStringAsFixed(2)}. Thank you!',
+          'LocalHive: marked complete. Payout of '
               '\$${(b.amount / (1 + platformFeePct)).toStringAsFixed(2)} is on the way.'
         ),
       _ => (null, null),
@@ -243,7 +269,74 @@ class FirebaseService {
       customerName: (m['customerName'] ?? '') as String,
       customerPhone: (m['customerPhone'] ?? '') as String,
       customerEmail: (m['customerEmail'] ?? '') as String,
+      fulfillment: (m['fulfillment'] ?? '') as String,
     );
+  }
+
+  // ---- Delivery job board ----
+
+  /// Store owner sends a Ready delivery order to the job board.
+  Future<void> createDeliveryJob(Booking b, {double fee = 4.99}) async {
+    if (!ready || b.id.isEmpty) return;
+    await _db!.collection('delivery_jobs').doc(b.id).set({
+      'storeName': b.providerName,
+      'orderDetail': b.detail,
+      'dropAddress': b.address,
+      'customerPhone': b.customerPhone, // delivery partner needs to reach them
+      'customerEmail': b.customerEmail,
+      'fee': fee,
+      'status': 'Open',
+      'deliveryPersonId': '',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Stream<List<Map<String, dynamic>>> deliveryJobsStream() {
+    if (!ready || currentUser == null) return Stream.value(const []);
+    return _db!.collection('delivery_jobs').snapshots().map((snap) => snap.docs
+        .map((d) => {...d.data(), 'id': d.id})
+        .where((j) =>
+            j['status'] != 'Delivered' &&
+            (j['deliveryPersonId'] == '' || j['deliveryPersonId'] == _uid))
+        .toList());
+  }
+
+  Future<void> claimDeliveryJob(String jobId) async {
+    await _db!.collection('delivery_jobs').doc(jobId).update({
+      'deliveryPersonId': _uid,
+      'status': 'Claimed',
+    });
+  }
+
+  /// Advance a claimed delivery: 'PickedUp' → booking 'Out for delivery';
+  /// 'Delivered' → booking 'Delivered'. Queues customer notifications.
+  Future<void> advanceDeliveryJob(
+      String jobId, String jobStatus, Booking? bookingForNotify) async {
+    await _db!
+        .collection('delivery_jobs')
+        .doc(jobId)
+        .update({'status': jobStatus});
+    final bookingStatus =
+        jobStatus == 'PickedUp' ? 'Out for delivery' : 'Delivered';
+    await _db!
+        .collection('bookings')
+        .doc(jobId)
+        .update({'status': bookingStatus});
+    if (bookingForNotify != null) {
+      await _queueNotifications(
+        event: 'delivery_${jobStatus.toLowerCase()}',
+        bookingId: jobId,
+        customerMsg: bookingStatus == 'Out for delivery'
+            ? 'LocalHive: your order from ${bookingForNotify.providerName} is '
+                'OUT FOR DELIVERY to ${bookingForNotify.address}.'
+            : 'LocalHive: your order from ${bookingForNotify.providerName} was '
+                'delivered. Enjoy!',
+        providerMsg: bookingStatus == 'Delivered'
+            ? 'LocalHive: order delivered to the customer.'
+            : null,
+        booking: bookingForNotify,
+      );
+    }
   }
 
   Stream<List<Booking>> bookingsStream() {

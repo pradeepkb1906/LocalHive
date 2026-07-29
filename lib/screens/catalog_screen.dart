@@ -19,10 +19,13 @@ class CatalogScreen extends StatefulWidget {
 
 class _CatalogScreenState extends State<CatalogScreen> {
   final Map<CatalogItem, int> _cart = {};
+  bool _delivery = false;
+  final _address = TextEditingController();
+  static const _deliveryFee = 4.99;
 
   double get _subtotal => _cart.entries.fold(0, (sum, e) => sum + e.key.price * e.value);
   double get _fee => _subtotal * platformFeePct;
-  double get _total => _subtotal + _fee;
+  double get _total => _subtotal + _fee + (_delivery ? _deliveryFee : 0);
   int get _count => _cart.values.fold(0, (a, b) => a + b);
 
   Color get _tint =>
@@ -39,16 +42,44 @@ class _CatalogScreenState extends State<CatalogScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: LhColors.background,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            20, 20, 20, 20 + MediaQuery.of(ctx).viewInsets.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Order · ${widget.provider.name}',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 14),
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(
+                    value: false,
+                    label: Text('Pickup'),
+                    icon: Icon(CupertinoIcons.bag)),
+                ButtonSegment(
+                    value: true,
+                    label: Text('Delivery +\$4.99'),
+                    icon: Icon(CupertinoIcons.cube_box)),
+              ],
+              selected: {_delivery},
+              onSelectionChanged: (s) =>
+                  setSheet(() => setState(() => _delivery = s.first)),
+            ),
+            if (_delivery) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _address,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                    hintText: 'Delivery address (street, city, state)'),
+              ),
+            ],
             const SizedBox(height: 14),
             Card(
               child: Padding(
@@ -78,6 +109,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             style: const TextStyle(fontSize: 14.5)),
                       ],
                     ),
+                    if (_delivery) ...[
+                      const SizedBox(height: 4),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Delivery fee', style: TextStyle(fontSize: 14.5)),
+                          Text('\$4.99', style: TextStyle(fontSize: 14.5)),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,22 +137,37 @@ class _CatalogScreenState extends State<CatalogScreen> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () {
+                if (_delivery && _address.text.trim().length < 8) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                      content: Text('Enter the full delivery address.')));
+                  return;
+                }
                 AppState.instance.addBooking(Booking(
                   widget.provider.name,
-                  'Pickup order · $_count item${_count > 1 ? 's' : ''}',
-                  'Preparing',
+                  '${_delivery ? 'Delivery' : 'Pickup'} order · '
+                      '$_count item${_count > 1 ? 's' : ''}',
+                  'Placed',
                   _total,
+                  providerId: widget.provider.id,
+                  category: widget.provider.category,
+                  address: _delivery ? _address.text.trim() : '',
+                  customerName: AppState.instance.userName ?? '',
+                  customerPhone: AppState.instance.userPhone ?? '',
+                  customerEmail: AppState.instance.userEmail ?? '',
+                  fulfillment: _delivery ? 'delivery' : 'pickup',
                 ));
                 Navigator.pop(ctx);
                 setState(() => _cart.clear());
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text(
-                        'Order placed — see the Bookings tab. (Demo — no real payment.)')));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(_delivery
+                        ? 'Order placed for delivery — track it in the Bookings tab.'
+                        : 'Pickup order placed — track it in the Bookings tab.')));
               },
-              child: const Text('Place Pickup Order'),
+              child: Text(_delivery ? 'Place Delivery Order' : 'Place Pickup Order'),
             ),
             const SizedBox(height: 8),
           ],
+        ),
         ),
       ),
     );

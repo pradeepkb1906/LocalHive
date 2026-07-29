@@ -74,9 +74,19 @@ class BookingsScreen extends StatelessWidget {
                                   style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: bookings[i].status == 'Confirmed'
-                                          ? LhColors.green
-                                          : LhColors.orange)),
+                                      color: switch (bookings[i].status) {
+                                        'Completed' ||
+                                        'Delivered' ||
+                                        'Confirmed' =>
+                                          LhColors.green,
+                                        'Accepted' ||
+                                        'Preparing' ||
+                                        'Ready' ||
+                                        'Out for delivery' =>
+                                          LhColors.blue,
+                                        'Declined' => const Color(0xFFFF3B30),
+                                        _ => LhColors.orange,
+                                      })),
                             ],
                           ),
                         ),

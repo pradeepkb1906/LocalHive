@@ -44,20 +44,23 @@ def _read_env():
 SA_FILE = os.path.join(os.path.dirname(SECRETS), "service_account.json")
 
 
-def _fs_token():
-    """OAuth token from the service account — the dispatcher acts as the
-    trusted server and bypasses security rules."""
+_CREDS = None
+
+
+def _fs_headers():
+    """OAuth headers from the service account — the dispatcher acts as the
+    trusted server and bypasses security rules. Auto-refreshes the token
+    so --loop mode survives past the 1-hour token lifetime."""
+    global _CREDS
     import google.auth.transport.requests
     from google.oauth2 import service_account
-    creds = service_account.Credentials.from_service_account_file(
-        SA_FILE, scopes=["https://www.googleapis.com/auth/datastore"])
-    creds.refresh(google.auth.transport.requests.Request())
-    return creds.token
-
-
-FS_TOKEN = _fs_token()
-FS_HEADERS = {"Authorization": f"Bearer {FS_TOKEN}",
-              "Content-Type": "application/json"}
+    if _CREDS is None:
+        _CREDS = service_account.Credentials.from_service_account_file(
+            SA_FILE, scopes=["https://www.googleapis.com/auth/datastore"])
+    if not _CREDS.valid:
+        _CREDS.refresh(google.auth.transport.requests.Request())
+    return {"Authorization": f"Bearer {_CREDS.token}",
+            "Content-Type": "application/json"}
 
 
 def load_secrets():
@@ -93,7 +96,7 @@ def normalize_us(phone: str) -> str | None:
 
 def fs_get(path, params=""):
     req = urllib.request.Request(f"{FS}/{path}?{params.lstrip('&')}",
-                                 headers=FS_HEADERS)
+                                 headers=_fs_headers())
     with urllib.request.urlopen(req) as r:
         return json.loads(r.read().decode())
 
@@ -104,7 +107,7 @@ def fs_patch(doc_path, fields):
     req = urllib.request.Request(
         f"https://firestore.googleapis.com/v1/{doc_path}?{mask}",
         data=json.dumps(body).encode(),
-        headers=FS_HEADERS,
+        headers=_fs_headers(),
         method="PATCH",
     )
     urllib.request.urlopen(req).read()

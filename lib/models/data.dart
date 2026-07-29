@@ -50,10 +50,11 @@ class Booking {
   final String id; // Firestore doc id ('' for local/mock)
   final String providerId;
   final String category;
-  final String address; // service address (home services)
+  final String address; // service or delivery address
   final String customerName;
   final String customerPhone;
   final String customerEmail;
+  final String fulfillment; // '' | 'pickup' | 'delivery'
   const Booking(
     this.providerName,
     this.detail,
@@ -66,6 +67,7 @@ class Booking {
     this.customerName = '',
     this.customerPhone = '',
     this.customerEmail = '',
+    this.fulfillment = '',
   });
 }
 

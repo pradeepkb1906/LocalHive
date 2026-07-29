@@ -62,22 +62,30 @@ class _JobCard extends StatelessWidget {
   const _JobCard({required this.job});
 
   Color get _statusColor => switch (job.status) {
-        'Requested' => LhColors.orange,
-        'Accepted' => LhColors.blue,
-        'Completed' => LhColors.green,
+        'Requested' || 'Placed' => LhColors.orange,
+        'Accepted' || 'Preparing' || 'Ready' || 'Out for delivery' => LhColors.blue,
+        'Completed' || 'Delivered' => LhColors.green,
         'Declined' => const Color(0xFFFF3B30),
         _ => LhColors.inkSecondary,
       };
 
   Future<void> _update(BuildContext context, String status) async {
     await FirebaseService.instance.updateBookingStatus(job, status);
+    if (status == 'Ready' && job.fulfillment == 'delivery') {
+      await FirebaseService.instance.createDeliveryJob(job);
+    }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(status == 'Accepted'
-              ? 'Job accepted — the customer has been notified (SMS + email queued).'
-              : status == 'Declined'
-                  ? 'Job declined — the customer has been notified.'
-                  : 'Job completed — receipt sent to customer, payout queued.')));
+          content: Text(switch (status) {
+        'Accepted' =>
+          'Job accepted — the customer has been notified.',
+        'Declined' => 'Job declined — the customer has been notified.',
+        'Preparing' => 'Order accepted — customer notified you are preparing it.',
+        'Ready' => job.fulfillment == 'delivery'
+            ? 'Marked ready — posted to the delivery job board, customer notified.'
+            : 'Marked ready — customer notified to come pick it up.',
+        _ => 'Completed — receipt sent to customer, payout queued.',
+      })));
     }
   }
 
@@ -153,6 +161,31 @@ class _JobCard extends StatelessWidget {
                 onPressed: () => _update(context, 'Completed'),
                 style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(42)),
                 child: const Text('Mark Job Complete'),
+              ),
+            ] else if (job.status == 'Placed') ...[
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: () => _update(context, 'Preparing'),
+                style: FilledButton.styleFrom(
+                    backgroundColor: LhColors.green,
+                    minimumSize: const Size.fromHeight(42)),
+                child: const Text('Accept Order & Start Preparing'),
+              ),
+            ] else if (job.status == 'Preparing') ...[
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: () => _update(context, 'Ready'),
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(42)),
+                child: Text(job.fulfillment == 'delivery'
+                    ? 'Mark Ready & Request Delivery Partner'
+                    : 'Mark Ready for Pickup'),
+              ),
+            ] else if (job.status == 'Ready' && job.fulfillment != 'delivery') ...[
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: () => _update(context, 'Completed'),
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(42)),
+                child: const Text('Customer Picked Up — Complete'),
               ),
             ],
           ],
