@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../demo_accounts.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
@@ -426,6 +427,79 @@ class _SignInScreenState extends State<SignInScreen> {
                 onPressed: _busy ? null : _forgotPassword,
                 child: const Text('Forgot password?'),
               ),
+            if (kShowDemoAccounts && !_registering) ...[
+              const SizedBox(height: 18),
+              const Row(children: [
+                Expanded(child: Divider()),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text('TRY A DEMO ACCOUNT',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.4,
+                          color: LhColors.inkSecondary)),
+                ),
+                Expanded(child: Divider()),
+              ]),
+              const SizedBox(height: 4),
+              const Text(
+                  'Tap Use to fill the form, then Sign In. Each login opens '
+                  'the app in that role.',
+                  style: TextStyle(fontSize: 12, color: LhColors.inkSecondary)),
+              const SizedBox(height: 10),
+              for (final a in demoAccounts)
+                Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    dense: true,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                    leading: IconTile(icon: a.icon, color: a.color, size: 32),
+                    title: Text(a.label,
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(a.description,
+                            style: const TextStyle(
+                                fontSize: 11.5, color: LhColors.inkSecondary)),
+                        Text('${a.email} · ${a.password}',
+                            style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: LhColors.ink)),
+                      ],
+                    ),
+                    trailing: FilledButton(
+                      onPressed: _busy
+                          ? null
+                          : () {
+                              setState(() {
+                                _email.text = a.email;
+                                _password.text = a.password;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          '${a.label} credentials filled — tap Sign In.'),
+                                      duration: const Duration(seconds: 2)));
+                            },
+                      style: FilledButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16)),
+                      child: const Text('Use'),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 4),
+              const Text(
+                  'Demo logins are shared test accounts — remove them before '
+                  'launching publicly.',
+                  style: TextStyle(fontSize: 11, color: LhColors.inkSecondary)),
+            ],
           ] else if (!_codeSent) ...[
             TextField(
               controller: _name,
