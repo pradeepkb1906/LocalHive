@@ -169,9 +169,24 @@ class FirebaseService {
       });
     }
     if (providerMsg != null) {
+      // Deliver to the contact details on the provider's listing.
+      String provPhone = '', provEmail = '';
+      if (booking.providerId.isNotEmpty) {
+        try {
+          final doc = await _db!
+              .collection('providers')
+              .doc(booking.providerId)
+              .get();
+          final m = doc.data() ?? {};
+          provPhone = (m['phone'] ?? '') as String;
+          provEmail = (m['email'] ?? '') as String;
+        } catch (_) {}
+      }
       batch.set(_db!.collection('notifications').doc(), {
         'recipient': 'provider',
         'providerId': booking.providerId,
+        'phone': provPhone,
+        'email': provEmail,
         'channels': ['sms', 'email'],
         'event': event,
         'bookingId': bookingId,
@@ -268,6 +283,8 @@ class FirebaseService {
       'verified': false,
       'live': false,
       'ownerId': _uid,
+      'phone': currentUser?.phoneNumber ?? '',
+      'email': currentUser?.email ?? '',
     });
   }
 
