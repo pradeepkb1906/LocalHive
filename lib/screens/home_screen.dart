@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/location_chip.dart';
 import 'admin_review_screen.dart';
 import 'delivery_jobs_screen.dart';
+import 'demo_tour_screen.dart';
 import 'provider_dashboard_screen.dart';
 import 'provider_list_screen.dart';
 import 'bookings_screen.dart';
@@ -163,6 +164,51 @@ class HomeTab extends StatelessWidget {
             onTap: () {},
           ),
           const SizedBox(height: 16),
+          // Guided tour — the fastest way for a brand-new user to "get it".
+          Card(
+            color: LhColors.blue.withValues(alpha: 0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(color: LhColors.blue.withValues(alpha: 0.35)),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const DemoTourScreen())),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    const IconTile(
+                        icon: CupertinoIcons.play_circle_fill,
+                        color: LhColors.blue),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('See how LocalHive works',
+                              style: TextStyle(
+                                  fontSize: 15.5, fontWeight: FontWeight.w700)),
+                          SizedBox(height: 2),
+                          Text(
+                              '2-minute guided tour with narration — customer, '
+                              'business owner, delivery partner & admin',
+                              style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: LhColors.inkSecondary,
+                                  height: 1.3)),
+                        ],
+                      ),
+                    ),
+                    const Icon(CupertinoIcons.chevron_right,
+                        size: 18, color: LhColors.blue),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           // Owner call-to-action: signed-in providers see their live order
           // count and a one-tap path to the dashboard.
           StreamBuilder<int>(
