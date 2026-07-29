@@ -1,0 +1,66 @@
+rules_version = '2';
+// LocalHive Firestore security rules.
+// Server-side jobs (notification dispatcher, admin scripts) use the Admin SDK
+// service account, which bypasses these rules entirely.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Public marketplace catalog. Only listing owners can create/update
+    // their listings; going live (live: true) is admin-only (console).
+    match /providers/{providerId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.live == false;
+      allow update: if signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.live == resource.data.live; // can't self-publish
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Bookings: customers create their own; readable by the customer or by
+    // the owner of the booked provider listing; status updates by either
+    // party (provider accepts/completes, customer cancels).
+    match /bookings/{bookingId} {
+      function isCustomer() {
+        return signedIn() && resource.data.userId == request.auth.uid;
+      }
+      // providerOwnerId is denormalized onto the booking at creation so
+      // owner queries are provable without per-doc get() lookups.
+      function isProviderOwner() {
+        return signedIn() && resource.data.providerOwnerId == request.auth.uid;
+      }
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if isCustomer() || isProviderOwner();
+      allow update: if (isCustomer() || isProviderOwner())
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status']);
+      allow delete: if false;
+    }
+
+    // Provider applications: create and read your own; decisions are
+    // admin-only (console).
+    match /provider_applications/{appId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Notification outbox: clients may only enqueue. Reading/dispatching is
+    // the server-side dispatcher's job (Admin SDK).
+    match /notifications/{noteId} {
+      allow create: if signedIn();
+      allow read, update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

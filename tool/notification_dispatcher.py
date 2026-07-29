@@ -41,9 +41,23 @@ def _read_env():
     return vals
 
 
-API_KEY = _read_env().get("FIREBASE_API_KEY", "")
-if not API_KEY:
-    sys.exit("FIREBASE_API_KEY missing from .secrets/twilio.env")
+SA_FILE = os.path.join(os.path.dirname(SECRETS), "service_account.json")
+
+
+def _fs_token():
+    """OAuth token from the service account — the dispatcher acts as the
+    trusted server and bypasses security rules."""
+    import google.auth.transport.requests
+    from google.oauth2 import service_account
+    creds = service_account.Credentials.from_service_account_file(
+        SA_FILE, scopes=["https://www.googleapis.com/auth/datastore"])
+    creds.refresh(google.auth.transport.requests.Request())
+    return creds.token
+
+
+FS_TOKEN = _fs_token()
+FS_HEADERS = {"Authorization": f"Bearer {FS_TOKEN}",
+              "Content-Type": "application/json"}
 
 
 def load_secrets():
@@ -78,7 +92,9 @@ def normalize_us(phone: str) -> str | None:
 
 
 def fs_get(path, params=""):
-    with urllib.request.urlopen(f"{FS}/{path}?key={API_KEY}{params}") as r:
+    req = urllib.request.Request(f"{FS}/{path}?{params.lstrip('&')}",
+                                 headers=FS_HEADERS)
+    with urllib.request.urlopen(req) as r:
         return json.loads(r.read().decode())
 
 
@@ -86,9 +102,9 @@ def fs_patch(doc_path, fields):
     mask = "&".join(f"updateMask.fieldPaths={k}" for k in fields)
     body = {"fields": {k: {"stringValue": v} for k, v in fields.items()}}
     req = urllib.request.Request(
-        f"https://firestore.googleapis.com/v1/{doc_path}?{mask}&key={API_KEY}",
+        f"https://firestore.googleapis.com/v1/{doc_path}?{mask}",
         data=json.dumps(body).encode(),
-        headers={"Content-Type": "application/json"},
+        headers=FS_HEADERS,
         method="PATCH",
     )
     urllib.request.urlopen(req).read()

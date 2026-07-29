@@ -45,7 +45,7 @@ class AppState extends ChangeNotifier {
     _bookingsSub = _fb.bookingsStream().listen((list) {
       bookings = list;
       notifyListeners();
-    });
+    }, onError: (_) {}); // guests can't read bookings — keep local list
   }
 
   /// Normalizes a US number to E.164 (+1XXXXXXXXXX).

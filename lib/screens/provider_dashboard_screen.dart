@@ -6,10 +6,8 @@ import '../theme.dart';
 
 /// Provider-side interface: incoming job requests with Accept / Decline,
 /// then Mark Complete. Every action queues SMS + email notifications for
-/// the customer via the notifications outbox.
-///
-/// Demo scope: shows all home-service jobs; per-provider filtering arrives
-/// with role-based security rules.
+/// the customer via the notifications outbox. Scoped by security rules to
+/// bookings whose listing is owned by the signed-in user.
 class ProviderDashboardScreen extends StatelessWidget {
   const ProviderDashboardScreen({super.key});
 
@@ -18,10 +16,10 @@ class ProviderDashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Provider Dashboard')),
       body: StreamBuilder<List<Booking>>(
-        stream: FirebaseService.instance.homeServiceJobsStream(),
+        stream: FirebaseService.instance.providerJobsStream(),
         builder: (context, snap) {
           final jobs = snap.data ?? const <Booking>[];
-          if (!snap.hasData) {
+          if (!snap.hasData && !snap.hasError) {
             return const Center(child: CircularProgressIndicator());
           }
           if (jobs.isEmpty) {
@@ -37,8 +35,9 @@ class ProviderDashboardScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     SizedBox(height: 4),
                     Text(
-                        'When a customer books you, the request appears here '
-                        'and you are notified by SMS and email.',
+                        'Sign in and get your listing approved — bookings for '
+                        'your listings appear here, and you are notified by '
+                        'SMS and email.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
                   ],

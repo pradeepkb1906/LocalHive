@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
 import '../theme.dart';
+import 'profile_screen.dart';
 
 /// Books a home-service provider for a 3-4 hour visit with the transparent
 /// fee breakdown. Confirming records a real booking in AppState.
@@ -38,6 +39,13 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void _confirm() {
+    if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please sign in to book — it keeps your booking secure.')));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const SignInScreen()));
+      return;
+    }
     if (_address.text.trim().length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Enter the full service address (street, city, state).')));

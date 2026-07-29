@@ -4,6 +4,7 @@ import '../app_state.dart';
 import '../models/data.dart';
 import '../services/directions.dart';
 import '../theme.dart';
+import 'profile_screen.dart';
 
 /// Order-ahead catalog for Indian stores and food trucks. Placing an order
 /// records a real booking in AppState.
@@ -28,6 +29,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
       widget.provider.category == 'indian_store' ? LhColors.green : LhColors.orange;
 
   void _checkout() {
+    if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please sign in to place an order.')));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const SignInScreen()));
+      return;
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: LhColors.background,

@@ -83,8 +83,19 @@ class FirebaseService {
 
   Future<void> addBooking(Booking b) async {
     if (!ready) return;
+    // Denormalize the listing owner so provider-side queries are cheap and
+    // provable under security rules.
+    String providerOwnerId = '';
+    if (b.providerId.isNotEmpty) {
+      try {
+        final prov =
+            await _db!.collection('providers').doc(b.providerId).get();
+        providerOwnerId = (prov.data()?['ownerId'] ?? '') as String;
+      } catch (_) {}
+    }
     final doc = await _db!.collection('bookings').add({
       'userId': _uid,
+      'providerOwnerId': providerOwnerId,
       'providerId': b.providerId,
       'providerName': b.providerName,
       'category': b.category,
@@ -198,14 +209,12 @@ class FirebaseService {
     await batch.commit();
   }
 
-  /// Incoming home-service jobs for the provider dashboard.
-  /// Demo scope: shows all home-service bookings until role-based
-  /// security rules land (flagged as a known gap).
-  Stream<List<Booking>> homeServiceJobsStream() {
-    if (!ready) return const Stream.empty();
+  /// Incoming jobs/orders for listings owned by the signed-in provider.
+  Stream<List<Booking>> providerJobsStream() {
+    if (!ready || currentUser == null) return Stream.value(const []);
     return _db!
         .collection('bookings')
-        .where('category', isEqualTo: 'home_service')
+        .where('providerOwnerId', isEqualTo: _uid)
         .snapshots()
         .map((snap) {
       final docs = snap.docs.toList()

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import 'profile_screen.dart';
 
 /// Three-step "Become a provider" wizard: type → business details → KYC.
 /// The KYC step is a placeholder for Stripe Identity + Checkr; the collected
@@ -42,6 +43,12 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
     if (_step == 2) {
       if (!_agreeContractor || !_agreeKyc) {
         _toast('Please review and accept both items to continue.');
+        return;
+      }
+      if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
+        _toast('Please sign in first — your application must be linked to your account.');
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const SignInScreen()));
         return;
       }
       AppState.instance.submitProviderApplication(
