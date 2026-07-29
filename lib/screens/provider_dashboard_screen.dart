@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/data.dart';
+import '../services/directions.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
@@ -199,8 +200,30 @@ class _JobCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            _row(CupertinoIcons.location_solid,
-                job.address.isEmpty ? 'No address given' : job.address),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _row(CupertinoIcons.location_solid,
+                      job.address.isEmpty ? 'No address given' : job.address),
+                ),
+                if (job.address.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => openDirectionsToAddress(job.address),
+                    style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact),
+                    icon: const Icon(CupertinoIcons.arrow_turn_up_right,
+                        size: 14),
+                    label: const Text('Directions',
+                        style: TextStyle(fontSize: 13)),
+                  ),
+              ],
+            ),
+            if (job.fulfillment == 'pickup' && job.pickupEta.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              _row(CupertinoIcons.time,
+                  'Customer arriving: ${job.pickupEta}'),
+            ],
             const SizedBox(height: 6),
             _row(CupertinoIcons.person_fill,
                 '${job.customerName.isEmpty ? 'Customer' : job.customerName}'

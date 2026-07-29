@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -83,6 +85,10 @@ class FirebaseService {
 
   Future<void> addBooking(Booking b) async {
     if (!ready) return;
+    // 4-digit OTP the customer shares with the delivery partner on arrival.
+    final otp = b.fulfillment == 'delivery'
+        ? (1000 + Random().nextInt(9000)).toString()
+        : '';
     // Denormalize the listing owner so provider-side queries are cheap and
     // provable under security rules.
     String providerOwnerId = '';
@@ -107,6 +113,8 @@ class FirebaseService {
       'customerPhone': b.customerPhone,
       'customerEmail': b.customerEmail,
       'fulfillment': b.fulfillment,
+      'pickupEta': b.pickupEta,
+      'otp': otp,
       'createdAt': FieldValue.serverTimestamp(),
     });
     final isOrder = b.category != 'home_service';
@@ -115,12 +123,13 @@ class FirebaseService {
       bookingId: doc.id,
       customerMsg: isOrder
           ? 'LocalHive: your order at ${b.providerName} (${b.detail}) is placed. '
+              '${otp.isNotEmpty ? 'Your delivery OTP is $otp — share it ONLY when your order arrives. ' : ''}'
               'We will notify you as it is prepared.'
           : 'LocalHive: your request to ${b.providerName} (${b.detail}) was sent. '
               'We will notify you when it is accepted.',
       providerMsg: isOrder
           ? 'LocalHive: NEW ORDER — ${b.detail}'
-              '${b.fulfillment == 'delivery' ? ' (deliver to ${b.address})' : ' (pickup)'}. '
+              '${b.fulfillment == 'delivery' ? ' (deliver to ${b.address})' : ' (pickup${b.pickupEta.isNotEmpty ? ', customer arriving ${b.pickupEta}' : ''})'}. '
               'Open your Provider Dashboard.'
           : 'LocalHive: NEW JOB REQUEST — ${b.detail} at ${b.address}. '
               'Open your Provider Dashboard to accept.',
@@ -270,6 +279,8 @@ class FirebaseService {
       customerPhone: (m['customerPhone'] ?? '') as String,
       customerEmail: (m['customerEmail'] ?? '') as String,
       fulfillment: (m['fulfillment'] ?? '') as String,
+      pickupEta: (m['pickupEta'] ?? '') as String,
+      otp: (m['otp'] ?? '') as String,
     );
   }
 
@@ -395,6 +406,7 @@ class FirebaseService {
       'dropAddress': b.address,
       'customerPhone': b.customerPhone, // delivery partner needs to reach them
       'customerEmail': b.customerEmail,
+      'otp': b.otp, // partner must collect this from the customer to complete
       'fee': fee,
       'status': 'Open',
       'deliveryPersonId': '',
@@ -473,6 +485,8 @@ class FirebaseService {
     required String type,
     required String businessName,
     required String city,
+    String availableFrom = '',
+    String availableTo = '',
   }) async {
     if (!ready) return;
     await _db!.collection('provider_applications').add({
@@ -480,6 +494,8 @@ class FirebaseService {
       'type': type,
       'businessName': businessName,
       'city': city,
+      'availableFrom': availableFrom,
+      'availableTo': availableTo,
       'status': 'in_review',
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -488,11 +504,15 @@ class FirebaseService {
     await _db!.collection('providers').add({
       'name': businessName,
       'category': type,
-      'subtitle': 'New on LocalHive',
+      'subtitle': type == 'delivery'
+          ? 'Delivery partner'
+          : 'New on LocalHive',
       'rating': 5.0,
       'reviews': 0,
       'hourlyRate': type == 'home_service' ? 30.0 : 0.0,
       'city': city,
+      'availableFrom': availableFrom,
+      'availableTo': availableTo,
       'verified': false,
       'live': false,
       'ownerId': _uid,
@@ -526,6 +546,8 @@ class FirebaseService {
           emoji: '',
           lat: ((m['lat'] ?? 0) as num).toDouble(),
           lng: ((m['lng'] ?? 0) as num).toDouble(),
+          availableFrom: (m['availableFrom'] ?? '') as String,
+          availableTo: (m['availableTo'] ?? '') as String,
         );
       }).toList()
         ..sort((a, b) => b.rating.compareTo(a.rating));

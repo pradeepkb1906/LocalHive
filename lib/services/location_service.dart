@@ -41,7 +41,8 @@ class LocationService extends ChangeNotifier {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        return; // keep 'USA' fallback
+        await _detectFromIp(); // laptops / denied permission: IP estimate
+        return;
       }
       final pos = await Geolocator.getCurrentPosition(
           locationSettings:
@@ -70,6 +71,27 @@ class LocationService extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Location detect failed: $e');
+      await _detectFromIp();
+    }
+  }
+
+  /// Coarse city-level location from the IP address — used on laptops or
+  /// when GPS permission is denied. Free service, no API key.
+  Future<void> _detectFromIp() async {
+    try {
+      final resp = await http
+          .get(Uri.parse('https://ipapi.co/json/'))
+          .timeout(const Duration(seconds: 6));
+      if (resp.statusCode != 200) return;
+      final d = jsonDecode(resp.body) as Map<String, dynamic>;
+      final city = (d['city'] ?? '') as String;
+      final region = (d['region_code'] ?? d['region'] ?? '') as String;
+      if (city.isNotEmpty) {
+        label = region.toString().isNotEmpty ? '$city, $region' : city;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('IP location failed: $e');
     }
   }
 }

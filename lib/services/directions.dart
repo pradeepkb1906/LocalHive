@@ -14,3 +14,10 @@ Future<void> openDirections(Provider p) async {
   }
   await launchUrl(uri, mode: LaunchMode.externalApplication);
 }
+
+/// Turn-by-turn directions to a raw street address (customer locations).
+Future<void> openDirectionsToAddress(String address) async {
+  final uri = Uri.parse('https://www.google.com/maps/dir/?api=1'
+      '&destination=${Uri.encodeComponent(address)}');
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
+}

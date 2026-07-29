@@ -151,6 +151,19 @@ class _BookingScreenState extends State<BookingScreen> {
                               style: const TextStyle(
                                   fontSize: 12.5, color: LhColors.inkSecondary)),
                         ]),
+                        if (p.availability.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Row(children: [
+                            const Icon(CupertinoIcons.time,
+                                size: 13, color: LhColors.green),
+                            const SizedBox(width: 3),
+                            Text('Available ${p.availability}',
+                                style: const TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: LhColors.green)),
+                          ]),
+                        ],
                       ],
                     ),
                   ),

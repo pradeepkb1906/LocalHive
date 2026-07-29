@@ -95,6 +95,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
   final _address = TextEditingController();
   static const _deliveryFee = 4.99;
+  String _pickupEta = 'In 30 min';
+  static const _etaOptions = ['In 15 min', 'In 30 min', 'In 45 min', 'In 1 hour'];
 
   double get _subtotal => _cart.entries.fold(0, (sum, e) => sum + e.key.price * e.value);
   double get _fee => _subtotal * platformFeePct;
@@ -151,6 +153,21 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                     hintText: 'Delivery address (street, city, state)'),
+              ),
+            ] else ...[
+              const SizedBox(height: 12),
+              const Text('When will you arrive?',
+                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: _etaOptions
+                    .map((e) => ChoiceChip(
+                        label: Text(e),
+                        selected: _pickupEta == e,
+                        onSelected: (_) => setSheet(
+                            () => setState(() => _pickupEta = e))))
+                    .toList(),
               ),
             ],
             const SizedBox(height: 14),
@@ -228,6 +245,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   customerPhone: AppState.instance.userPhone ?? '',
                   customerEmail: AppState.instance.userEmail ?? '',
                   fulfillment: _delivery ? 'delivery' : 'pickup',
+                  pickupEta: _delivery ? '' : _pickupEta,
                 ));
                 Navigator.pop(ctx);
                 setState(() => _cart.clear());

@@ -23,6 +23,14 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
   bool _agreeContractor = false;
   bool _agreeKyc = false;
 
+  String _availFrom = '9 AM';
+  String _availTo = '6 PM';
+  static const _hours = [
+    '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM',
+    '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM',
+    '10 PM', '11 PM'
+  ];
+
   static const _types = [
     ('home_service', CupertinoIcons.sparkles, LhColors.indigo, 'Home services',
         'Cleaning, handyman work, and other in-home services'),
@@ -30,6 +38,8 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
         'Grocery or retail store with pickup / delivery orders'),
     ('food_truck', CupertinoIcons.car_detailed, LhColors.orange, 'Food truck',
         'Mobile food business with live location and pre-orders'),
+    ('delivery', CupertinoIcons.cube_box_fill, LhColors.blue, 'Delivery partner',
+        'Students & gig workers — deliver orders on your own schedule'),
   ];
 
   void _next() {
@@ -53,7 +63,11 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
         return;
       }
       AppState.instance.submitProviderApplication(
-          type: _type!, businessName: _businessName.text.trim());
+          type: _type!,
+          businessName: _businessName.text.trim(),
+          city: _city.text.trim(),
+          availableFrom: _availFrom,
+          availableTo: _availTo);
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -164,6 +178,39 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
                     controller: _city,
                     textCapitalization: TextCapitalization.words,
                     decoration: const InputDecoration(hintText: 'City, State (e.g., Edison, NJ)'),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('I am available',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  const Text('Customers see this window; jobs and deliveries '
+                      'are only expected within it.',
+                      style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Text('From ', style: TextStyle(fontSize: 14)),
+                      DropdownButton<String>(
+                        value: _availFrom,
+                        items: _hours
+                            .map((h) =>
+                                DropdownMenuItem(value: h, child: Text(h)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _availFrom = v ?? _availFrom),
+                      ),
+                      const SizedBox(width: 16),
+                      const Text('To ', style: TextStyle(fontSize: 14)),
+                      DropdownButton<String>(
+                        value: _availTo,
+                        items: _hours
+                            .map((h) =>
+                                DropdownMenuItem(value: h, child: Text(h)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _availTo = v ?? _availTo),
+                      ),
+                    ],
                   ),
                 ] else ...[
                   const Text('Verification',

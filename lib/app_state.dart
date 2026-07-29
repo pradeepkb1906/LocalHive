@@ -127,11 +127,20 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> submitProviderApplication(
-      {required String type, required String businessName, String city = ''}) async {
+      {required String type,
+      required String businessName,
+      String city = '',
+      String availableFrom = '',
+      String availableTo = ''}) async {
     providerType = type;
     providerBusinessName = businessName;
     providerKycSubmitted = true;
     notifyListeners();
-    unawaited(_fb.submitProviderApplication(type: type, businessName: businessName, city: city));
+    unawaited(_fb.submitProviderApplication(
+        type: type,
+        businessName: businessName,
+        city: city,
+        availableFrom: availableFrom,
+        availableTo: availableTo));
   }
 }

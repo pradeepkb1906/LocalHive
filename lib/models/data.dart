@@ -15,6 +15,8 @@ class Provider {
   final String emoji;
   final double lat; // 0 = unknown
   final double lng;
+  final String availableFrom; // e.g. '9 AM'
+  final String availableTo; // e.g. '6 PM'
 
   const Provider({
     required this.id,
@@ -29,9 +31,14 @@ class Provider {
     required this.emoji,
     this.lat = 0,
     this.lng = 0,
+    this.availableFrom = '',
+    this.availableTo = '',
   });
 
   bool get hasLocation => lat != 0 || lng != 0;
+  String get availability => availableFrom.isNotEmpty && availableTo.isNotEmpty
+      ? '$availableFrom – $availableTo'
+      : '';
 }
 
 class CatalogItem {
@@ -55,6 +62,8 @@ class Booking {
   final String customerPhone;
   final String customerEmail;
   final String fulfillment; // '' | 'pickup' | 'delivery'
+  final String pickupEta; // customer's stated arrival, pickup orders
+  final String otp; // 4-digit delivery confirmation code
   const Booking(
     this.providerName,
     this.detail,
@@ -68,6 +77,8 @@ class Booking {
     this.customerPhone = '',
     this.customerEmail = '',
     this.fulfillment = '',
+    this.pickupEta = '',
+    this.otp = '',
   });
 }
 

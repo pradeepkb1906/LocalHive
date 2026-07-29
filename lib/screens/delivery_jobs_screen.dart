@@ -56,11 +56,69 @@ class DeliveryJobsScreen extends StatelessWidget {
               ),
             );
           }
-          return ListView.separated(
+          final mine = jobs.where((j) => j['status'] != 'Open').toList();
+          final open = jobs.where((j) => j['status'] == 'Open').toList();
+          // Simple route hint: open jobs sharing an address word with one of
+          // my active deliveries are likely "on the way".
+          final myWords = mine
+              .expand((j) => '${j['dropAddress']}'
+                  .toLowerCase()
+                  .split(RegExp(r'[^a-z]+')))
+              .where((w) => w.length > 3)
+              .toSet();
+          bool onTheWay(Map<String, dynamic> j) =>
+              mine.isNotEmpty &&
+              '${j['dropAddress']}'
+                  .toLowerCase()
+                  .split(RegExp(r'[^a-z]+'))
+                  .any((w) => w.length > 3 && myWords.contains(w));
+          return ListView(
             padding: const EdgeInsets.all(16),
-            itemCount: jobs.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, i) => _DeliveryCard(job: jobs[i]),
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text('${mine.length}',
+                                style: const TextStyle(
+                                    fontSize: 22, fontWeight: FontWeight.w700,
+                                    color: LhColors.navy)),
+                            const Text('My deliveries',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: LhColors.inkSecondary)),
+                          ],
+                        ),
+                      ),
+                      Container(width: 0.5, height: 34, color: LhColors.hairline),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text('${open.length}',
+                                style: const TextStyle(
+                                    fontSize: 22, fontWeight: FontWeight.w700,
+                                    color: LhColors.blue)),
+                            const Text('Open to claim',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: LhColors.inkSecondary)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              for (final j in [...mine, ...open]) ...[
+                _DeliveryCard(job: j, onTheWay: j['status'] == 'Open' && onTheWay(j)),
+                const SizedBox(height: 10),
+              ],
+            ],
           );
         },
       ),
@@ -70,12 +128,63 @@ class DeliveryJobsScreen extends StatelessWidget {
 
 class _DeliveryCard extends StatelessWidget {
   final Map<String, dynamic> job;
-  const _DeliveryCard({required this.job});
+  final bool onTheWay;
+  const _DeliveryCard({required this.job, this.onTheWay = false});
 
   Future<void> _act(BuildContext context) async {
     final fb = FirebaseService.instance;
     final id = job['id'] as String;
     final status = job['status'] as String;
+    // Completing a delivery requires the customer's OTP.
+    if (status == 'PickedUp') {
+      final otpCtl = TextEditingController();
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          icon: const Icon(CupertinoIcons.lock_shield_fill,
+              color: LhColors.navy, size: 40),
+          title: const Text('Enter customer OTP'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                  'Ask the customer for the 4-digit code from their order '
+                  'confirmation. This proves the delivery reached them.',
+                  style: TextStyle(fontSize: 13.5, color: LhColors.inkSecondary)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: otpCtl,
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: 8),
+                decoration:
+                    const InputDecoration(hintText: '••••', counterText: ''),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Confirm Delivery')),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      final expected = (job['otp'] ?? '') as String;
+      if (expected.isNotEmpty && otpCtl.text.trim() != expected) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Wrong OTP — ask the customer for the code in '
+                  'their order message.')));
+        }
+        return;
+      }
+    }
     final notify = Booking(
       (job['storeName'] ?? '') as String,
       (job['orderDetail'] ?? '') as String,
@@ -120,6 +229,21 @@ class _DeliveryCard extends StatelessWidget {
                   child: Text('${job['storeName']}',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                 ),
+                if (onTheWay)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: LhColors.green.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text('On your way!',
+                        style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: LhColors.green)),
+                  ),
                 Text('\$${((job['fee'] ?? 0) as num).toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontSize: 16,

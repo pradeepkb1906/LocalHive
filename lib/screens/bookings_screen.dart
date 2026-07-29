@@ -70,9 +70,22 @@ class BookingsScreen extends StatelessWidget {
                           title: Text(bookings[i].providerName,
                               style: const TextStyle(
                                   fontWeight: FontWeight.w600, fontSize: 15)),
-                          subtitle: Text(bookings[i].detail,
-                              style: const TextStyle(
-                                  fontSize: 13, color: LhColors.inkSecondary)),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(bookings[i].detail,
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      color: LhColors.inkSecondary)),
+                              if (bookings[i].otp.isNotEmpty &&
+                                  bookings[i].status != 'Delivered')
+                                Text('Delivery OTP: ${bookings[i].otp} — share on arrival',
+                                    style: const TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: LhColors.navy)),
+                            ],
+                          ),
                           trailing: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.end,
