@@ -75,6 +75,20 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Truck arrival subscriptions: users follow a truck to get "we've
+    // arrived" alerts. truckOwnerId is denormalized so the owner can list
+    // their followers to fan out notifications.
+    match /truck_followers/{fid} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if signedIn()
+        && (resource.data.userId == request.auth.uid
+            || resource.data.truckOwnerId == request.auth.uid);
+      allow delete: if signedIn()
+        && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
     // Notification outbox: clients may only enqueue. Reading/dispatching is
     // the server-side dispatcher's job (Admin SDK).
     match /notifications/{noteId} {

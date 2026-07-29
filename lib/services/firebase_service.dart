@@ -273,6 +273,117 @@ class FirebaseService {
     );
   }
 
+  // ---- Truck arrival alerts ----
+
+  /// Follow a truck to be notified when it announces arrival.
+  Future<void> followTruck(Provider truck,
+      {required String phone, required String email}) async {
+    if (!ready || currentUser == null) return;
+    String ownerId = '';
+    try {
+      final doc = await _db!.collection('providers').doc(truck.id).get();
+      ownerId = (doc.data()?['ownerId'] ?? '') as String;
+    } catch (_) {}
+    await _db!.collection('truck_followers').doc('${truck.id}_$_uid').set({
+      'truckId': truck.id,
+      'truckName': truck.name,
+      'truckOwnerId': ownerId,
+      'userId': _uid,
+      'phone': phone,
+      'email': email,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> unfollowTruck(String truckId) async {
+    if (!ready || currentUser == null) return;
+    await _db!
+        .collection('truck_followers')
+        .doc('${truckId}_$_uid')
+        .delete();
+  }
+
+  Future<bool> isFollowingTruck(String truckId) async {
+    if (!ready || currentUser == null) return false;
+    try {
+      final doc = await _db!
+          .collection('truck_followers')
+          .doc('${truckId}_$_uid')
+          .get();
+      return doc.exists;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Owner announces the truck has arrived: updates the listing location and
+  /// queues an alert to every follower. Returns the follower count notified.
+  Future<int> announceArrival(Provider truck, String locationText) async {
+    if (!ready || currentUser == null) return 0;
+    await _db!
+        .collection('providers')
+        .doc(truck.id)
+        .update({'city': locationText});
+    final followers = await _db!
+        .collection('truck_followers')
+        .where('truckOwnerId', isEqualTo: _uid)
+        .where('truckId', isEqualTo: truck.id)
+        .get();
+    final batch = _db!.batch();
+    for (final f in followers.docs) {
+      final m = f.data();
+      batch.set(_db!.collection('notifications').doc(), {
+        'recipient': 'follower',
+        'phone': (m['phone'] ?? '') as String,
+        'email': (m['email'] ?? '') as String,
+        'channels': ['sms', 'email'],
+        'event': 'truck_arrived',
+        'message': 'LocalHive: ${truck.name} has ARRIVED at $locationText — '
+            'come grab your favorites or pre-order in the app to skip the line!',
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+    return followers.docs.length;
+  }
+
+  /// Follower count per truck the signed-in owner runs — their opted-in
+  /// customer base.
+  Future<Map<String, int>> myTruckFollowerCounts() async {
+    if (!ready || currentUser == null) return {};
+    final snap = await _db!
+        .collection('truck_followers')
+        .where('truckOwnerId', isEqualTo: _uid)
+        .get();
+    final counts = <String, int>{};
+    for (final d in snap.docs) {
+      final name = (d.data()['truckName'] ?? '') as String;
+      counts[name] = (counts[name] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  Future<List<Provider>> myListings({String? category}) async {
+    if (!ready || currentUser == null) return [];
+    var q = _db!.collection('providers').where('ownerId', isEqualTo: _uid);
+    if (category != null) q = q.where('category', isEqualTo: category);
+    final snap = await q.get();
+    return snap.docs.map((d) {
+      final m = d.data();
+      return Provider(
+        id: d.id,
+        name: (m['name'] ?? '') as String,
+        category: (m['category'] ?? '') as String,
+        subtitle: (m['subtitle'] ?? '') as String,
+        rating: ((m['rating'] ?? 0) as num).toDouble(),
+        reviews: ((m['reviews'] ?? 0) as num).toInt(),
+        city: (m['city'] ?? '') as String,
+        emoji: '',
+      );
+    }).toList();
+  }
+
   // ---- Delivery job board ----
 
   /// Store owner sends a Ready delivery order to the job board.
