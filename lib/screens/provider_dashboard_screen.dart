@@ -210,7 +210,8 @@ class _JobCard extends StatelessWidget {
                 ),
                 if (job.address.isNotEmpty)
                   TextButton.icon(
-                    onPressed: () => openDirectionsToAddress(job.address),
+                    onPressed: () => openDirectionsWithFallback(context,
+                        address: job.address),
                     style: TextButton.styleFrom(
                         visualDensity: VisualDensity.compact),
                     icon: const Icon(CupertinoIcons.arrow_turn_up_right,

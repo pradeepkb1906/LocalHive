@@ -282,7 +282,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
           IconButton(
             tooltip: 'Get directions',
             icon: const Icon(CupertinoIcons.arrow_turn_up_right, size: 20),
-            onPressed: () => openDirections(widget.provider),
+            onPressed: () => openDirectionsWithFallback(context,
+                provider: widget.provider),
           ),
           const LocationChip(),
         ],

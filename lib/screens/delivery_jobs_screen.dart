@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
+import '../services/directions.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
@@ -264,6 +265,15 @@ class _DeliveryCard extends StatelessWidget {
                 Expanded(
                     child: Text('Deliver to: ${job['dropAddress']}',
                         style: const TextStyle(fontSize: 13.5))),
+                TextButton.icon(
+                  onPressed: () => openDirectionsWithFallback(context,
+                      address: '${job['dropAddress']}'),
+                  style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact),
+                  icon: const Icon(CupertinoIcons.arrow_turn_up_right, size: 14),
+                  label: const Text('Directions',
+                      style: TextStyle(fontSize: 13)),
+                ),
               ],
             ),
             if (mine && (job['customerPhone'] ?? '') != '') ...[
