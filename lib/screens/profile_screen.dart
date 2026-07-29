@@ -231,6 +231,53 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
+  Future<void> _forgotPassword() async {
+    final ctl = TextEditingController(text: _email.text.trim());
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(CupertinoIcons.lock_rotation,
+            color: LhColors.blue, size: 40),
+        title: const Text('Reset your password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+                'We\'ll email you a secure link to choose a new password.',
+                style: TextStyle(fontSize: 13.5, color: LhColors.inkSecondary)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctl,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: 'Your email address'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Send Reset Link')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final email = ctl.text.trim();
+    if (!email.contains('@')) {
+      _toast('Enter a valid email address.');
+      return;
+    }
+    setState(() => _busy = true);
+    final err = await AppState.instance.sendPasswordReset(email);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    _toast(err ??
+        'If an account exists for $email, a reset link is on its way. '
+            'Check your inbox and spam folder.');
+  }
+
   Future<void> _sendCode() async {
     if (_name.text.trim().isEmpty || _phone.text.trim().isEmpty) {
       _toast('Enter your name and phone number.');
@@ -339,6 +386,11 @@ class _SignInScreenState extends State<SignInScreen> {
                   ? 'Already have an account? Sign in'
                   : 'New here? Create an account'),
             ),
+            if (!_registering)
+              TextButton(
+                onPressed: _busy ? null : _forgotPassword,
+                child: const Text('Forgot password?'),
+              ),
           ] else if (!_codeSent) ...[
             TextField(
               controller: _name,

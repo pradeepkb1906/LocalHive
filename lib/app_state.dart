@@ -132,6 +132,9 @@ class AppState extends ChangeNotifier {
 
   String? get userEmail => _fb.currentUser?.email;
 
+  Future<String?> sendPasswordReset(String email) =>
+      _fb.sendPasswordReset(email);
+
   Future<void> signOut() async {
     _localName = null;
     await _fb.signOut();

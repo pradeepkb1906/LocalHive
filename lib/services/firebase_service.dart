@@ -55,6 +55,19 @@ class FirebaseService {
     await _auth?.currentUser?.updateDisplayName(name);
   }
 
+  /// Sends the Firebase password-reset email. Returns error text or null.
+  Future<String?> sendPasswordReset(String email) async {
+    if (!ready) return 'Offline — try again when connected.';
+    try {
+      await _auth!.sendPasswordResetEmail(email: email);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      // Don't leak whether an account exists.
+      if (e.code == 'user-not-found') return null;
+      return e.message ?? 'Could not send the reset email.';
+    }
+  }
+
   Future<void> signOut() async => _auth?.signOut();
 
   // ---- Firestore ----
