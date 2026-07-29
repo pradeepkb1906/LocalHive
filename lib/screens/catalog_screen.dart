@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
-import '../services/directions.dart';
+import 'directions_screen.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
@@ -282,8 +282,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
           IconButton(
             tooltip: 'Get directions',
             icon: const Icon(CupertinoIcons.arrow_turn_up_right, size: 20),
-            onPressed: () => openDirectionsWithFallback(context,
-                provider: widget.provider),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DirectionsScreen(
+                  title: widget.provider.name,
+                  address: widget.provider.city,
+                  lat: widget.provider.lat,
+                  lng: widget.provider.lng,
+                ),
+              ),
+            ),
           ),
           const LocationChip(),
         ],

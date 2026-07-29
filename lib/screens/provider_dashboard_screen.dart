@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/data.dart';
-import '../services/directions.dart';
+import 'directions_screen.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
@@ -210,8 +210,16 @@ class _JobCard extends StatelessWidget {
                 ),
                 if (job.address.isNotEmpty)
                   TextButton.icon(
-                    onPressed: () => openDirectionsWithFallback(context,
-                        address: job.address),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DirectionsScreen(
+                            title: job.customerName.isEmpty
+                                ? 'Customer'
+                                : job.customerName,
+                            address: job.address),
+                      ),
+                    ),
                     style: TextButton.styleFrom(
                         visualDensity: VisualDensity.compact),
                     icon: const Icon(CupertinoIcons.arrow_turn_up_right,

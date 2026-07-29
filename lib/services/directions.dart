@@ -43,12 +43,14 @@ Future<bool> openDirectionsToAddress(String address) =>
 /// Opens directions and, if the browser blocked the tab, shows the map link
 /// so the user can still reach it.
 Future<void> openDirectionsWithFallback(BuildContext context,
-    {Provider? provider, String? address}) async {
+    {Provider? provider, String? address, double lat = 0, double lng = 0}) async {
   final uri = provider != null
       ? (provider.hasLocation
           ? directionsUri(lat: provider.lat, lng: provider.lng)
           : directionsUri(query: '${provider.name}, ${provider.city}'))
-      : directionsUri(query: address ?? '');
+      : (lat != 0 || lng != 0)
+          ? directionsUri(lat: lat, lng: lng)
+          : directionsUri(query: address ?? '');
   final ok = await _open(uri);
   if (ok || !context.mounted) return;
   showDialog(
