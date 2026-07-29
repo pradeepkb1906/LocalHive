@@ -526,21 +526,15 @@ class FirebaseService {
     required String city,
     String availableFrom = '',
     String availableTo = '',
+    String phone = '',
   }) async {
     if (!ready) return;
-    await _db!.collection('provider_applications').add({
-      'userId': _uid,
-      'type': type,
-      'businessName': businessName,
-      'city': city,
-      'availableFrom': availableFrom,
-      'availableTo': availableTo,
-      'status': 'in_review',
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    // Draft listing, hidden until approved: flipping `live` to true in the
-    // console (or a future admin screen) publishes it into the catalog.
-    await _db!.collection('providers').add({
+    final contactPhone =
+        phone.isNotEmpty ? phone : (currentUser?.phoneNumber ?? '');
+    // The draft listing is created first so the application can point at it;
+    // approving flips that listing live.
+    // Draft listing, hidden until an admin approves the application.
+    final listing = await _db!.collection('providers').add({
       'name': businessName,
       'category': type,
       'subtitle': type == 'delivery'
@@ -555,9 +549,118 @@ class FirebaseService {
       'verified': false,
       'live': false,
       'ownerId': _uid,
-      'phone': currentUser?.phoneNumber ?? '',
+      'phone': contactPhone,
       'email': currentUser?.email ?? '',
     });
+    await _db!.collection('provider_applications').add({
+      'userId': _uid,
+      'listingId': listing.id,
+      'type': type,
+      'businessName': businessName,
+      'city': city,
+      'availableFrom': availableFrom,
+      'availableTo': availableTo,
+      'applicantEmail': currentUser?.email ?? '',
+      'applicantPhone': contactPhone,
+      'status': 'in_review',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // ---- Admin review console ----
+
+  Future<bool> isAdmin() async {
+    if (!ready || currentUser == null) return false;
+    try {
+      final doc = await _db!.collection('admins').doc(_uid).get();
+      return doc.exists;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// All provider applications, newest first — admin only (rules enforce it).
+  Stream<List<Map<String, dynamic>>> applicationsStream() {
+    if (!ready || currentUser == null) return Stream.value(const []);
+    return _db!.collection('provider_applications').snapshots().map((snap) {
+      final docs = snap.docs.toList()
+        ..sort((a, b) {
+          final ta = a.data()['createdAt'];
+          final tb = b.data()['createdAt'];
+          if (ta is! Timestamp) return -1;
+          if (tb is! Timestamp) return 1;
+          return tb.compareTo(ta);
+        });
+      return docs.map((d) => {...d.data(), 'id': d.id}).toList();
+    });
+  }
+
+  /// Approve: publish the applicant's listing and tell them the good news.
+  Future<void> approveApplication(Map<String, dynamic> app) async {
+    if (!ready) return;
+    final listingId = (app['listingId'] ?? '') as String;
+    if (listingId.isNotEmpty) {
+      await _db!.collection('providers').doc(listingId).update({
+        'live': true,
+        'verified': true,
+      });
+    }
+    await _db!
+        .collection('provider_applications')
+        .doc(app['id'] as String)
+        .update({
+      'status': 'approved',
+      'reviewedBy': _uid,
+      'reviewedAt': FieldValue.serverTimestamp(),
+      'reviewNote': '',
+    });
+    await _notifyApplicant(app,
+        'LocalHive: your application for "${app['businessName']}" is APPROVED! '
+        'Your listing is live — customers can find and book you now. '
+        'Open the app to manage orders.');
+  }
+
+  /// Decline with a reason the applicant can act on.
+  Future<void> rejectApplication(Map<String, dynamic> app, String note) async {
+    if (!ready) return;
+    await _db!
+        .collection('provider_applications')
+        .doc(app['id'] as String)
+        .update({
+      'status': 'rejected',
+      'reviewNote': note,
+      'reviewedBy': _uid,
+      'reviewedAt': FieldValue.serverTimestamp(),
+    });
+    await _notifyApplicant(app,
+        'LocalHive: we could not approve "${app['businessName']}" yet. '
+        'Reason: $note. Reply to this message or reapply once resolved.');
+  }
+
+  Future<void> _notifyApplicant(
+      Map<String, dynamic> app, String message) async {
+    await _db!.collection('notifications').add({
+      'recipient': 'applicant',
+      'phone': (app['applicantPhone'] ?? '') as String,
+      'email': (app['applicantEmail'] ?? '') as String,
+      'channels': ['sms', 'email'],
+      'event': 'application_reviewed',
+      'message': message,
+      'status': 'pending',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// The signed-in user's own application status (for the Profile card).
+  Stream<Map<String, dynamic>?> myApplicationStream() {
+    if (!ready || currentUser == null) return Stream.value(null);
+    return _db!
+        .collection('provider_applications')
+        .where('userId', isEqualTo: _uid)
+        .snapshots()
+        .map((snap) => snap.docs.isEmpty
+            ? null
+            : {...snap.docs.first.data(), 'id': snap.docs.first.id});
   }
 
   /// Live catalog for one category. Only `live: true` listings are shown.

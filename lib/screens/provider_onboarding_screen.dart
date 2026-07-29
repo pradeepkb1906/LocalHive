@@ -74,8 +74,8 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
           icon: const Icon(CupertinoIcons.checkmark_seal_fill, color: LhColors.green, size: 44),
           title: const Text('Application submitted'),
           content: const Text(
-              'Identity verification and background screening open next. In this demo the '
-              'application is marked "in review" — production connects Stripe Identity and Checkr here.'),
+              'Your application is now with the LocalHive team for review. '
+              'You will get a text the moment it is approved — then your listing goes live.'),
           actions: [
             FilledButton(
               onPressed: () {

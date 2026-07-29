@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
 import '../widgets/role_picker.dart';
@@ -81,28 +82,60 @@ class ProfileScreen extends StatelessWidget {
               InsetGroup(
                 header: 'Earn with LocalHive',
                 children: [
-                  ListTile(
-                    leading: const IconTile(
-                        icon: CupertinoIcons.briefcase_fill, color: LhColors.indigo, size: 32),
-                    title: Text(
-                        s.providerKycSubmitted ? 'Provider application' : 'Become a provider',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                    subtitle: Text(
-                        s.providerKycSubmitted
-                            ? '${s.providerBusinessName} — verification in review'
-                            : 'List your services, store, or truck. Get paid securely.',
-                        style:
-                            const TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
-                    trailing: s.providerKycSubmitted
-                        ? const Icon(CupertinoIcons.clock, size: 18, color: LhColors.orange)
-                        : const Icon(CupertinoIcons.chevron_right,
-                            size: 18, color: LhColors.hairline),
-                    onTap: s.providerKycSubmitted
-                        ? null
-                        : () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const ProviderOnboardingScreen())),
+                  // Live application status straight from the review queue.
+                  StreamBuilder<Map<String, dynamic>?>(
+                    stream: FirebaseService.instance.myApplicationStream(),
+                    builder: (context, snap) {
+                      final app = snap.data;
+                      final status = app?['status'] as String?;
+                      final (icon, color, title, sub) = switch (status) {
+                        'approved' => (
+                            CupertinoIcons.checkmark_seal_fill,
+                            LhColors.green,
+                            'Application approved',
+                            '${app!['businessName']} is live — customers can book you.'
+                          ),
+                        'rejected' => (
+                            CupertinoIcons.xmark_seal_fill,
+                            const Color(0xFFFF3B30),
+                            'Application declined',
+                            '${app!['reviewNote'] ?? 'See message'} — tap to reapply.'
+                          ),
+                        'in_review' => (
+                            CupertinoIcons.clock_fill,
+                            LhColors.orange,
+                            'Application under review',
+                            '${app!['businessName']} — our team is verifying your details.'
+                          ),
+                        _ => (
+                            CupertinoIcons.briefcase_fill,
+                            LhColors.indigo,
+                            'Become a provider',
+                            'List your services, store, or truck. Get paid securely.'
+                          ),
+                      };
+                      final canApply = status == null || status == 'rejected';
+                      return ListTile(
+                        leading: IconTile(icon: icon, color: color, size: 32),
+                        title: Text(title,
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600)),
+                        subtitle: Text(sub,
+                            style: const TextStyle(
+                                fontSize: 13, color: LhColors.inkSecondary)),
+                        trailing: canApply
+                            ? const Icon(CupertinoIcons.chevron_right,
+                                size: 18, color: LhColors.hairline)
+                            : null,
+                        onTap: canApply
+                            ? () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ProviderOnboardingScreen()))
+                            : null,
+                      );
+                    },
                   ),
                   ListTile(
                     leading: const IconTile(

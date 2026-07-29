@@ -4,6 +4,7 @@ import '../app_state.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
+import 'admin_review_screen.dart';
 import 'delivery_jobs_screen.dart';
 import 'provider_dashboard_screen.dart';
 import 'provider_list_screen.dart';
@@ -33,6 +34,12 @@ class _HomeShellState extends State<HomeShell> {
           _tab = role == 'customer' ? 0 : 1;
         }
         final pages = switch (role) {
+          'admin' => const [
+              HomeTab(),
+              AdminReviewScreen(),
+              BookingsScreen(),
+              ProfileScreen()
+            ],
           'provider' => const [
               HomeTab(),
               ProviderDashboardScreen(),
@@ -49,6 +56,23 @@ class _HomeShellState extends State<HomeShell> {
         };
         if (_tab >= pages.length) _tab = 0;
         final roleTab = switch (role) {
+          'admin' => NavigationDestination(
+              icon: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: FirebaseService.instance.applicationsStream(),
+                builder: (context, snap) {
+                  final n = (snap.data ?? [])
+                      .where((a) => a['status'] == 'in_review')
+                      .length;
+                  return Badge(
+                    isLabelVisible: n > 0,
+                    label: Text('$n'),
+                    child: const Icon(CupertinoIcons.checkmark_shield),
+                  );
+                },
+              ),
+              selectedIcon: const Icon(CupertinoIcons.checkmark_shield_fill),
+              label: 'Review',
+            ),
           'provider' => NavigationDestination(
               icon: StreamBuilder<int>(
                 stream: FirebaseService.instance.pendingOwnerJobsCount(),

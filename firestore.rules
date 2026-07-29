@@ -9,6 +9,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Platform staff. Membership is granted server-side only.
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false; // service account only
+    }
+
     // User profile: account type (customer | provider | delivery) and prefs.
     match /users/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
@@ -21,10 +32,14 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.live == false;
-      allow update: if signedIn()
-        && resource.data.ownerId == request.auth.uid
-        && request.resource.data.live == resource.data.live; // can't self-publish
-      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+      // Owners edit their listing but cannot publish themselves; admins
+      // approve (flip live/verified) as part of application review.
+      allow update: if isAdmin()
+        || (signedIn()
+            && resource.data.ownerId == request.auth.uid
+            && request.resource.data.live == resource.data.live);
+      allow delete: if isAdmin()
+        || (signedIn() && resource.data.ownerId == request.auth.uid);
     }
 
     // Bookings: customers create their own; readable by the customer or by
@@ -71,13 +86,19 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Provider applications: create and read your own; decisions are
-    // admin-only (console).
+    // Provider applications: applicants create and track their own;
+    // platform admins review them in the in-app Admin console.
     match /provider_applications/{appId} {
       allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid;
-      allow read: if signedIn() && resource.data.userId == request.auth.uid;
-      allow update, delete: if false;
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'in_review';
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      // Only the review fields may change, and only by an admin.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'reviewNote', 'reviewedBy', 'reviewedAt']);
+      allow delete: if false;
     }
 
     // Truck arrival subscriptions: users follow a truck to get "we've
