@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../services/location_service.dart';
 import '../theme.dart';
 import 'provider_list_screen.dart';
 import 'bookings_screen.dart';
@@ -63,20 +64,26 @@ class HomeTab extends StatelessWidget {
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w700, letterSpacing: -0.5)),
               const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: LhColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: LhColors.hairline),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.location_solid, size: 14, color: LhColors.blue),
-                    SizedBox(width: 4),
-                    Text('Edison, NJ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                  ],
+              ListenableBuilder(
+                listenable: LocationService.instance..detect(),
+                builder: (context, _) => Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: LhColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: LhColors.hairline),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🇺🇸', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 5),
+                      Text(LocationService.instance.label,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -45,9 +45,28 @@ class CatalogItem {
 class Booking {
   final String providerName;
   final String detail;
-  final String status;
+  final String status; // Requested | Accepted | Declined | Completed | Preparing
   final double amount;
-  const Booking(this.providerName, this.detail, this.status, this.amount);
+  final String id; // Firestore doc id ('' for local/mock)
+  final String providerId;
+  final String category;
+  final String address; // service address (home services)
+  final String customerName;
+  final String customerPhone;
+  final String customerEmail;
+  const Booking(
+    this.providerName,
+    this.detail,
+    this.status,
+    this.amount, {
+    this.id = '',
+    this.providerId = '',
+    this.category = '',
+    this.address = '',
+    this.customerName = '',
+    this.customerPhone = '',
+    this.customerEmail = '',
+  });
 }
 
 const platformFeePct = 0.12; // 12% platform fee, shown transparently at checkout

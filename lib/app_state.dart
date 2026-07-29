@@ -91,6 +91,28 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Email/password auth (register with any email, e.g. a Gmail address,
+  /// plus a password the user sets). Returns error text or null.
+  Future<String?> signUpEmail(String email, String password, String name) async {
+    if (!_fb.ready) {
+      _localName = name;
+      notifyListeners();
+      return null;
+    }
+    final err = await _fb.signUpWithEmail(email, password, name);
+    if (err == null) notifyListeners();
+    return err;
+  }
+
+  Future<String?> signInEmail(String email, String password) async {
+    if (!_fb.ready) return 'Offline — use phone demo sign-in.';
+    final err = await _fb.signInWithEmail(email, password);
+    if (err == null) notifyListeners();
+    return err;
+  }
+
+  String? get userEmail => _fb.currentUser?.email;
+
   Future<void> signOut() async {
     _localName = null;
     await _fb.signOut();

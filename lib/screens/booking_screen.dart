@@ -18,6 +18,13 @@ class _BookingScreenState extends State<BookingScreen> {
   int _hours = 3;
   int _dayOffset = 1;
   String _slot = '10:00 AM';
+  late final _name =
+      TextEditingController(text: AppState.instance.userName ?? '');
+  late final _phone =
+      TextEditingController(text: AppState.instance.userPhone ?? '');
+  late final _email =
+      TextEditingController(text: AppState.instance.userEmail ?? '');
+  final _address = TextEditingController();
 
   static const _slots = ['8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM'];
 
@@ -31,21 +38,39 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void _confirm() {
+    if (_address.text.trim().length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Enter the full service address (street, city, state).')));
+      return;
+    }
+    if (_name.text.trim().isEmpty || _phone.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Enter your name and phone so the provider can reach you.')));
+      return;
+    }
     AppState.instance.addBooking(Booking(
       widget.provider.name,
       '${widget.provider.subtitle.split(' · ').first} · ${_dayLabel(_dayOffset)} $_slot · $_hours hrs',
-      'Confirmed',
+      'Requested',
       _total,
+      providerId: widget.provider.id,
+      category: 'home_service',
+      address: _address.text.trim(),
+      customerName: _name.text.trim(),
+      customerPhone: _phone.text.trim(),
+      customerEmail: _email.text.trim(),
     ));
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(CupertinoIcons.checkmark_circle_fill, color: LhColors.green, size: 44),
-        title: const Text('Booking confirmed'),
+        icon: const Icon(CupertinoIcons.paperplane_fill, color: LhColors.blue, size: 44),
+        title: const Text('Request sent'),
         content: Text(
             '${widget.provider.name} · ${_dayLabel(_dayOffset)} at $_slot for $_hours hours.\n\n'
-            'It now appears in your Bookings tab. You are charged \$${_total.toStringAsFixed(2)} '
-            'only after the job is completed. (Demo — no real payment.)'),
+            '${widget.provider.name} has been notified and will accept shortly — '
+            'you\'ll get an SMS and email the moment they do. Track it in the '
+            'Bookings tab. You are charged \$${_total.toStringAsFixed(2)} only '
+            'after the job is completed.'),
         actions: [
           FilledButton(
             onPressed: () {
@@ -160,6 +185,40 @@ class _BookingScreenState extends State<BookingScreen> {
                     selected: _hours == h,
                     onSelected: (_) => setState(() => _hours = h)))
                 .toList(),
+          ),
+          const SizedBox(height: 24),
+          _sectionLabel('Service address & contact'),
+          TextField(
+            controller: _address,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+                hintText: 'Street address, city, state (where the pro should come)'),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _name,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(hintText: 'Your name'),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _phone,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(hintText: 'Mobile (SMS updates)'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(hintText: 'Email (receipts)'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           _sectionLabel('Summary'),

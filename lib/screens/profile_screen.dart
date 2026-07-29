@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import 'provider_dashboard_screen.dart';
 import 'provider_onboarding_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -92,6 +93,23 @@ class ProfileScreen extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (_) => const ProviderOnboardingScreen())),
                   ),
+                  ListTile(
+                    leading: const IconTile(
+                        icon: CupertinoIcons.tray_full_fill,
+                        color: LhColors.blue,
+                        size: 32),
+                    title: const Text('Provider Dashboard',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    subtitle: const Text(
+                        'Incoming job requests — accept, decline, complete.',
+                        style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                    trailing: const Icon(CupertinoIcons.chevron_right,
+                        size: 18, color: LhColors.hairline),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ProviderDashboardScreen())),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -161,11 +179,39 @@ class _SignInScreenState extends State<SignInScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _code = TextEditingController();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
   bool _codeSent = false;
   bool _busy = false;
+  bool _emailMode = true;
+  bool _registering = true;
 
   void _toast(String msg) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+  Future<void> _emailSubmit() async {
+    final email = _email.text.trim();
+    final pass = _password.text;
+    if (!email.contains('@') || pass.length < 6) {
+      _toast('Enter a valid email and a password of at least 6 characters.');
+      return;
+    }
+    if (_registering && _name.text.trim().isEmpty) {
+      _toast('Enter your name.');
+      return;
+    }
+    setState(() => _busy = true);
+    final err = _registering
+        ? await AppState.instance.signUpEmail(email, pass, _name.text.trim())
+        : await AppState.instance.signInEmail(email, pass);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (err != null) {
+      _toast(err);
+    } else {
+      Navigator.pop(context);
+    }
+  }
 
   Future<void> _sendCode() async {
     if (_name.text.trim().isEmpty || _phone.text.trim().isEmpty) {
@@ -216,12 +262,62 @@ class _SignInScreenState extends State<SignInScreen> {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 4),
-          const Center(
-            child: Text('Sign in with your phone number',
-                style: TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
+          Center(
+            child: Text(
+                _emailMode
+                    ? 'Use your email (e.g. Gmail) and a password you set'
+                    : 'Sign in with your phone number',
+                style: const TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
           ),
-          const SizedBox(height: 28),
-          if (!_codeSent) ...[
+          const SizedBox(height: 20),
+          Center(
+            child: SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(value: true, label: Text('Email'), icon: Icon(CupertinoIcons.envelope)),
+                ButtonSegment(value: false, label: Text('Phone'), icon: Icon(CupertinoIcons.phone)),
+              ],
+              selected: {_emailMode},
+              onSelectionChanged: (s) => setState(() => _emailMode = s.first),
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (_emailMode) ...[
+            if (_registering) ...[
+              TextField(
+                controller: _name,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(hintText: 'Full name'),
+              ),
+              const SizedBox(height: 12),
+            ],
+            TextField(
+              controller: _email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(hintText: 'Email (e.g. you@gmail.com)'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _password,
+              obscureText: true,
+              decoration: const InputDecoration(hintText: 'Password (6+ characters)'),
+            ),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: _busy ? null : _emailSubmit,
+              child: _busy
+                  ? const SizedBox(
+                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(_registering ? 'Create Account' : 'Sign In'),
+            ),
+            TextButton(
+              onPressed: _busy
+                  ? null
+                  : () => setState(() => _registering = !_registering),
+              child: Text(_registering
+                  ? 'Already have an account? Sign in'
+                  : 'New here? Create an account'),
+            ),
+          ] else if (!_codeSent) ...[
             TextField(
               controller: _name,
               textCapitalization: TextCapitalization.words,

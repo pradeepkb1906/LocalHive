@@ -59,16 +59,167 @@ class FirebaseService {
 
   String get _uid => currentUser?.uid ?? 'guest';
 
+  // ---- Auth: email + password ----
+
+  Future<String?> signUpWithEmail(String email, String password, String name) async {
+    try {
+      final cred = await _auth!
+          .createUserWithEmailAndPassword(email: email, password: password);
+      await cred.user?.updateDisplayName(name);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? 'Sign-up failed.';
+    }
+  }
+
+  Future<String?> signInWithEmail(String email, String password) async {
+    try {
+      await _auth!.signInWithEmailAndPassword(email: email, password: password);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? 'Sign-in failed.';
+    }
+  }
+
   Future<void> addBooking(Booking b) async {
     if (!ready) return;
-    await _db!.collection('bookings').add({
+    final doc = await _db!.collection('bookings').add({
       'userId': _uid,
+      'providerId': b.providerId,
       'providerName': b.providerName,
+      'category': b.category,
       'detail': b.detail,
       'status': b.status,
       'amount': b.amount,
+      'address': b.address,
+      'customerName': b.customerName,
+      'customerPhone': b.customerPhone,
+      'customerEmail': b.customerEmail,
       'createdAt': FieldValue.serverTimestamp(),
     });
+    await _queueNotifications(
+      event: 'booking_requested',
+      bookingId: doc.id,
+      customerMsg:
+          'LocalHive: your request to ${b.providerName} (${b.detail}) was sent. '
+          'We will notify you when it is accepted.',
+      providerMsg:
+          'LocalHive: NEW JOB REQUEST — ${b.detail} at ${b.address}. '
+          'Open your Provider Dashboard to accept.',
+      booking: b,
+    );
+  }
+
+  /// Moves a booking through its lifecycle and queues the matching
+  /// customer/provider notifications.
+  Future<void> updateBookingStatus(Booking b, String newStatus) async {
+    if (!ready || b.id.isEmpty) return;
+    await _db!.collection('bookings').doc(b.id).update({'status': newStatus});
+    final msgs = switch (newStatus) {
+      'Accepted' => (
+          'LocalHive: ${b.providerName} ACCEPTED your booking (${b.detail}). '
+              'They will arrive at ${b.address}.',
+          'LocalHive: you accepted ${b.detail}. Customer: ${b.customerName} '
+              '${b.customerPhone}.'
+        ),
+      'Declined' => (
+          'LocalHive: ${b.providerName} cannot take your booking (${b.detail}). '
+              'Please pick another provider.',
+          null
+        ),
+      'Completed' => (
+          'LocalHive: your job with ${b.providerName} is complete. '
+              'Total \$${b.amount.toStringAsFixed(2)}. Thank you!',
+          'LocalHive: job marked complete. Payout of '
+              '\$${(b.amount / (1 + platformFeePct)).toStringAsFixed(2)} is on the way.'
+        ),
+      _ => (null, null),
+    };
+    await _queueNotifications(
+      event: 'booking_${newStatus.toLowerCase()}',
+      bookingId: b.id,
+      customerMsg: msgs.$1,
+      providerMsg: msgs.$2,
+      booking: b,
+    );
+  }
+
+  /// Notification outbox: one Firestore doc per message. A dispatcher
+  /// (Twilio for SMS, Brevo/Resend for email) drains docs with
+  /// status == 'pending' once those accounts exist — no app changes needed.
+  Future<void> _queueNotifications({
+    required String event,
+    required String bookingId,
+    String? customerMsg,
+    String? providerMsg,
+    required Booking booking,
+  }) async {
+    final batch = _db!.batch();
+    if (customerMsg != null) {
+      batch.set(_db!.collection('notifications').doc(), {
+        'recipient': 'customer',
+        'phone': booking.customerPhone,
+        'email': booking.customerEmail,
+        'channels': ['sms', 'email'],
+        'event': event,
+        'bookingId': bookingId,
+        'message': customerMsg,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+    if (providerMsg != null) {
+      batch.set(_db!.collection('notifications').doc(), {
+        'recipient': 'provider',
+        'providerId': booking.providerId,
+        'channels': ['sms', 'email'],
+        'event': event,
+        'bookingId': bookingId,
+        'message': providerMsg,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+  }
+
+  /// Incoming home-service jobs for the provider dashboard.
+  /// Demo scope: shows all home-service bookings until role-based
+  /// security rules land (flagged as a known gap).
+  Stream<List<Booking>> homeServiceJobsStream() {
+    if (!ready) return const Stream.empty();
+    return _db!
+        .collection('bookings')
+        .where('category', isEqualTo: 'home_service')
+        .snapshots()
+        .map((snap) {
+      final docs = snap.docs.toList()
+        ..sort((a, b) {
+          final ta = a.data()['createdAt'];
+          final tb = b.data()['createdAt'];
+          if (ta is! Timestamp) return -1;
+          if (tb is! Timestamp) return 1;
+          return tb.compareTo(ta);
+        });
+      return docs.map(_bookingFromDoc).toList();
+    });
+  }
+
+  Booking _bookingFromDoc(QueryDocumentSnapshot<Map<String, dynamic>> d) {
+    final m = d.data();
+    return Booking(
+      (m['providerName'] ?? '') as String,
+      (m['detail'] ?? '') as String,
+      (m['status'] ?? '') as String,
+      ((m['amount'] ?? 0) as num).toDouble(),
+      id: d.id,
+      providerId: (m['providerId'] ?? '') as String,
+      category: (m['category'] ?? '') as String,
+      address: (m['address'] ?? '') as String,
+      customerName: (m['customerName'] ?? '') as String,
+      customerPhone: (m['customerPhone'] ?? '') as String,
+      customerEmail: (m['customerEmail'] ?? '') as String,
+    );
   }
 
   Stream<List<Booking>> bookingsStream() {
@@ -86,15 +237,7 @@ class FirebaseService {
           if (tb is! Timestamp) return 1;
           return tb.compareTo(ta);
         });
-      return docs.map((d) {
-        final m = d.data();
-        return Booking(
-          (m['providerName'] ?? '') as String,
-          (m['detail'] ?? '') as String,
-          (m['status'] ?? '') as String,
-          ((m['amount'] ?? 0) as num).toDouble(),
-        );
-      }).toList();
+      return docs.map(_bookingFromDoc).toList();
     });
   }
 
