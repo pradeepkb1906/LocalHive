@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import '../services/speech/speech_engine.dart';
 
 import '../theme.dart';
 import 'system_check_screen.dart';
@@ -951,27 +951,21 @@ class _DemoTourScreenState extends State<DemoTourScreen>
   late final AnimationController _pulse = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 1100))
     ..repeat(reverse: true);
-  final FlutterTts _tts = FlutterTts();
+  // The shared engine rather than flutter_tts directly: on the web the plugin
+  // goes silently mute (it reuses one utterance object, which Chrome drops
+  // after any cancel), and the engine also picks Olivia's voice, so the tour
+  // and the assistant sound like the same person.
+  final SpeechEngine _tts = SpeechEngine();
 
   @override
   void initState() {
     super.initState();
-    _configureTts();
     WidgetsBinding.instance.addPostFrameCallback((_) => _speak());
-  }
-
-  Future<void> _configureTts() async {
-    try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.48);
-      await _tts.setPitch(1.0);
-    } catch (_) {}
   }
 
   Future<void> _speak() async {
     if (!_sound) return;
     try {
-      await _tts.stop();
       await _tts.speak(_steps[_i].narration);
     } catch (_) {
       // Narration is a bonus; the tour reads fine silently.
@@ -981,7 +975,7 @@ class _DemoTourScreenState extends State<DemoTourScreen>
   @override
   void dispose() {
     _pulse.dispose();
-    _tts.stop();
+    _tts.dispose();
     super.dispose();
   }
 
