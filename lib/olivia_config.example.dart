@@ -13,7 +13,7 @@ library;
 
 class OliviaConfig {
   /// The Cloudflare Worker endpoint that forwards to Groq. Preferred.
-  /// Example: 'https://localhive-olivia.<your-subdomain>.workers.dev'
+  /// This project's deployed worker: 'https://localhive-olivia.localhive.workers.dev'
   static const proxyUrl = '';
 
   /// Local-development escape hatch. Calls api.groq.com directly with this key

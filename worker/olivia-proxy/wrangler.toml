@@ -2,10 +2,11 @@ name = "localhive-olivia"
 main = "src/index.js"
 compatibility_date = "2026-07-01"
 
-[vars]
-# Firebase project id. The proxy rejects ID tokens minted for any other
-# project, so a token from someone else's Firebase app cannot be used here.
-FIREBASE_PROJECT_ID = "localhivelocalhive"
+# The proxy needs the Firebase WEB API key to verify sign-ins via
+# accounts:lookup. It is a public app identifier, not a secret — it ships in
+# every client build — but committing anything key-shaped trips secret
+# scanners, so it is stored on the worker instead:
+#   npx wrangler secret put FIREBASE_API_KEY
 
 # Set to "false" only for local experiments. Leaving it unset (or "true") means
 # every request must carry a valid LocalHive sign-in.

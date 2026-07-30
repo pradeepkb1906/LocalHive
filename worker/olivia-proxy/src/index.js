@@ -61,28 +61,39 @@ function json(body, status, origin) {
 }
 
 /**
- * Verifies a Firebase ID token.
+ * Verifies a Firebase ID token by asking Firebase itself.
  *
- * Uses Google's tokeninfo endpoint rather than local JWT verification: it needs
- * no crypto dependencies, and one extra round trip is irrelevant next to the
- * model call. Rejects tokens from any other Firebase project.
+ * accounts:lookup validates the token's signature, expiry AND that it was
+ * minted for this project (the API key identifies the project, so a token from
+ * someone else's Firebase app comes back INVALID_ID_TOKEN). One round trip, no
+ * crypto dependencies, and it cannot drift from Firebase's own rules.
+ *
+ * Google's generic oauth2 tokeninfo endpoint does NOT work here — Firebase ID
+ * tokens are signed by the securetoken service, not Google's OAuth keys, so
+ * tokeninfo rejects every one of them. That mistake shipped once; hence this
+ * comment.
  */
-async function verifyFirebaseUser(request, projectId) {
+async function verifyFirebaseUser(request, apiKey) {
   const auth = request.headers.get('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
   if (!token) return { ok: false, reason: 'missing token' };
+  if (!apiKey) return { ok: false, reason: 'proxy missing FIREBASE_API_KEY' };
 
   try {
     const resp = await fetch(
-      'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(token),
+      'https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' +
+        encodeURIComponent(apiKey),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token }),
+      },
     );
     if (!resp.ok) return { ok: false, reason: 'token rejected' };
     const info = await resp.json();
-    if (projectId && info.aud !== projectId) {
-      return { ok: false, reason: 'wrong project' };
-    }
-    if (!info.sub) return { ok: false, reason: 'no subject' };
-    return { ok: true, uid: info.sub };
+    const uid = info.users && info.users[0] && info.users[0].localId;
+    if (!uid) return { ok: false, reason: 'no user' };
+    return { ok: true, uid };
   } catch (e) {
     return { ok: false, reason: 'verification failed' };
   }
@@ -104,7 +115,7 @@ export default {
 
     // A signed-in LocalHive user, unless the deployment explicitly opts out.
     if (env.REQUIRE_AUTH !== 'false') {
-      const user = await verifyFirebaseUser(request, env.FIREBASE_PROJECT_ID);
+      const user = await verifyFirebaseUser(request, env.FIREBASE_API_KEY);
       if (!user.ok) {
         return json({ error: 'Sign-in required: ' + user.reason }, 401, origin);
       }
