@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -563,16 +564,27 @@ class _OliviaScreenState extends State<OliviaScreen> {
             children: [
               const OliviaAvatar(size: 130),
               const SizedBox(height: 16),
-              const Text('Olivia is not switched on yet',
+              const Text('Olivia is coming soon',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               const Text(
-                  'Her assistant service needs to be configured for this '
-                  'build. Copy lib/olivia_config.example.dart to '
-                  'lib/olivia_config.dart and fill it in.',
+                  'She will take your order by voice — a food truck nearby, '
+                  'groceries from an Indian store, or a cleaner for a few '
+                  'hours. Everything else in LocalHive works now.',
                   textAlign: TextAlign.center,
                   style:
                       TextStyle(fontSize: 13.5, color: LhColors.inkSecondary)),
+              // How to actually switch her on. Only in a debug build: on the
+              // public site this screen is read by people wanting the app, not
+              // by whoever builds it.
+              if (kDebugMode) ...[
+                const SizedBox(height: 20),
+                const Text(
+                    'Set OliviaConfig.proxyUrl to the deployed '
+                    'worker/olivia-proxy, or groqKey for local development.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: LhColors.orange)),
+              ],
             ],
           ),
         ),
