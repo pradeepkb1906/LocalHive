@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../web_video/web_video.dart';
 import 'olivia_stage.dart';
 
 /// Olivia as a looping video clip.
@@ -48,7 +49,9 @@ class _OliviaVideoState extends State<OliviaVideo> {
   @override
   void initState() {
     super.initState();
-    _load();
+    // On the web the raw element needs no loading at all; the plugin path is
+    // only for Android and iOS, where it works reliably.
+    if (!webVideoSupported) _load();
   }
 
   Future<void> _load() async {
@@ -119,6 +122,25 @@ class _OliviaVideoState extends State<OliviaVideo> {
 
   @override
   Widget build(BuildContext context) {
+    if (webVideoSupported) {
+      // The element does its own cover-crop; '50% 100%' pins the bottom of the
+      // frame — her sweater — matching what OliviaStage does for the plugin
+      // path. The stage still draws her state (the line under her).
+      return OliviaStage(
+        expand: widget.expand,
+        speaking: widget.speaking,
+        listening: widget.listening,
+        thinking: widget.thinking,
+        naturalSize: OliviaStage.portrait,
+        rawCover: true,
+        child: WebVideoView(
+          assetPath: OliviaVideo.asset,
+          playing: widget.speaking,
+          objectPosition: '50% 100%',
+        ),
+      );
+    }
+
     final c = _controller;
     if (_failed || c == null || !c.value.isInitialized) {
       return widget.fallback;

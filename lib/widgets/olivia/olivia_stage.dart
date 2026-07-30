@@ -23,6 +23,11 @@ class OliviaStage extends StatelessWidget {
   /// The pixel size of what [child] draws, needed to crop it in [expand] mode.
   final Size naturalSize;
 
+  /// True when [child] does its own cover-cropping (a raw web video element
+  /// with CSS object-fit). The stage then skips its sizing math and just fills
+  /// the box — doing both would crop twice.
+  final bool rawCover;
+
   final Widget child;
 
   const OliviaStage({
@@ -30,6 +35,7 @@ class OliviaStage extends StatelessWidget {
     required this.naturalSize,
     required this.child,
     this.expand = false,
+    this.rawCover = false,
     this.speaking = false,
     this.listening = false,
     this.thinking = false,
@@ -105,31 +111,34 @@ class OliviaStage extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          // Covered by giving the child a real size larger than this box and
-          // clipping, rather than by scaling it with a transform. A video is a
-          // platform view on the web, and a scaled platform view paints
-          // nothing — she came out as an empty white rectangle.
-          LayoutBuilder(
-            builder: (context, box) {
-              final scale = math.max(
-                box.maxWidth / naturalSize.width,
-                box.maxHeight / naturalSize.height,
-              );
-              final size = naturalSize * scale;
-              return ClipRect(
-                child: OverflowBox(
-                  alignment: cropFor(size.height, box.maxHeight),
-                  maxWidth: size.width,
-                  maxHeight: size.height,
-                  child: SizedBox(
-                    width: size.width,
-                    height: size.height,
-                    child: child,
+          if (rawCover)
+            Positioned.fill(child: child)
+          else
+            // Covered by giving the child a real size larger than this box and
+            // clipping, rather than by scaling it with a transform. A video is a
+            // platform view on the web, and a scaled platform view paints
+            // nothing — she came out as an empty white rectangle.
+            LayoutBuilder(
+              builder: (context, box) {
+                final scale = math.max(
+                  box.maxWidth / naturalSize.width,
+                  box.maxHeight / naturalSize.height,
+                );
+                final size = naturalSize * scale;
+                return ClipRect(
+                  child: OverflowBox(
+                    alignment: cropFor(size.height, box.maxHeight),
+                    maxWidth: size.width,
+                    maxHeight: size.height,
+                    child: SizedBox(
+                      width: size.width,
+                      height: size.height,
+                      child: child,
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
           // A full-bleed frame has no room for a border, so her state shows as
           // a line under her. It is positioned, so it costs no layout.
           Positioned(

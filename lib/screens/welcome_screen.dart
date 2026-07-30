@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../theme.dart';
+import '../widgets/web_video/web_video.dart';
 import 'profile_screen.dart';
 
 /// The first thing anyone sees: the LocalHive brand film, full screen, with
@@ -29,7 +30,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    if (!webVideoSupported) _load();
   }
 
   Future<void> _load() async {
@@ -70,26 +71,36 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           // The film (or its still), covering the whole screen. Cover is done
           // by sizing and clipping, not scaling: a video is a platform view on
           // the web and a scaled platform view paints nothing.
-          LayoutBuilder(
-            builder: (context, box) {
-              final scale = math.max(
-                box.maxWidth / _clipSize.width,
-                box.maxHeight / _clipSize.height,
-              );
-              final w = _clipSize.width * scale;
-              final h = _clipSize.height * scale;
-              final child = (video != null && video.value.isInitialized)
-                  ? VideoPlayer(video)
-                  : Image.asset(_poster, fit: BoxFit.cover);
-              return ClipRect(
-                child: OverflowBox(
-                  maxWidth: w,
-                  maxHeight: h,
-                  child: SizedBox(width: w, height: h, child: child),
-                ),
-              );
-            },
-          ),
+          if (webVideoSupported)
+            // A raw element covers and crops itself — and cannot be lost to
+            // the plugin-registration failure that broke video_player on web.
+            const Positioned.fill(
+              child: WebVideoView(
+                assetPath: _clip,
+                playing: true,
+              ),
+            )
+          else
+            LayoutBuilder(
+              builder: (context, box) {
+                final scale = math.max(
+                  box.maxWidth / _clipSize.width,
+                  box.maxHeight / _clipSize.height,
+                );
+                final w = _clipSize.width * scale;
+                final h = _clipSize.height * scale;
+                final child = (video != null && video.value.isInitialized)
+                    ? VideoPlayer(video)
+                    : Image.asset(_poster, fit: BoxFit.cover);
+                return ClipRect(
+                  child: OverflowBox(
+                    maxWidth: w,
+                    maxHeight: h,
+                    child: SizedBox(width: w, height: h, child: child),
+                  ),
+                );
+              },
+            ),
           // A quiet gradient so the button reads on any frame of the film.
           const DecoratedBox(
             decoration: BoxDecoration(
