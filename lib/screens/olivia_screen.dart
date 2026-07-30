@@ -8,6 +8,7 @@ import '../services/olivia/olivia_session.dart';
 import '../services/olivia/olivia_voice.dart';
 import '../theme.dart';
 import '../widgets/olivia/olivia_avatar.dart';
+import '../widgets/olivia/olivia_lipsync.dart';
 import '../widgets/olivia/olivia_video.dart';
 import '../widgets/olivia/order_confirm_card.dart';
 import 'profile_screen.dart';
@@ -225,8 +226,9 @@ class _OliviaScreenState extends State<OliviaScreen> {
       padding: const EdgeInsets.only(top: 8, bottom: 12),
       child: Column(
         children: [
-          // Olivia is a video clip of a real person where one is bundled,
-          // falling back to the still photo and then to the drawn face.
+          // Olivia is her video clip. If it cannot play, the next best thing
+          // is the set of mouth frames cut from that same clip driven by her
+          // speech, then the still photo, then the drawn face.
           // Bounded in height so a portrait clip does not push the transcript
           // off the screen.
           ConstrainedBox(
@@ -237,13 +239,19 @@ class _OliviaScreenState extends State<OliviaScreen> {
                 speaking: _voice.isSpeaking,
                 listening: listening,
                 thinking: state == OliviaState.thinking,
-                fallback: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: OliviaAvatar(
-                    size: 150,
-                    mouthOpen: mouth,
-                    listening: listening,
-                    thinking: state == OliviaState.thinking,
+                fallback: OliviaLipSync(
+                  mouthOpen: mouth,
+                  speaking: _voice.isSpeaking,
+                  listening: listening,
+                  thinking: state == OliviaState.thinking,
+                  fallback: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: OliviaAvatar(
+                      size: 150,
+                      mouthOpen: mouth,
+                      listening: listening,
+                      thinking: state == OliviaState.thinking,
+                    ),
                   ),
                 ),
               ),

@@ -120,11 +120,14 @@ class _OliviaVideoState extends State<OliviaVideo> {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
+      // The border width is deliberately constant: it is part of layout, so
+      // animating it resized the image on every change and made her visibly
+      // shake. Only the colour and the shadow react, and neither affects
+      // layout.
       decoration: BoxDecoration(
         borderRadius: radius,
         border: Border.all(
-            color: ring.withValues(alpha: active ? 0.75 : 0.55),
-            width: active ? 3 : 1.5),
+            color: ring.withValues(alpha: active ? 0.85 : 0.45), width: 2),
         boxShadow: [
           if (active)
             BoxShadow(
