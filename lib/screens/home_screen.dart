@@ -8,6 +8,7 @@ import '../widgets/location_chip.dart';
 import 'admin_review_screen.dart';
 import 'delivery_jobs_screen.dart';
 import 'demo_tour_screen.dart';
+import 'nearby_map_screen.dart';
 import 'olivia_screen.dart';
 import 'provider_dashboard_screen.dart';
 import 'provider_list_screen.dart';
@@ -368,6 +369,21 @@ class HomeTab extends StatelessWidget {
             title: 'Food Trucks',
             subtitle: 'Live locations. Skip the line with pre-orders.',
             onTap: () => _open(context, 'food_truck', 'Food Trucks'),
+          ),
+          const SizedBox(height: 12),
+          // Everything genuinely around the customer, partnered or not — live
+          // from the public map. This is what keeps the app useful in a city
+          // where no partners have signed up yet.
+          _CategoryCard(
+            icon: CupertinoIcons.map_pin_ellipse,
+            tint: LhColors.blue,
+            title: 'Nearby Now',
+            subtitle: 'Restaurants, groceries, handymen, gas & EV charging '
+                'around you — live map, even beyond our partners.',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NearbyMapScreen()),
+            ),
           ),
           const SizedBox(height: 28),
           InsetGroup(

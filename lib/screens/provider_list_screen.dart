@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/location_chip.dart';
 import 'booking_screen.dart';
 import 'catalog_screen.dart';
+import 'nearby_map_screen.dart';
 import 'truck_map_screen.dart';
 
 class ProviderListScreen extends StatelessWidget {
@@ -58,13 +59,44 @@ class ProviderListScreen extends StatelessWidget {
     );
   }
 
+  /// Which live-map category answers this screen's question when the partner
+  /// list does not.
+  String get _nearbyKind => switch (category) {
+        'home_service' => 'handyman',
+        'indian_store' => 'groceries',
+        _ => 'food',
+      };
+
   Widget _list(List<Provider> providers) {
     return Builder(
       builder: (context) => ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: providers.length,
+        // One extra row: the door to the live map of non-partnered places.
+        itemCount: providers.length + 1,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, i) {
+          if (i == providers.length) {
+            return Card(
+              child: ListTile(
+                leading: const Icon(CupertinoIcons.map_pin_ellipse,
+                    color: LhColors.blue),
+                title: const Text('Looking for something else?',
+                    style:
+                        TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600)),
+                subtitle: const Text(
+                    'See everything nearby on the live map — including places '
+                    'not partnered with LocalHive yet.',
+                    style: TextStyle(fontSize: 12.5)),
+                trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          NearbyMapScreen(initialKind: _nearbyKind)),
+                ),
+              ),
+            );
+          }
           final p = providers[i];
           return Card(
             child: InkWell(

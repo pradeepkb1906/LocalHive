@@ -183,7 +183,9 @@ class OliviaTools {
             'description':
                 'Search the public map for real places around the customer, '
                     'anywhere in the world — restaurants, street food, cafes, '
-                    'grocery shops, hotels, pharmacies. Use this when '
+                    'grocery shops, hotels, pharmacies, gas stations, EV '
+                    'charging stations, handyman trades and hardware stores. '
+                    'Use this when '
                     'find_businesses has nothing suitable, or when the customer '
                     'is outside the area LocalHive covers, or when they ask '
                     'what is around them generally. '
@@ -202,7 +204,11 @@ class OliviaTools {
                     'street_food',
                     'groceries',
                     'hotel',
-                    'pharmacy'
+                    'pharmacy',
+                    'gas_station',
+                    'ev_charging',
+                    'handyman',
+                    'hardware_store'
                   ],
                 },
                 'query': {

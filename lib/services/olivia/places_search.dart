@@ -56,15 +56,23 @@ class PlacesSearch {
 
   /// OSM tag filters per kind of place a customer might ask about.
   /// Raw strings: the trailing `$` anchors belong to the OSM regex, not to
-  /// Dart interpolation.
+  /// Dart interpolation. `nwr` (node/way/relation) rather than `node`: most
+  /// gas stations, supermarkets and chargers are mapped as building outlines,
+  /// which a node-only query silently misses — `out center` turns each into a
+  /// single coordinate either way.
   static const _filters = <String, String>{
     'food':
-        r'node["amenity"~"^(restaurant|fast_food|cafe|food_court|ice_cream)$"]',
-    'street_food': r'node["amenity"~"^(fast_food|food_court)$"]',
+        r'nwr["amenity"~"^(restaurant|fast_food|cafe|food_court|ice_cream)$"]',
+    'street_food': r'nwr["amenity"~"^(fast_food|food_court)$"]',
     'groceries':
-        r'node["shop"~"^(supermarket|convenience|greengrocer|general|deli)$"]',
-    'hotel': r'node["tourism"~"^(hotel|guest_house|hostel)$"]',
-    'pharmacy': r'node["amenity"="pharmacy"]',
+        r'nwr["shop"~"^(supermarket|convenience|greengrocer|general|deli)$"]',
+    'hotel': r'nwr["tourism"~"^(hotel|guest_house|hostel)$"]',
+    'pharmacy': r'nwr["amenity"="pharmacy"]',
+    'gas_station': r'nwr["amenity"="fuel"]',
+    'ev_charging': r'nwr["amenity"="charging_station"]',
+    'handyman':
+        r'nwr["craft"~"^(electrician|plumber|carpenter|painter|hvac|handyman|key_cutter|tiler|roofer)$"]',
+    'hardware_store': r'nwr["shop"~"^(hardware|doityourself)$"]',
   };
 
   static List<String> get kinds => _filters.keys.toList();
@@ -143,8 +151,11 @@ class PlacesSearch {
 
       places.add(NearbyPlace(
         name: name,
-        kind: ((tags['amenity'] ?? tags['shop'] ?? tags['tourism'] ?? 'place')
-                as String)
+        kind: ((tags['amenity'] ??
+                tags['shop'] ??
+                tags['tourism'] ??
+                tags['craft'] ??
+                'place') as String)
             .replaceAll('_', ' '),
         cuisine: cuisine,
         area: street,

@@ -284,7 +284,9 @@ class _SignInScreenState extends State<SignInScreen> {
         // New account: choose how they'll use the app (Airbnb-style).
         await showRolePicker(context, dismissible: false);
       }
-      if (mounted) Navigator.pop(context);
+      // Pushed as a dialog this closes itself; as the app's front door there
+      // is nothing to pop — the root swaps to the app when auth changes.
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
     }
   }
 
@@ -369,7 +371,9 @@ class _SignInScreenState extends State<SignInScreen> {
         // New account: choose how they'll use the app (Airbnb-style).
         await showRolePicker(context, dismissible: false);
       }
-      if (mounted) Navigator.pop(context);
+      // Pushed as a dialog this closes itself; as the app's front door there
+      // is nothing to pop — the root swaps to the app when auth changes.
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
     }
   }
 
