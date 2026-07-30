@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
 import '../speech/speech_engine.dart';
+import '../speech/speech_recognizer.dart';
 
 /// Olivia's ears and mouth.
 ///
@@ -14,10 +14,9 @@ import '../speech/speech_engine.dart';
 /// its word callbacks drive [mouthOpen] so the avatar's lips move roughly in
 /// time with what is being said.
 class OliviaVoice {
-  final SpeechToText _stt = SpeechToText();
+  final SpeechRecognizerImpl _stt = SpeechRecognizerImpl();
   final SpeechEngine _engine = SpeechEngine();
 
-  bool _sttReady = false;
   bool _speaking = false;
 
   /// 0 closed to 1 wide. The avatar listens to this.
@@ -46,20 +45,12 @@ class OliviaVoice {
 
   // ------------------------------------------------------------------ speech
 
-  /// Asks for the microphone and initialises recognition. Returns false when
-  /// permission is refused or the platform has no recogniser.
+  /// Asks for the microphone up front — the permission dialog appears while
+  /// the customer is reading Olivia's greeting, not mid-sentence later.
+  /// Returns false when refused or when this browser cannot listen at all.
   Future<bool> prepareMic() async {
-    if (_sttReady) return true;
-    try {
-      _sttReady = await _stt.initialize(
-        onError: (e) => debugPrint('Olivia speech error: ${e.errorMsg}'),
-        onStatus: (s) => debugPrint('Olivia speech status: $s'),
-      );
-    } catch (e) {
-      debugPrint('Olivia speech init failed: $e');
-      _sttReady = false;
-    }
-    return _sttReady;
+    if (!_stt.isSupported) return false;
+    return _stt.requestPermission();
   }
 
   /// Listens until the customer stops talking. [onPartial] fires as words
@@ -68,50 +59,16 @@ class OliviaVoice {
     required void Function(String) onPartial,
     required void Function(String) onFinal,
   }) async {
-    if (!await prepareMic()) return false;
     await stopSpeaking();
-
-    var lastHeard = '';
-    try {
-      await _stt.listen(
-        onResult: (result) {
-          lastHeard = result.recognizedWords;
-          if (result.finalResult) {
-            onFinal(lastHeard);
-          } else {
-            onPartial(lastHeard);
-          }
-        },
-        listenOptions: SpeechListenOptions(
-          partialResults: true,
-          // Ordering food involves proper nouns the recogniser guesses at, so
-          // prefer dictation-style handling over command matching.
-          listenMode: ListenMode.dictation,
-          cancelOnError: true,
-          localeId: 'en_US',
-          // Long enough to describe a whole order in one breath, then a few
-          // seconds of silence to decide they have finished.
-          listenFor: const Duration(seconds: 30),
-          pauseFor: const Duration(seconds: 3),
-        ),
-      );
-      return true;
-    } catch (e) {
-      debugPrint('Olivia listen failed: $e');
-      return false;
-    }
+    return _stt.listen(onPartial: onPartial, onFinal: onFinal);
   }
 
   Future<void> stopListening() async {
-    try {
-      await _stt.stop();
-    } catch (_) {}
+    _stt.stop();
   }
 
   Future<void> cancelListening() async {
-    try {
-      await _stt.cancel();
-    } catch (_) {}
+    _stt.cancel();
   }
 
   // ------------------------------------------------------------------- voice

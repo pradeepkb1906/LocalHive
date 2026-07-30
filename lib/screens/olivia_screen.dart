@@ -54,7 +54,13 @@ class _OliviaScreenState extends State<OliviaScreen> {
   void initState() {
     super.initState();
     _session.addListener(_onSessionChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _greet());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _greet();
+      // Ask for the microphone now, while the greeting plays — the customer
+      // grants it once and the talk button just works from then on. A refusal
+      // here is not an error; the button will explain if pressed.
+      _voice.prepareMic();
+    });
   }
 
   @override
