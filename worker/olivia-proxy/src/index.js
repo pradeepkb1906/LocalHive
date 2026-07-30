@@ -128,6 +128,47 @@ export default {
       return json({ error: 'Body must be JSON' }, 400, origin);
     }
 
+    // Olivia's spoken voice: text in, WAV out, everything else pinned here.
+    // The model is fixed so a tampered client cannot pick something pricier,
+    // and the input is capped because Olivia's replies are short by design —
+    // anything longer than this is not her talking.
+    if (new URL(request.url).pathname === '/tts') {
+      const input = typeof body.input === 'string' ? body.input.trim() : '';
+      if (!input) return json({ error: 'input required' }, 400, origin);
+      if (input.length > 600) {
+        return json({ error: 'input too long' }, 400, origin);
+      }
+      const voice = ['autumn', 'diana', 'hannah'].includes(body.voice)
+        ? body.voice
+        : 'autumn';
+
+      let upstream;
+      try {
+        upstream = await fetch('https://api.groq.com/openai/v1/audio/speech', {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + env.GROQ_API_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'canopylabs/orpheus-v1-english',
+            voice,
+            input,
+            response_format: 'wav',
+          }),
+        });
+      } catch {
+        return json({ error: 'Could not reach the voice service' }, 502, origin);
+      }
+      if (!upstream.ok) {
+        return json({ error: 'Voice service error' }, upstream.status, origin);
+      }
+      return new Response(upstream.body, {
+        status: 200,
+        headers: { 'Content-Type': 'audio/wav', ...corsHeaders(origin) },
+      });
+    }
+
     if (!ALLOWED_MODELS.has(body.model)) {
       return json({ error: 'Model not allowed' }, 400, origin);
     }
