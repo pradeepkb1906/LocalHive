@@ -24,11 +24,39 @@ class FirebaseService {
   /// (query, user) and shared.
   final Map<String, Stream> _streams = {};
 
-  Stream<T> _shared<T>(String key, Stream<T> Function() create) =>
-      _streams.putIfAbsent('$key|$_uid', () => create().asBroadcastStream())
-          as Stream<T>;
+  /// The most recent value each shared stream produced.
+  ///
+  /// A broadcast stream does not replay to a subscriber that arrives late, and
+  /// Firestore only pushes again when the data changes. So the second widget to
+  /// listen used to wait forever: the owner's home screen subscribed first for
+  /// the "orders waiting" badge, and when they then opened the Provider
+  /// Dashboard it sat on a spinner with the orders already in hand. Keeping the
+  /// last value and handing it straight to new subscribers fixes that without
+  /// opening a second listener per widget.
+  final Map<String, Object?> _latest = {};
 
-  void _resetStreams() => _streams.clear();
+  Stream<T> _shared<T>(String key, Stream<T> Function() create) {
+    final k = '$key|$_uid';
+    final source = _streams.putIfAbsent(
+      k,
+      () => create().map((value) {
+        _latest[k] = value;
+        return value;
+      }).asBroadcastStream(),
+    ) as Stream<T>;
+
+    return Stream<T>.multi((controller) {
+      if (_latest.containsKey(k)) controller.add(_latest[k] as T);
+      final sub = source.listen(controller.add,
+          onError: controller.addError, onDone: controller.close);
+      controller.onCancel = sub.cancel;
+    });
+  }
+
+  void _resetStreams() {
+    _streams.clear();
+    _latest.clear();
+  }
 
   Future<void> init() async {
     try {
@@ -140,7 +168,10 @@ class FirebaseService {
       'category': b.category,
       'detail': b.detail,
       'status': b.status,
-      'amount': b.amount,
+      // Rounded here too, not just at the call sites: this is the figure a
+      // customer is asked to hand over, and it must be whole cents whoever
+      // built the booking.
+      'amount': money(b.amount),
       'address': b.address,
       'customerName': b.customerName,
       'customerPhone': b.customerPhone,
@@ -148,6 +179,11 @@ class FirebaseService {
       'fulfillment': b.fulfillment,
       'pickupEta': b.pickupEta,
       'otp': otp,
+      // The order contents. The business needs this to pack the order, the
+      // customer to check it, and the courier to know what they are carrying —
+      // so it lives on the booking rather than being reconstructed from a
+      // catalog that may have changed since.
+      'items': b.items.map((l) => l.toMap()).toList(),
       // LocalHive never takes payment in-app: the customer settles directly
       // with the business on arrival.
       'paymentMode': 'manual',
@@ -325,6 +361,12 @@ class FirebaseService {
       fulfillment: (m['fulfillment'] ?? '') as String,
       pickupEta: (m['pickupEta'] ?? '') as String,
       otp: (m['otp'] ?? '') as String,
+      // Orders placed before items were recorded have no list. Those fall back
+      // to the summary line, so an older order still reads sensibly.
+      items: ((m['items'] as List?) ?? const [])
+          .whereType<Map>()
+          .map((e) => OrderLine.fromMap(Map<String, dynamic>.from(e)))
+          .toList(),
     );
   }
 
@@ -468,6 +510,11 @@ class FirebaseService {
     await _db!.collection('delivery_jobs').doc(b.id).set({
       'storeName': b.providerName,
       'orderDetail': b.detail,
+      // Copied onto the job so a partner can check the handover against the
+      // order without being able to read the booking. What goods are in the bag
+      // is not private; the customer's phone, email and OTP stay on the booking
+      // and are readable only once this partner is assigned.
+      'items': b.items.map((l) => l.toMap()).toList(),
       'dropAddress': b.address,
       'fee': fee,
       'status': 'Open',

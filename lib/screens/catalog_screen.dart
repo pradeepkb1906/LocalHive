@@ -109,8 +109,36 @@ class _CatalogScreenState extends State<CatalogScreen> {
   double get _subtotal =>
       _cart.entries.fold(0, (sum, e) => sum + e.key.price * e.value);
   double get _fee => _subtotal * platformFeePct;
-  double get _total => _subtotal + _fee + (_delivery ? _deliveryFee : 0);
+  double get _total => money(_subtotal + _fee + (_delivery ? _deliveryFee : 0));
   int get _count => _cart.values.fold(0, (a, b) => a + b);
+
+  /// The cart, as lines recorded on the booking.
+  ///
+  /// The price is copied in rather than looked up later: this is what the
+  /// customer agreed to pay, and it must not move if the business reprices the
+  /// item tomorrow.
+  List<OrderLine> _orderLines() => _cart.entries
+      .map((e) => OrderLine(
+            name: e.key.name,
+            qty: e.value,
+            unitPrice: e.key.price,
+            unit: e.key.unit,
+            emoji: e.key.emoji,
+          ))
+      .toList();
+
+  /// One line describing the order, for notifications and for lists too tight
+  /// to show every item. Names the first few items instead of just counting
+  /// them, because "3 items" tells the person preparing it nothing.
+  String _orderSummary() {
+    final kind = _delivery ? 'Delivery' : 'Pickup';
+    final lines = _cart.entries.toList();
+    if (lines.isEmpty) return '$kind order';
+    final named =
+        lines.take(3).map((e) => '${e.value} × ${e.key.name}').join(', ');
+    final rest = lines.length - 3;
+    return '$kind order · $named${rest > 0 ? ' +$rest more' : ''}';
+  }
 
   Color get _tint => widget.provider.category == 'indian_store'
       ? LhColors.green
@@ -252,10 +280,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   }
                   AppState.instance.addBooking(Booking(
                     widget.provider.name,
-                    '${_delivery ? 'Delivery' : 'Pickup'} order · '
-                        '$_count item${_count > 1 ? 's' : ''}',
+                    _orderSummary(),
                     'Placed',
                     _total,
+                    items: _orderLines(),
                     providerId: widget.provider.id,
                     category: widget.provider.category,
                     address: _delivery ? _address.text.trim() : '',

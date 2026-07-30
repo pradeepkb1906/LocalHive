@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
+import '../widgets/order_items_view.dart';
 import 'track_delivery_screen.dart';
 
 class BookingsScreen extends StatelessWidget {
@@ -118,6 +119,18 @@ class BookingsScreen extends StatelessWidget {
                             ],
                           ),
                         ),
+                        // What they actually ordered. Under the row rather
+                        // than inside it: a ListTile subtitle has no room for a
+                        // list, and this is the thing people open Bookings to
+                        // check.
+                        if (bookings[i].items.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 12),
+                            child: OrderItemsView(
+                                booking: bookings[i],
+                                audience: OrderAudience.customer),
+                          ),
                         // A delivery order becomes trackable the moment a
                         // partner is on it.
                         if (bookings[i].fulfillment == 'delivery' &&

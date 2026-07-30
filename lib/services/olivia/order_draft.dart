@@ -133,6 +133,17 @@ class OrderDraft {
         customerEmail: customerEmail,
         fulfillment: kind == 'home_service' ? '' : fulfillment,
         pickupEta: kind == 'home_service' ? '' : pickupEta,
+        // The same lines the customer just approved on the confirm card, so what
+        // the business is shown is exactly what was agreed out loud.
+        items: lines
+            .map((l) => OrderLine(
+                  name: l.name,
+                  qty: l.qty,
+                  unitPrice: l.unitPrice,
+                  unit: l.unit,
+                  emoji: l.emoji,
+                ))
+            .toList(),
       );
 
   /// The summary Olivia reads back, and what gets returned to the model so it

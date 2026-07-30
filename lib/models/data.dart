@@ -49,6 +49,48 @@ class CatalogItem {
   const CatalogItem(this.name, this.price, this.unit, this.emoji);
 }
 
+/// One line of a placed order: what was bought, how many, and at what price.
+///
+/// Stored on the booking itself rather than derived from the catalog, because a
+/// receipt has to say what was charged at the time. If the store later reprices
+/// an item or stops selling it, an order already placed must not change.
+class OrderLine {
+  final String name;
+  final int qty;
+  final double unitPrice;
+  final String unit;
+  final String emoji;
+
+  const OrderLine({
+    required this.name,
+    required this.qty,
+    required this.unitPrice,
+    this.unit = '',
+    this.emoji = '',
+  });
+
+  double get lineTotal => unitPrice * qty;
+
+  Map<String, dynamic> toMap() => {
+        'name': name,
+        'qty': qty,
+        'unitPrice': unitPrice,
+        if (unit.isNotEmpty) 'unit': unit,
+        if (emoji.isNotEmpty) 'emoji': emoji,
+      };
+
+  /// Tolerant of missing or wrongly typed fields: these documents are written by
+  /// several versions of the app, and half a line is more useful to the person
+  /// packing the order than no line at all.
+  static OrderLine fromMap(Map<String, dynamic> m) => OrderLine(
+        name: (m['name'] ?? '') as String,
+        qty: (m['qty'] as num?)?.toInt() ?? 1,
+        unitPrice: (m['unitPrice'] as num?)?.toDouble() ?? 0,
+        unit: (m['unit'] ?? '') as String,
+        emoji: (m['emoji'] ?? '') as String,
+      );
+}
+
 class Booking {
   final String providerName;
   final String detail;
@@ -65,6 +107,11 @@ class Booking {
   final String fulfillment; // '' | 'pickup' | 'delivery'
   final String pickupEta; // customer's stated arrival, pickup orders
   final String otp; // 4-digit delivery confirmation code
+
+  /// What was ordered. Empty for home-service bookings, which are hours of
+  /// someone's time rather than a list of goods.
+  final List<OrderLine> items;
+
   const Booking(
     this.providerName,
     this.detail,
@@ -80,11 +127,27 @@ class Booking {
     this.fulfillment = '',
     this.pickupEta = '',
     this.otp = '',
+    this.items = const [],
   });
+
+  /// What the goods came to, before the platform fee and any delivery charge.
+  double get itemsSubtotal =>
+      items.fold(0.0, (sum, line) => sum + line.lineTotal);
+
+  int get itemCount => items.fold(0, (sum, line) => sum + line.qty);
 }
 
 const platformFeePct =
     0.12; // 12% platform fee, shown transparently at checkout
+
+/// Rounds an amount to whole cents.
+///
+/// A 12% fee on an odd subtotal gives fractions of a cent — $45.8752 — and that
+/// was being stored as the price of an order. It displayed as $45.88 because
+/// every label formats to two places, so it looked right while the recorded
+/// figure was not a payable amount. Anything that becomes money someone hands
+/// over goes through here first.
+double money(double amount) => (amount * 100).round() / 100;
 
 const homeServiceProviders = [
   Provider(

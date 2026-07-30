@@ -32,7 +32,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   double get _subtotal => widget.provider.hourlyRate * _hours;
   double get _fee => _subtotal * platformFeePct;
-  double get _total => _subtotal + _fee;
+  double get _total => money(_subtotal + _fee);
 
   String _dayLabel(int offset) {
     const names = ['Today', 'Tomorrow', 'In 2 days', 'In 3 days', 'In 4 days'];

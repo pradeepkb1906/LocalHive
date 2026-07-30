@@ -5,6 +5,7 @@ import 'directions_screen.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
+import '../widgets/order_items_view.dart';
 
 /// Provider-side interface: incoming job requests with Accept / Decline,
 /// then Mark Complete. Every action queues SMS + email notifications for
@@ -238,6 +239,12 @@ class _JobCard extends StatelessWidget {
                   ),
               ],
             ),
+            // What to actually prepare. First thing the owner needs after
+            // knowing where it is going.
+            if (job.items.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              OrderItemsView(booking: job, audience: OrderAudience.business),
+            ],
             if (job.fulfillment == 'pickup' && job.pickupEta.isNotEmpty) ...[
               const SizedBox(height: 6),
               _row(CupertinoIcons.time, 'Customer arriving: ${job.pickupEta}'),

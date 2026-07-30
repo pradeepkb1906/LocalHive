@@ -8,6 +8,7 @@ import '../services/courier_beacon.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
+import '../widgets/order_items_view.dart';
 
 /// Delivery-partner interface: open jobs from stores/trucks to claim, then
 /// Picked Up → Delivered. Each step notifies the customer (SMS/WhatsApp), and
@@ -305,6 +306,20 @@ class _DeliveryCard extends StatelessWidget {
     }
   }
 
+  /// The job's contents, wrapped as a booking so the shared itemised view can
+  /// render it. Only the goods are filled in — this card never holds the
+  /// customer's private details.
+  Booking get _carrying => Booking(
+        (job['storeName'] ?? '') as String,
+        (job['orderDetail'] ?? '') as String,
+        (job['status'] ?? '') as String,
+        0,
+        items: ((job['items'] as List?) ?? const [])
+            .whereType<Map>()
+            .map((e) => OrderLine.fromMap(Map<String, dynamic>.from(e)))
+            .toList(),
+      );
+
   @override
   Widget build(BuildContext context) {
     final status = job['status'] as String;
@@ -348,6 +363,14 @@ class _DeliveryCard extends StatelessWidget {
             Text('${job['orderDetail']}',
                 style: const TextStyle(
                     fontSize: 13.5, color: LhColors.inkSecondary)),
+            // What is in the bag, so the partner can check the handover against
+            // the order before leaving the store. No prices — what the customer
+            // paid is between them and the business.
+            if (_carrying.items.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              OrderItemsView(
+                  booking: _carrying, audience: OrderAudience.courier),
+            ],
             const SizedBox(height: 6),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
