@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:localhive/main.dart';
 import 'package:localhive/screens/home_screen.dart';
 import 'package:localhive/screens/profile_screen.dart';
+import 'package:localhive/screens/welcome_screen.dart';
 import 'package:localhive/theme.dart';
 
 /// The app's front door is now the sign-in screen (with the demo accounts),
@@ -22,8 +23,14 @@ void main() {
     await tester.pumpWidget(const LocalHiveApp());
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.byType(SignInScreen), findsOneWidget,
-        reason: 'signed out, the first screen is the front door');
+    // Signed out, the brand film greets first, with one way forward.
+    expect(find.byType(WelcomeScreen), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
+
+    await tester.tap(find.text('Sign In'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SignInScreen), findsOneWidget);
     expect(find.text('Welcome to LocalHive'), findsOneWidget);
     // The demo personas are the way into the demo; they must be on this
     // screen, not hidden behind navigation.

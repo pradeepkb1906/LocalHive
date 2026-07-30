@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_state.dart';
 import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'services/firebase_service.dart';
 import 'theme.dart';
 
@@ -29,7 +29,7 @@ class LocalHiveApp extends StatelessWidget {
         listenable: AppState.instance,
         builder: (context, _) => AppState.instance.signedIn
             ? const HomeShell()
-            : const SignInScreen(),
+            : const WelcomeScreen(),
       ),
     );
   }
