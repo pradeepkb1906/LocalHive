@@ -100,6 +100,30 @@ class OliviaVoice {
 
   // ------------------------------------------------------------------- voice
 
+  /// Voices that sound like a natural young American woman, best first.
+  ///
+  /// Every platform ships a different set, so this is a preference order rather
+  /// than a single choice: the first one actually installed wins, and if none
+  /// are, any US English female voice will do. Matching is on substrings
+  /// because the exact names vary by OS version.
+  static const _preferredVoices = <String>[
+    // Apple's natural-sounding US voices (iOS, macOS, Safari).
+    'samantha',
+    'ava',
+    'allison',
+    'susan',
+    // Google's US female voices (Android, Chrome). The -tpf-/-tpd- variants
+    // are the female ones.
+    'en-us-x-tpf-local',
+    'en-us-x-tpf-network',
+    'en-us-x-tpd-local',
+    'google us english',
+    // Microsoft (Windows, Edge).
+    'aria',
+    'jenny',
+    'zira',
+  ];
+
   Future<void> _wireHandlers() async {
     if (_handlersWired) return;
     _handlersWired = true;
@@ -108,6 +132,7 @@ class OliviaVoice {
       await _tts.setSpeechRate(0.50);
       await _tts.setPitch(1.06);
       await _tts.setVolume(1.0);
+      await _chooseVoice();
     } catch (_) {}
 
     // Word boundaries are reported on Android and on the web; where they are
@@ -130,6 +155,57 @@ class OliviaVoice {
       debugPrint('Olivia speak error: $msg');
       _finishSpeaking();
     });
+  }
+
+  /// Picks the most natural American English voice the device has.
+  ///
+  /// The default voice is whatever the OS chose, which is often a flat robotic
+  /// one and sometimes not even US English. Falls back gracefully: preferred
+  /// voice, then any en-US female, then any en-US, then leave it alone.
+  Future<void> _chooseVoice() async {
+    try {
+      final raw = await _tts.getVoices;
+      if (raw is! List) return;
+      final voices = raw
+          .map((v) => Map<String, dynamic>.from(v as Map))
+          .where((v) => (v['name'] ?? '').toString().isNotEmpty)
+          .toList();
+      if (voices.isEmpty) return;
+
+      String nameOf(Map<String, dynamic> v) =>
+          (v['name'] ?? '').toString().toLowerCase();
+      String localeOf(Map<String, dynamic> v) =>
+          (v['locale'] ?? v['language'] ?? '').toString().toLowerCase();
+      bool isUs(Map<String, dynamic> v) =>
+          localeOf(v).startsWith('en-us') || localeOf(v).startsWith('en_us');
+
+      Map<String, dynamic>? pick;
+      for (final wanted in _preferredVoices) {
+        pick = voices
+            .where((v) => nameOf(v).contains(wanted) && isUs(v))
+            .firstOrNull;
+        if (pick != null) break;
+        // Some platforms report no locale on the voice at all.
+        pick = voices.where((v) => nameOf(v).contains(wanted)).firstOrNull;
+        if (pick != null) break;
+      }
+      pick ??= voices
+          .where((v) =>
+              isUs(v) &&
+              (v['gender'] ?? '').toString().toLowerCase().contains('female'))
+          .firstOrNull;
+      pick ??= voices.where(isUs).firstOrNull;
+      if (pick == null) return;
+
+      await _tts.setVoice({
+        'name': pick['name'].toString(),
+        'locale': (pick['locale'] ?? pick['language'] ?? 'en-US').toString(),
+      });
+      debugPrint('Olivia is using the "${pick['name']}" voice');
+    } catch (e) {
+      // Not every platform exposes voice selection; the default still speaks.
+      debugPrint('Could not choose a voice for Olivia: $e');
+    }
   }
 
   /// Keeps the mouth moving between word callbacks, and is the only driver on
