@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../olivia_config.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
 import 'admin_review_screen.dart';
 import 'delivery_jobs_screen.dart';
 import 'demo_tour_screen.dart';
+import 'olivia_screen.dart';
 import 'provider_dashboard_screen.dart';
 import 'provider_list_screen.dart';
 import 'bookings_screen.dart';
@@ -95,6 +97,19 @@ class _HomeShellState extends State<HomeShell> {
         };
         return Scaffold(
           body: pages[_tab],
+          // Olivia stays reachable from every tab and every role — asking her
+          // is meant to be the fastest route into the app.
+          floatingActionButton: OliviaConfig.enabled
+              ? FloatingActionButton.extended(
+                  onPressed: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const OliviaScreen())),
+                  backgroundColor: LhColors.navy,
+                  foregroundColor: Colors.white,
+                  icon: const Icon(CupertinoIcons.mic_fill, size: 18),
+                  label: const Text('Ask Olivia',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                )
+              : null,
           bottomNavigationBar: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -146,9 +161,13 @@ class HomeTab extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text('LocalHive',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700, letterSpacing: -0.5)),
+              Flexible(
+                child: Text('LocalHive',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700, letterSpacing: -0.5)),
+              ),
               const Spacer(),
               const LocationChip(),
             ],
@@ -166,6 +185,54 @@ class HomeTab extends StatelessWidget {
             onTap: () {},
           ),
           const SizedBox(height: 16),
+          // Olivia — ordering by conversation instead of by tapping.
+          if (OliviaConfig.enabled) ...[
+            Card(
+              color: LhColors.navy.withValues(alpha: 0.06),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: LhColors.navy.withValues(alpha: 0.30)),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const OliviaScreen())),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      const IconTile(
+                          icon: CupertinoIcons.mic_circle_fill,
+                          color: LhColors.navy),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Just talk to Olivia',
+                                style: TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w700)),
+                            SizedBox(height: 2),
+                            Text(
+                                'Say what you need and she finds it, takes your '
+                                'order, or books a service — no tapping around',
+                                style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: LhColors.inkSecondary,
+                                    height: 1.3)),
+                          ],
+                        ),
+                      ),
+                      const Icon(CupertinoIcons.chevron_right,
+                          size: 18, color: LhColors.navy),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           // Guided tour — the fastest way for a brand-new user to "get it".
           Card(
             color: LhColors.blue.withValues(alpha: 0.08),
@@ -315,9 +382,12 @@ class HomeTab extends StatelessWidget {
               _TrustTile(
                   icon: CupertinoIcons.lock_fill,
                   color: LhColors.green,
-                  title: 'Protected payments',
+                  // LocalHive takes no payment in-app, so this must not
+                  // promise escrow or that funds are "held".
+                  title: 'Pay in person',
                   subtitle:
-                      'Your payment is held securely until the job is done.'),
+                      'You pay the business directly, on the day. No card '
+                      'details are stored in the app.'),
               _TrustTile(
                   icon: CupertinoIcons.percent,
                   color: LhColors.navy,

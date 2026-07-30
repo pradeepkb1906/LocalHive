@@ -11,6 +11,15 @@ class LocationService extends ChangeNotifier {
   static final LocationService instance = LocationService._();
 
   String label = 'USA';
+
+  /// The user's coordinates once detected, so features like "food trucks near
+  /// me" can rank by real distance rather than by the city label alone. Null
+  /// until [detect] resolves a position; the IP fallback fills these in coarsely.
+  double? lat;
+  double? lng;
+
+  bool get hasPosition => lat != null && lng != null;
+
   bool _requested = false;
 
   static const _stateAbbr = {
@@ -83,6 +92,8 @@ class LocationService extends ChangeNotifier {
       final pos = await Geolocator.getCurrentPosition(
           locationSettings:
               const LocationSettings(accuracy: LocationAccuracy.low));
+      lat = pos.latitude;
+      lng = pos.longitude;
       // zoom=14 returns neighbourhood/suburb-level detail when available.
       final resp = await http.get(
         Uri.parse('https://nominatim.openstreetmap.org/reverse'
@@ -129,6 +140,10 @@ class LocationService extends ChangeNotifier {
       final d = jsonDecode(resp.body) as Map<String, dynamic>;
       final city = (d['city'] ?? '') as String;
       final region = (d['region_code'] ?? d['region'] ?? '') as String;
+      // City-level accuracy only, but enough to rank nearby businesses when
+      // GPS is unavailable.
+      lat = (d['latitude'] as num?)?.toDouble() ?? lat;
+      lng = (d['longitude'] as num?)?.toDouble() ?? lng;
       if (city.isNotEmpty) {
         label = region.toString().isNotEmpty ? '$city, $region' : city;
         notifyListeners();

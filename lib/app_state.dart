@@ -151,6 +151,15 @@ class AppState extends ChangeNotifier {
     unawaited(_fb.addBooking(b));
   }
 
+  /// Same write, but awaits Firestore and hands back the new booking id.
+  /// Olivia uses this so she can tell the customer their order is really in
+  /// and then track it; the tap-driven screens keep using [addBooking].
+  Future<String?> addBookingAndWait(Booking b) async {
+    bookings = [b, ...bookings];
+    notifyListeners();
+    return _fb.addBooking(b);
+  }
+
   Future<void> submitProviderApplication(
       {required String type,
       required String businessName,

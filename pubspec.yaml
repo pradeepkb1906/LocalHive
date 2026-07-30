@@ -20,11 +20,32 @@ dependencies:
   geolocator: ^14.0.3
   http: ^1.6.0
   flutter_tts: ^4.2.5
+  speech_to_text: ^7.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/
+
+# App icon generation. Sources are built from assets/brand/localhive_mark.svg
+# by tool/make_icons.py; regenerate with `dart run flutter_launcher_icons`.
+flutter_launcher_icons:
+  image_path: "assets/brand/icon_1024.png"
+  android: true
+  # Android crops adaptive foregrounds to a circle, so the padded artwork is
+  # used here rather than the full-bleed mark.
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/brand/icon_foreground.png"
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/brand/icon_1024.png"
+    background_color: "#FFFFFF"
+    theme_color: "#0A2540"

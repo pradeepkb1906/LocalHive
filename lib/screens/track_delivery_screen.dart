@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
 import '../services/firebase_service.dart';
+import '../services/geo.dart';
 import '../theme.dart';
 
 /// Live courier tracking. The delivery partner's phone publishes its GPS
@@ -70,17 +71,8 @@ class _TrackDeliveryScreenState extends State<TrackDeliveryScreen> {
     }
   }
 
-  /// Great-circle distance in kilometres.
-  double _km(LatLng a, LatLng b) {
-    const r = 6371.0;
-    final dLat = (b.latitude - a.latitude) * math.pi / 180;
-    final dLon = (b.longitude - a.longitude) * math.pi / 180;
-    final la = a.latitude * math.pi / 180;
-    final lb = b.latitude * math.pi / 180;
-    final h = math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(la) * math.cos(lb) * math.sin(dLon / 2) * math.sin(dLon / 2);
-    return 2 * r * math.asin(math.min(1, math.sqrt(h)));
-  }
+  double _km(LatLng a, LatLng b) =>
+      distanceKm(a.latitude, a.longitude, b.latitude, b.longitude);
 
   String _ago(DateTime t) {
     final s = DateTime.now().difference(t).inSeconds;

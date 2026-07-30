@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>LocalHive needs the microphone so you can speak to Olivia, your assistant, to order food and book services.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>LocalHive turns what you say into text so Olivia can understand your order or booking request.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>LocalHive uses your location to show food trucks, stores and service providers near you, and to share a delivery partner's progress with the customer.</string>
 </dict>
 </plist>

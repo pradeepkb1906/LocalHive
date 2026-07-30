@@ -1,6 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Declared explicitly rather than relying on library manifest merge.
+         INTERNET was previously only in the debug manifest and reached release
+         builds by accident, via the Firebase plugins. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- Delivery partners share live GPS while a job is active, and the
+         location chip resolves the customer's area. Without these the release
+         APK silently fell back to IP-based location. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Speaking to Olivia, the in-app assistant. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
     <application
-        android:label="localhive"
+        android:label="LocalHive"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

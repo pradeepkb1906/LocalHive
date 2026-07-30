@@ -114,8 +114,11 @@ class FirebaseService {
     }
   }
 
-  Future<void> addBooking(Booking b) async {
-    if (!ready) return;
+  /// Writes a booking and returns its new document id, or null if it could not
+  /// be written. Olivia needs the id back so she can confirm and then track the
+  /// order she just placed.
+  Future<String?> addBooking(Booking b) async {
+    if (!ready) return null;
     // 4-digit OTP the customer shares with the delivery partner on arrival.
     final otp = b.fulfillment == 'delivery'
         ? (1000 + Random().nextInt(9000)).toString()
@@ -145,6 +148,9 @@ class FirebaseService {
       'fulfillment': b.fulfillment,
       'pickupEta': b.pickupEta,
       'otp': otp,
+      // LocalHive never takes payment in-app: the customer settles directly
+      // with the business on arrival.
+      'paymentMode': 'manual',
       'createdAt': FieldValue.serverTimestamp(),
     });
     final isOrder = b.category != 'home_service';
@@ -165,6 +171,7 @@ class FirebaseService {
               'Open your Provider Dashboard to accept.',
       booking: b,
     );
+    return doc.id;
   }
 
   /// Moves a booking through its lifecycle and queues the matching
@@ -741,10 +748,84 @@ class FirebaseService {
 
   /// Live catalog for one category. Only `live: true` listings are shown.
   /// Equality-only filters use Firestore index merging — no composite index.
+  /// One-shot version of [providersStream], for Olivia's tool calls. Returns
+  /// `ownerId` alongside each listing because a booking against a listing with
+  /// no owner is invisible to every business owner — Olivia must not offer one.
+  Future<List<(Provider, String)>> fetchProviders(String category) async {
+    if (!ready) return const [];
+    try {
+      final snap = await _db!
+          .collection('providers')
+          .where('category', isEqualTo: category)
+          .where('live', isEqualTo: true)
+          .get();
+      return snap.docs.map((d) {
+        final m = d.data();
+        return (
+          Provider(
+            id: d.id,
+            name: (m['name'] ?? '') as String,
+            category: category,
+            subtitle: (m['subtitle'] ?? '') as String,
+            rating: ((m['rating'] ?? 0) as num).toDouble(),
+            reviews: ((m['reviews'] ?? 0) as num).toInt(),
+            hourlyRate: ((m['hourlyRate'] ?? 0) as num).toDouble(),
+            city: (m['city'] ?? '') as String,
+            verified: (m['verified'] ?? false) as bool,
+            emoji: '',
+            lat: ((m['lat'] ?? 0) as num).toDouble(),
+            lng: ((m['lng'] ?? 0) as num).toDouble(),
+            availableFrom: (m['availableFrom'] ?? '') as String,
+            availableTo: (m['availableTo'] ?? '') as String,
+          ),
+          (m['ownerId'] ?? '') as String,
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('fetchProviders failed: $e');
+      return const [];
+    }
+  }
+
+  /// Raises a support request Olivia could not resolve herself, and queues a
+  /// notification so a human actually follows up.
+  Future<String?> createSupportTicket({
+    required String subject,
+    required String details,
+  }) async {
+    if (!ready || currentUser == null) return null;
+    try {
+      final doc = await _db!.collection('support_tickets').add({
+        'userId': _uid,
+        'subject': subject,
+        'details': details,
+        'status': 'open',
+        'raisedBy': 'olivia',
+        'customerEmail': currentUser?.email ?? '',
+        'customerName': currentUser?.displayName ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      await _db!.collection('notifications').add({
+        'recipient': 'support',
+        'phone': '',
+        'email': currentUser?.email ?? '',
+        'event': 'support_ticket',
+        'message': 'LocalHive support: "$subject" — $details',
+        'status': 'pending',
+        'ticketId': doc.id,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return doc.id;
+    } catch (e) {
+      debugPrint('createSupportTicket failed: $e');
+      return null;
+    }
+  }
+
   Stream<List<Provider>> providersStream(String category) {
     if (!ready) return const Stream.empty();
     return _shared(
-        'providers-\$category',
+        'providers-$category',
         () => _db!
                 .collection('providers')
                 .where('category', isEqualTo: category)

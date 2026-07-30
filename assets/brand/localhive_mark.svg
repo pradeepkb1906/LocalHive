@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!--
+    LocalHive app mark: a honeybee inside a honeycomb cell.
+    Navy #0A2540 is the app's primary ink; gold #F5B517 is the hive accent.
+    Drawn as vector so it stays crisp from a 16px favicon to a 1024px store icon.
+  -->
+  <defs>
+    <linearGradient id="wing" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#CFE4F5" stop-opacity="0.75"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Honeycomb cell, flat-top hexagon -->
+  <path d="M256 40 L436 144 L436 368 L256 472 L76 368 L76 144 Z"
+        fill="none" stroke="#F5B517" stroke-width="26"
+        stroke-linejoin="round"/>
+
+  <!-- Wings, behind the body -->
+  <g transform="translate(256 236)">
+    <ellipse cx="-74" cy="-52" rx="52" ry="34" fill="url(#wing)"
+             stroke="#0A2540" stroke-width="9"
+             transform="rotate(-28 -74 -52)"/>
+    <ellipse cx="74" cy="-52" rx="52" ry="34" fill="url(#wing)"
+             stroke="#0A2540" stroke-width="9"
+             transform="rotate(28 74 -52)"/>
+  </g>
+
+  <!-- Antennae -->
+  <g stroke="#0A2540" stroke-width="11" stroke-linecap="round" fill="none">
+    <path d="M232 150 Q216 118 196 108"/>
+    <path d="M280 150 Q296 118 316 108"/>
+  </g>
+  <circle cx="193" cy="104" r="11" fill="#0A2540"/>
+  <circle cx="319" cy="104" r="11" fill="#0A2540"/>
+
+  <!-- Head -->
+  <circle cx="256" cy="176" r="46" fill="#0A2540"/>
+  <circle cx="240" cy="170" r="7.5" fill="#FFFFFF"/>
+  <circle cx="272" cy="170" r="7.5" fill="#FFFFFF"/>
+
+  <!-- Body: gold base with navy stripes, clipped to the body outline -->
+  <clipPath id="bodyClip">
+    <ellipse cx="256" cy="300" rx="84" ry="108"/>
+  </clipPath>
+  <ellipse cx="256" cy="300" rx="84" ry="108" fill="#F5B517"/>
+  <g clip-path="url(#bodyClip)">
+    <rect x="168" y="222" width="176" height="34" fill="#0A2540"/>
+    <rect x="168" y="290" width="176" height="34" fill="#0A2540"/>
+    <rect x="168" y="358" width="176" height="34" fill="#0A2540"/>
+  </g>
+  <ellipse cx="256" cy="300" rx="84" ry="108" fill="none"
+           stroke="#0A2540" stroke-width="12"/>
+</svg>

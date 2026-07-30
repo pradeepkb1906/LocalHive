@@ -1,0 +1,15 @@
+name = "localhive-olivia"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+[vars]
+# Firebase project id. The proxy rejects ID tokens minted for any other
+# project, so a token from someone else's Firebase app cannot be used here.
+FIREBASE_PROJECT_ID = "localhivelocalhive"
+
+# Set to "false" only for local experiments. Leaving it unset (or "true") means
+# every request must carry a valid LocalHive sign-in.
+# REQUIRE_AUTH = "true"
+
+# GROQ_API_KEY is deliberately NOT here — it is a secret, set with:
+#   npx wrangler secret put GROQ_API_KEY

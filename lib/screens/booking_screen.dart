@@ -82,8 +82,8 @@ class _BookingScreenState extends State<BookingScreen> {
             '${widget.provider.name} · ${_dayLabel(_dayOffset)} at $_slot for $_hours hours.\n\n'
             '${widget.provider.name} has been notified and will accept shortly — '
             'you\'ll get an SMS and email the moment they do. Track it in the '
-            'Bookings tab. You are charged \$${_total.toStringAsFixed(2)} only '
-            'after the job is completed.'),
+            'Bookings tab. You pay \$${_total.toStringAsFixed(2)} directly to '
+            'them once the job is done — nothing is charged in the app.'),
         actions: [
           FilledButton(
             style: dialogButtonStyle(),

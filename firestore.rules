@@ -128,6 +128,18 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // Support requests Olivia could not resolve herself. Customers raise and
+    // read their own; only staff see the whole queue. Clients never resolve a
+    // ticket — that is the service account's job, like the outbox.
+    match /support_tickets/{ticketId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'open';
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if false;
+    }
+
     // In-app system check writes a ping here to prove the backend round-trip.
     match /diagnostics/{docId} {
       allow create, read: if signedIn();
