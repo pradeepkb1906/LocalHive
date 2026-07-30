@@ -178,8 +178,8 @@ class _OliviaAvatarState extends State<OliviaAvatar>
 /// Where Olivia's eyes are in the photograph, as fractions of its width and
 /// height, so the blink lands correctly at any display size.
 ///
-/// Measured from assets/brand/olivia_source.jpeg (1024x559). If that photo is
-/// replaced, re-measure these — `tool/crop_olivia.py` documents how.
+/// Measured from the still photo Olivia used before her video clip. These are
+/// only used by the drawn-face path now, which has no photo to match.
 class _EyeGeometry {
   static const leftCentre = Offset(0.4746, 0.2594);
   static const rightCentre = Offset(0.5342, 0.2612);
