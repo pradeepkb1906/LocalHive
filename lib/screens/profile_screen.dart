@@ -236,7 +236,11 @@ class _LinkTile extends StatelessWidget {
 /// Firebase Auth (invisible reCAPTCHA on web); offline it falls back to a
 /// demo mode that accepts any 6-digit code.
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  /// Opens straight onto the Create Account form. Everywhere the user tapped
+  /// something called "Sign In" this stays false — landing a returning user on
+  /// a registration form is the wrong default, and it hides the demo logins.
+  final bool startRegistering;
+  const SignInScreen({super.key, this.startRegistering = false});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -251,7 +255,7 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _codeSent = false;
   bool _busy = false;
   bool _emailMode = true;
-  bool _registering = true;
+  late bool _registering = widget.startRegistering;
 
   void _toast(String msg) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));

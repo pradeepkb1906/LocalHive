@@ -29,6 +29,11 @@ PROJECT = "localhivelocalhive"
 FS = (f"https://firestore.googleapis.com/v1/projects/{PROJECT}"
       "/databases/(default)/documents")
 
+# Set DEMO_PHONE to a number the Twilio trial can reach (a Verified Caller ID)
+# to see the customer-side SMS/WhatsApp messages land during a demo. Left blank
+# the flows still work; the dispatcher just logs "no valid phone on record".
+DEMO_PHONE = os.environ.get("DEMO_PHONE", "")
+
 DEMO = {
     "customer": ("demo@localhive.app", "demo@123"),
     "maria": ("maria@localhive.app", "maria@123"),
@@ -127,7 +132,7 @@ def make_booking(cat, detail, amount, status, fulfillment, address="",
         "amount": amount,
         "address": address,
         "customerName": "Demo Customer",
-        "customerPhone": "",
+        "customerPhone": DEMO_PHONE,
         "customerEmail": DEMO["customer"][0],
         "fulfillment": fulfillment,
         "pickupEta": pickup_eta,
