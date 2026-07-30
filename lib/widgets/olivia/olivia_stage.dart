@@ -45,72 +45,15 @@ class OliviaStage extends StatelessWidget {
   /// work out how tall her frame wants to be — see [heightIn].
   static const portrait = Size(464, 688);
 
-  /// The part of her footage worth showing, measured down the frame: from a
-  /// little above her head to the bottom, which is the bottom of her sweater.
-  ///
-  /// Her head starts around 0.37 and her mouth is around 0.62. Above 0.30 is
-  /// the LocalHive sign on the wall behind her, which only looks like branding
-  /// when it is whole — there is no room for all of it *and* her, and a sign
-  /// sliced through the middle of its letters just looks like a mistake.
-  static const _bandTop = 0.30;
-  static const _bandBottom = 1.0;
-
-  /// The middle of her face, used to decide what to keep when the box is too
-  /// short even for the band above.
-  static const _faceCentre = 0.53;
-
-  /// How tall her frame wants to be in a window of [screen].
-  ///
-  /// Tall enough for that whole band when the window can spare it: she reads as
-  /// a person you are talking to when her face, shoulders and sweater are all
-  /// there, and as a passport photo when she is cropped to a strip. The reserve
-  /// is the app bar, the status line, the talk button and the text field, plus
-  /// enough of the conversation to read her last answer.
+  /// How tall her frame wants to be in a window of [screen]: the height at
+  /// which the WHOLE portrait fits the width, capped by what the window can
+  /// spare. Pradeep wants everything visible — the bee, the LocalHive sign,
+  /// her face and her sweater — so nothing is ever cropped away; a wider
+  /// window letterboxes her instead.
   static double heightIn(Size screen) {
     const reserve = 400.0;
-    final scale = screen.width / portrait.width;
-    final band = portrait.height * scale * (_bandBottom - _bandTop);
-    return (screen.height - reserve).clamp(200.0, band);
-  }
-
-  /// Which slice of a [full]-tall frame to show in a [visible]-tall box.
-  ///
-  /// Keeps her sweater at the bottom of the frame while the box is tall enough
-  /// for that, and slides down to centre on her face when it is not — a short
-  /// window should lose her sweater, not her expression.
-  static Alignment cropFor(double full, double visible) {
-    final excess = full - visible;
-    if (excess <= 0) return Alignment.center;
-    final top = topFor(full, visible);
-    // OverflowBox places the child at (1 + y) / 2 of the excess.
-    return Alignment(0, (2 * top / excess - 1).clamp(-1.0, 1.0));
-  }
-
-  /// The pixels cropped off the top of a [full]-tall frame shown in a
-  /// [visible]-tall box. Shared by the OverflowBox path and the raw web
-  /// element's CSS object-position, so both crop identically.
-  static double topFor(double full, double visible) {
-    final excess = full - visible;
-    if (excess <= 0) return 0;
-    return math
-        .min(
-          _bandBottom * full - visible,
-          math.max(_bandTop * full, _faceCentre * full - visible / 2),
-        )
-        .clamp(0.0, excess);
-  }
-
-  /// The CSS object-position for a raw cover-cropping element in a box of
-  /// [boxSize]. Percentage semantics: P% aligns the frame's P% line with the
-  /// box's P% line, so the fraction cropped off the top is P * (1 - visible).
-  static String objectPositionFor(Size boxSize) {
-    if (boxSize.width <= 0 || boxSize.height <= 0) return '50% 50%';
-    final scaledH = boxSize.width * portrait.height / portrait.width;
-    if (scaledH <= boxSize.height) return '50% 50%';
-    final hidden = scaledH - boxSize.height;
-    final p =
-        (topFor(scaledH, boxSize.height) / hidden * 100).clamp(0.0, 100.0);
-    return '50% ${p.toStringAsFixed(1)}%';
+    final whole = screen.width * portrait.height / portrait.width;
+    return (screen.height - reserve).clamp(200.0, whole);
   }
 
   Color get _ring {
@@ -134,29 +77,24 @@ class OliviaStage extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           if (rawCover)
+            // The raw web element letterboxes itself (object-fit: contain).
             Positioned.fill(child: child)
           else
-            // Covered by giving the child a real size larger than this box and
-            // clipping, rather than by scaling it with a transform. A video is a
-            // platform view on the web, and a scaled platform view paints
-            // nothing — she came out as an empty white rectangle.
+            // The whole frame, as large as fits, centred. Sized explicitly
+            // rather than with FittedBox: a video is a platform view on the
+            // web, and a scaled platform view paints nothing.
             LayoutBuilder(
               builder: (context, box) {
-                final scale = math.max(
+                final scale = math.min(
                   box.maxWidth / naturalSize.width,
                   box.maxHeight / naturalSize.height,
                 );
                 final size = naturalSize * scale;
-                return ClipRect(
-                  child: OverflowBox(
-                    alignment: cropFor(size.height, box.maxHeight),
-                    maxWidth: size.width,
-                    maxHeight: size.height,
-                    child: SizedBox(
-                      width: size.width,
-                      height: size.height,
-                      child: child,
-                    ),
+                return Center(
+                  child: SizedBox(
+                    width: size.width,
+                    height: size.height,
+                    child: child,
                   ),
                 );
               },

@@ -9,12 +9,14 @@ class WebVideoView extends StatelessWidget {
   final String assetPath;
   final bool playing;
   final String objectPosition;
+  final String fit;
 
   const WebVideoView({
     super.key,
     required this.assetPath,
     required this.playing,
     this.objectPosition = '50% 50%',
+    this.fit = 'cover',
   });
 
   @override

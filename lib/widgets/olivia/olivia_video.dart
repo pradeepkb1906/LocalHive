@@ -123,24 +123,19 @@ class _OliviaVideoState extends State<OliviaVideo> {
   @override
   Widget build(BuildContext context) {
     if (webVideoSupported) {
-      // The element does its own cover-crop, but WHERE to crop depends on the
-      // box: a phone-tall box keeps her sweater pinned, a wide desktop strip
-      // must slide up to her face — a fixed position showed only her sweater
-      // on a wide window. Same maths as the plugin path, translated to CSS.
-      return LayoutBuilder(
-        builder: (context, box) => OliviaStage(
-          expand: widget.expand,
-          speaking: widget.speaking,
-          listening: widget.listening,
-          thinking: widget.thinking,
-          naturalSize: OliviaStage.portrait,
-          rawCover: true,
-          child: WebVideoView(
-            assetPath: OliviaVideo.asset,
-            playing: widget.speaking,
-            objectPosition: OliviaStage.objectPositionFor(
-                Size(box.maxWidth, box.maxHeight)),
-          ),
+      // The whole frame, always: bee, sign, face and sweater. The element
+      // letterboxes itself; the stage draws the state line under her.
+      return OliviaStage(
+        expand: widget.expand,
+        speaking: widget.speaking,
+        listening: widget.listening,
+        thinking: widget.thinking,
+        naturalSize: OliviaStage.portrait,
+        rawCover: true,
+        child: WebVideoView(
+          assetPath: OliviaVideo.asset,
+          playing: widget.speaking,
+          fit: 'contain',
         ),
       );
     }

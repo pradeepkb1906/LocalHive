@@ -47,11 +47,17 @@ class WebVideoView extends StatefulWidget {
   final bool playing;
   final String objectPosition;
 
+  /// 'cover' fills the box and crops; 'contain' shows the WHOLE frame with
+  /// letterboxing. Olivia uses contain — Pradeep wants the full portrait,
+  /// bee and sign and sweater and all.
+  final String fit;
+
   const WebVideoView({
     super.key,
     required this.assetPath,
     required this.playing,
     this.objectPosition = '50% 50%',
+    this.fit = 'cover',
   });
 
   @override
@@ -82,7 +88,7 @@ class _WebVideoViewState extends State<WebVideoView> {
       video.setAttribute('preload', 'auto');
       video.style.width = '100%';
       video.style.height = '100%';
-      video.style.objectFit = 'cover';
+      video.style.objectFit = widget.fit;
       video.style.objectPosition = widget.objectPosition;
       // Taps must fall through to the Flutter surface, not the element.
       video.style.pointerEvents = 'none';
