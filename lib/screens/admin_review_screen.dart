@@ -109,13 +109,42 @@ class _ApplicationCard extends StatelessWidget {
   final Map<String, dynamic> app;
   const _ApplicationCard({required this.app});
 
-  String get _typeLabel => switch (app['type']) {
+  /// Applications written by older builds (or by seed scripts) can be missing
+  /// fields. Read them as text that degrades to '' rather than the string
+  /// "null", which is what a bare interpolation would put on screen.
+  String _s(String key) {
+    final v = app[key];
+    return v == null ? '' : '$v';
+  }
+
+  String get _typeLabel =>
+      switch (_s('type').isEmpty ? _s('category') : _s('type')) {
         'home_service' => 'Home services',
         'indian_store' => 'Indian store',
         'food_truck' => 'Food truck',
         'delivery' => 'Delivery partner',
-        _ => '${app['type']}',
+        '' => 'Not specified',
+        final other => other,
       };
+
+  /// Display name for the business, never the string "null".
+  String get _name =>
+      _s('businessName').isEmpty ? 'this business' : _s('businessName');
+
+  /// Applicant's contact line. Field names differ between the app's own
+  /// submissions and older/seeded rows, so accept either.
+  String get _contact {
+    final email =
+        _s('applicantEmail').isEmpty ? _s('email') : _s('applicantEmail');
+    final phone =
+        _s('applicantPhone').isEmpty ? _s('phone') : _s('applicantPhone');
+    final name = _s('contactName');
+    return [
+      if (name.isNotEmpty) name,
+      if (email.isNotEmpty) email,
+      if (phone.isNotEmpty) phone,
+    ].join(' · ');
+  }
 
   (Color, String) get _statusChip => switch (app['status']) {
         'approved' => (LhColors.green, 'Approved'),
@@ -129,7 +158,7 @@ class _ApplicationCard extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         icon: const Icon(CupertinoIcons.checkmark_seal_fill,
             color: LhColors.green, size: 40),
-        title: Text('Approve ${app['businessName']}?'),
+        title: Text('Approve ${_name}?'),
         content: const Text(
             'This publishes their listing to the public catalog immediately '
             'and texts them the good news.\n\n'
@@ -151,9 +180,8 @@ class _ApplicationCard extends StatelessWidget {
     await FirebaseService.instance.approveApplication(app);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content:
-              Text('${app['businessName']} approved — listing is live and the '
-                  'applicant has been notified.')));
+          content: Text('$_name approved — listing is live and the '
+              'applicant has been notified.')));
     }
   }
 
@@ -164,7 +192,7 @@ class _ApplicationCard extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         icon: const Icon(CupertinoIcons.xmark_seal_fill,
             color: Color(0xFFFF3B30), size: 40),
-        title: Text('Decline ${app['businessName']}?'),
+        title: Text('Decline ${_name}?'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -216,7 +244,10 @@ class _ApplicationCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text('${app['businessName']}',
+                  child: Text(
+                      _s('businessName').isEmpty
+                          ? 'Unnamed business'
+                          : _s('businessName'),
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w700)),
                 ),
@@ -237,22 +268,27 @@ class _ApplicationCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             _row(CupertinoIcons.briefcase, _typeLabel),
-            const SizedBox(height: 6),
-            _row(CupertinoIcons.location_solid, '${app['city']}'),
-            if ('${app['availableFrom']}'.isNotEmpty) ...[
+            if (_s('city').isNotEmpty) ...[
+              const SizedBox(height: 6),
+              _row(CupertinoIcons.location_solid, _s('city')),
+            ],
+            if (_s('availableFrom').isNotEmpty) ...[
               const SizedBox(height: 6),
               _row(CupertinoIcons.time,
-                  'Available ${app['availableFrom']} – ${app['availableTo']}'),
+                  'Available ${_s('availableFrom')} – ${_s('availableTo')}'),
             ],
-            const SizedBox(height: 6),
-            _row(
-                CupertinoIcons.person,
-                '${app['applicantEmail']}'
-                '${'${app['applicantPhone']}'.isEmpty ? '' : ' · ${app['applicantPhone']}'}'),
-            if ('${app['reviewNote'] ?? ''}'.isNotEmpty) ...[
+            if (_contact.isNotEmpty) ...[
               const SizedBox(height: 6),
-              _row(CupertinoIcons.chat_bubble_text,
-                  'Note: ${app['reviewNote']}'),
+              _row(CupertinoIcons.person, _contact),
+            ],
+            if (_s('about').isNotEmpty) ...[
+              const SizedBox(height: 6),
+              _row(CupertinoIcons.doc_text, _s('about')),
+            ],
+            if (_s('reviewNote').isNotEmpty) ...[
+              const SizedBox(height: 6),
+              _row(
+                  CupertinoIcons.chat_bubble_text, 'Note: ${_s('reviewNote')}'),
             ],
             if (pending) ...[
               const SizedBox(height: 14),
