@@ -58,24 +58,33 @@ class _OliviaVideoState extends State<OliviaVideo> {
       await controller.setLooping(true);
       // Her voice is the TTS voice; the clip's own audio would clash with it.
       await controller.setVolume(0);
-      if (!mounted) {
-        await controller.dispose();
-        return;
-      }
-      setState(() => _controller = controller);
-
-      // A paused video paints nothing on the web until it has played at least
-      // one frame, which left Olivia as an empty rectangle. Nudge it forward,
-      // then settle to whatever her current state calls for.
-      await controller.play();
-      await Future.delayed(const Duration(milliseconds: 120));
-      if (!mounted) return;
-      _syncPlayback();
     } catch (e) {
+      // Only a failure to LOAD the clip demotes her to the still frames.
       debugPrint('Olivia video unavailable, using the still image: $e');
       await controller.dispose();
       if (mounted) setState(() => _failed = true);
+      return;
     }
+    if (!mounted) {
+      await controller.dispose();
+      return;
+    }
+    setState(() => _controller = controller);
+
+    // A paused video paints nothing on the web until it has played at least
+    // one frame, which left Olivia as an empty rectangle. Nudge it forward,
+    // then settle to whatever her current state calls for. A mobile browser
+    // may refuse this first play() — that is a POLICY refusal, not a broken
+    // clip, so she keeps the video and simply tries again when she next
+    // speaks, by which point the customer has tapped something.
+    try {
+      await controller.play();
+      await Future.delayed(const Duration(milliseconds: 120));
+    } catch (e) {
+      debugPrint('Olivia video first play deferred: $e');
+    }
+    if (!mounted) return;
+    _syncPlayback();
   }
 
   /// Plays only while she is actually saying something.
@@ -83,7 +92,11 @@ class _OliviaVideoState extends State<OliviaVideo> {
     final c = _controller;
     if (c == null || !c.value.isInitialized) return;
     if (widget.speaking) {
-      if (!c.value.isPlaying) c.play();
+      if (!c.value.isPlaying) {
+        c.play().catchError((Object e) {
+          debugPrint('Olivia video play refused: $e');
+        });
+      }
     } else if (c.value.isPlaying) {
       c.pause();
       // Rewind so every reply starts from the same expression rather than

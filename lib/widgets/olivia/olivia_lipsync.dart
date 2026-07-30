@@ -110,9 +110,12 @@ class _OliviaLipSyncState extends State<OliviaLipSync> {
         children: [
           for (var i = 0; i < OliviaLipSync.frames.length; i++)
             AnimatedOpacity(
-              // Fast enough to keep up with speech, slow enough not to flicker
-              // between neighbouring shapes.
-              duration: const Duration(milliseconds: 45),
+              // A slow cross-fade rather than a swap: at 45ms the change reads
+              // as flicker, especially on a phone held close to the face. At
+              // this speed neighbouring mouth shapes blend into each other and
+              // it reads as lips moving.
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeInOut,
               opacity: i == index ? 1 : 0,
               child: Image.asset(
                 OliviaLipSync.frames[i],

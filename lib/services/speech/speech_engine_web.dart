@@ -135,6 +135,20 @@ class SpeechEngineImpl implements SpeechEngine {
     final say = text.trim();
     if (say.isEmpty) return;
 
+    // Never speak without an explicitly chosen English voice if it can be
+    // helped. Android Chrome often reports an EMPTY voice list until the
+    // first utterance, and an utterance with no voice object falls back to
+    // the phone's default speech voice — whatever language that happens to
+    // be. Olivia introduced herself in Spanish on exactly this path. Waiting
+    // a moment for the list beats speaking wrongly right away.
+    if (_chosen == null) {
+      for (var attempt = 0; attempt < 10 && _chosen == null; attempt++) {
+        _pickVoice();
+        if (_chosen != null) break;
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+    }
+
     await stop();
 
     final u = _Utterance(say);
