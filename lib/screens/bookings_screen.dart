@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
+import 'track_delivery_screen.dart';
 
 class BookingsScreen extends StatelessWidget {
   const BookingsScreen({super.key});
@@ -37,7 +38,8 @@ class BookingsScreen extends StatelessWidget {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(CupertinoIcons.doc_text, size: 44, color: LhColors.hairline),
+                        Icon(CupertinoIcons.doc_text,
+                            size: 44, color: LhColors.hairline),
                         SizedBox(height: 12),
                         Text('No bookings yet',
                             style: TextStyle(
@@ -57,8 +59,8 @@ class BookingsScreen extends StatelessWidget {
                     children: [
                       for (var i = 0; i < bookings.length; i++) ...[
                         ListTile(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
                           leading: IconTile(
                               icon: bookings[i].status == 'Confirmed'
                                   ? CupertinoIcons.calendar_badge_plus
@@ -79,7 +81,8 @@ class BookingsScreen extends StatelessWidget {
                                       color: LhColors.inkSecondary)),
                               if (bookings[i].otp.isNotEmpty &&
                                   bookings[i].status != 'Delivered')
-                                Text('Delivery OTP: ${bookings[i].otp} — share on arrival',
+                                Text(
+                                    'Delivery OTP: ${bookings[i].otp} — share on arrival',
                                     style: const TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w600,
@@ -92,7 +95,8 @@ class BookingsScreen extends StatelessWidget {
                             children: [
                               Text('\$${bookings[i].amount.toStringAsFixed(2)}',
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.w700, fontSize: 15)),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15)),
                               const SizedBox(height: 2),
                               Text(bookings[i].status,
                                   style: TextStyle(
@@ -114,9 +118,53 @@ class BookingsScreen extends StatelessWidget {
                             ],
                           ),
                         ),
+                        // A delivery order becomes trackable the moment a
+                        // partner is on it.
+                        if (bookings[i].fulfillment == 'delivery' &&
+                            const ['Ready', 'Out for delivery']
+                                .contains(bookings[i].status) &&
+                            bookings[i].id.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 10),
+                            child: Row(
+                              children: [
+                                const Icon(CupertinoIcons.map_pin_ellipse,
+                                    size: 15, color: LhColors.blue),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Text(
+                                      'Watch your delivery partner approach in '
+                                      'real time.',
+                                      style: TextStyle(
+                                          fontSize: 12.5,
+                                          color: LhColors.inkSecondary)),
+                                ),
+                                SizedBox(
+                                  height: 32,
+                                  child: FilledButton(
+                                    onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => TrackDeliveryScreen(
+                                          jobId: bookings[i].id,
+                                          title: bookings[i].providerName,
+                                          dropAddress: bookings[i].address,
+                                        ),
+                                      ),
+                                    ),
+                                    style: compactButtonStyle(
+                                        width: 74, height: 32),
+                                    child: const Text('Track'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         if (i != bookings.length - 1)
                           const Padding(
-                              padding: EdgeInsets.only(left: 68), child: Divider()),
+                              padding: EdgeInsets.only(left: 68),
+                              child: Divider()),
                       ]
                     ],
                   ),
@@ -124,7 +172,8 @@ class BookingsScreen extends StatelessWidget {
               const SizedBox(height: 20),
               const Center(
                 child: Text('Live status updates arrive with real-time sync.',
-                    style: TextStyle(color: LhColors.inkSecondary, fontSize: 12.5)),
+                    style: TextStyle(
+                        color: LhColors.inkSecondary, fontSize: 12.5)),
               ),
             ],
           );

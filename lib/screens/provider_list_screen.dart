@@ -11,7 +11,8 @@ import 'truck_map_screen.dart';
 class ProviderListScreen extends StatelessWidget {
   final String category;
   final String title;
-  const ProviderListScreen({super.key, required this.category, required this.title});
+  const ProviderListScreen(
+      {super.key, required this.category, required this.title});
 
   List<Provider> get _mock => switch (category) {
         'home_service' => homeServiceProviders,
@@ -70,15 +71,19 @@ class ProviderListScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               onTap: () {
                 if (category == 'home_service') {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => BookingScreen(provider: p)));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => BookingScreen(provider: p)));
                 } else {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => CatalogScreen(
                               provider: p,
-                              items: category == 'indian_store' ? storeCatalog : truckMenu)));
+                              items: category == 'indian_store'
+                                  ? storeCatalog
+                                  : truckMenu)));
                 }
               },
               child: Padding(
@@ -91,7 +96,9 @@ class ProviderListScreen extends StatelessWidget {
                       child: Text(
                         p.name.substring(0, 1),
                         style: TextStyle(
-                            color: _tint, fontSize: 18, fontWeight: FontWeight.w700),
+                            color: _tint,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -104,7 +111,8 @@ class ProviderListScreen extends StatelessWidget {
                               Flexible(
                                 child: Text(p.name,
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.w600, fontSize: 16),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16),
                                     overflow: TextOverflow.ellipsis),
                               ),
                               if (p.verified) ...[
@@ -126,10 +134,12 @@ class ProviderListScreen extends StatelessWidget {
                               const SizedBox(width: 3),
                               Text('${p.rating}',
                                   style: const TextStyle(
-                                      fontSize: 13, fontWeight: FontWeight.w600)),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600)),
                               Text(' (${p.reviews})',
                                   style: const TextStyle(
-                                      fontSize: 13, color: LhColors.inkSecondary)),
+                                      fontSize: 13,
+                                      color: LhColors.inkSecondary)),
                               const SizedBox(width: 10),
                               const Icon(CupertinoIcons.location_solid,
                                   size: 12, color: LhColors.inkSecondary),
@@ -137,7 +147,8 @@ class ProviderListScreen extends StatelessWidget {
                               Flexible(
                                 child: Text(p.city,
                                     style: const TextStyle(
-                                        fontSize: 13, color: LhColors.inkSecondary),
+                                        fontSize: 13,
+                                        color: LhColors.inkSecondary),
                                     overflow: TextOverflow.ellipsis),
                               ),
                             ],

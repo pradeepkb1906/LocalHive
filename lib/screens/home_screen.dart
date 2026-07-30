@@ -132,7 +132,8 @@ class HomeTab extends StatelessWidget {
   void _open(BuildContext context, String category, String title) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => ProviderListScreen(category: category, title: title)),
+      MaterialPageRoute(
+          builder: (_) => ProviderListScreen(category: category, title: title)),
     );
   }
 
@@ -159,7 +160,8 @@ class HomeTab extends StatelessWidget {
           TextField(
             decoration: const InputDecoration(
               hintText: 'Search cleaners, groceries, biryani',
-              prefixIcon: Icon(CupertinoIcons.search, color: LhColors.inkSecondary, size: 20),
+              prefixIcon: Icon(CupertinoIcons.search,
+                  color: LhColors.inkSecondary, size: 20),
             ),
             onTap: () {},
           ),
@@ -279,7 +281,8 @@ class HomeTab extends StatelessWidget {
             icon: CupertinoIcons.sparkles,
             tint: LhColors.indigo,
             title: 'Home Services',
-            subtitle: 'Cleaners & handymen, background-checked. Book 3–4 hour visits.',
+            subtitle:
+                'Cleaners & handymen, background-checked. Book 3–4 hour visits.',
             onTap: () => _open(context, 'home_service', 'Home Services'),
           ),
           const SizedBox(height: 12),
@@ -287,7 +290,8 @@ class HomeTab extends StatelessWidget {
             icon: CupertinoIcons.cart_fill,
             tint: LhColors.green,
             title: 'Indian Stores',
-            subtitle: 'Groceries & essentials. Order ahead for pickup or delivery.',
+            subtitle:
+                'Groceries & essentials. Order ahead for pickup or delivery.',
             onTap: () => _open(context, 'indian_store', 'Indian Stores'),
           ),
           const SizedBox(height: 12),
@@ -306,17 +310,20 @@ class HomeTab extends StatelessWidget {
                   icon: CupertinoIcons.checkmark_seal_fill,
                   color: LhColors.blue,
                   title: 'Verified providers',
-                  subtitle: 'Every provider is ID-verified; home-service pros are background-checked.'),
+                  subtitle:
+                      'Every provider is ID-verified; home-service pros are background-checked.'),
               _TrustTile(
                   icon: CupertinoIcons.lock_fill,
                   color: LhColors.green,
                   title: 'Protected payments',
-                  subtitle: 'Your payment is held securely until the job is done.'),
+                  subtitle:
+                      'Your payment is held securely until the job is done.'),
               _TrustTile(
                   icon: CupertinoIcons.percent,
                   color: LhColors.navy,
                   title: 'Transparent pricing',
-                  subtitle: 'A flat 12% platform fee, always shown before you pay.'),
+                  subtitle:
+                      'A flat 12% platform fee, always shown before you pay.'),
             ],
           ),
           const SizedBox(height: 24),
@@ -331,12 +338,16 @@ class HomeTab extends StatelessWidget {
                   child: Row(
                     children: [
                       const Expanded(
-                        child: Text('Sign in to book services and track orders.',
-                            style: TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
+                        child: Text(
+                            'Sign in to book services and track orders.',
+                            style: TextStyle(
+                                fontSize: 14, color: LhColors.inkSecondary)),
                       ),
                       TextButton(
-                        onPressed: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const SignInScreen())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const SignInScreen())),
                         child: const Text('Sign In'),
                       ),
                     ],
@@ -358,7 +369,11 @@ class _CategoryCard extends StatelessWidget {
   final String title, subtitle;
   final VoidCallback onTap;
   const _CategoryCard(
-      {required this.icon, required this.tint, required this.title, required this.subtitle, required this.onTap});
+      {required this.icon,
+      required this.tint,
+      required this.title,
+      required this.subtitle,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -376,15 +391,21 @@ class _CategoryCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 3),
                     Text(subtitle,
-                        style: const TextStyle(color: LhColors.inkSecondary, fontSize: 13, height: 1.35)),
+                        style: const TextStyle(
+                            color: LhColors.inkSecondary,
+                            fontSize: 13,
+                            height: 1.35)),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(CupertinoIcons.chevron_right, size: 18, color: LhColors.hairline),
+              const Icon(CupertinoIcons.chevron_right,
+                  size: 18, color: LhColors.hairline),
             ],
           ),
         ),
@@ -397,15 +418,21 @@ class _TrustTile extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String title, subtitle;
-  const _TrustTile({required this.icon, required this.color, required this.title, required this.subtitle});
+  const _TrustTile(
+      {required this.icon,
+      required this.color,
+      required this.title,
+      required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: IconTile(icon: icon, color: color, size: 32),
-      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+      title: Text(title,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle,
-          style: const TextStyle(fontSize: 13, color: LhColors.inkSecondary, height: 1.3)),
+          style: const TextStyle(
+              fontSize: 13, color: LhColors.inkSecondary, height: 1.3)),
     );
   }
 }

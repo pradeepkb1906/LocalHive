@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/data.dart';
+import '../theme.dart';
 
 /// Builds a Google Maps directions URL. Universal links work on every
 /// platform: they open the Maps app on Android/iOS and maps.google.com in a
@@ -22,7 +23,8 @@ Future<bool> _open(Uri uri) async {
     return await launchUrl(
       uri,
       // On web a new tab must be requested this way, or popup blockers win.
-      mode: kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
+      mode:
+          kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
       webOnlyWindowName: '_blank',
     );
   } catch (_) {
@@ -31,10 +33,9 @@ Future<bool> _open(Uri uri) async {
 }
 
 /// Directions to a listing (uses its coordinates when known).
-Future<bool> openDirections(Provider p) =>
-    _open(p.hasLocation
-        ? directionsUri(lat: p.lat, lng: p.lng)
-        : directionsUri(query: '${p.name}, ${p.city}'));
+Future<bool> openDirections(Provider p) => _open(p.hasLocation
+    ? directionsUri(lat: p.lat, lng: p.lng)
+    : directionsUri(query: '${p.name}, ${p.city}'));
 
 /// Directions to a street address — customer homes, delivery drop-offs.
 Future<bool> openDirectionsToAddress(String address) =>
@@ -43,7 +44,10 @@ Future<bool> openDirectionsToAddress(String address) =>
 /// Opens directions and, if the browser blocked the tab, shows the map link
 /// so the user can still reach it.
 Future<void> openDirectionsWithFallback(BuildContext context,
-    {Provider? provider, String? address, double lat = 0, double lng = 0}) async {
+    {Provider? provider,
+    String? address,
+    double lat = 0,
+    double lng = 0}) async {
   final uri = provider != null
       ? (provider.hasLocation
           ? directionsUri(lat: provider.lat, lng: provider.lng)
@@ -74,6 +78,7 @@ Future<void> openDirectionsWithFallback(BuildContext context,
         TextButton(
             onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
         FilledButton(
+          style: dialogButtonStyle(),
           onPressed: () {
             Navigator.pop(ctx);
             launchUrl(uri, webOnlyWindowName: '_self');

@@ -92,9 +92,10 @@ ThemeData buildTheme() {
     chipTheme: base.chipTheme.copyWith(
       backgroundColor: LhColors.surface,
       selectedColor: LhColors.navy,
-      labelStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: LhColors.ink),
-      secondaryLabelStyle:
-          GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+      labelStyle: GoogleFonts.inter(
+          fontSize: 14, fontWeight: FontWeight.w500, color: LhColors.ink),
+      secondaryLabelStyle: GoogleFonts.inter(
+          fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
       side: const BorderSide(color: LhColors.hairline),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       showCheckmark: false,
@@ -107,33 +108,67 @@ ThemeData buildTheme() {
         (states) => GoogleFonts.inter(
           fontSize: 11,
           fontWeight: FontWeight.w500,
-          color: states.contains(WidgetState.selected) ? LhColors.blue : LhColors.inkSecondary,
+          color: states.contains(WidgetState.selected)
+              ? LhColors.blue
+              : LhColors.inkSecondary,
         ),
       ),
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
           size: 24,
-          color: states.contains(WidgetState.selected) ? LhColors.blue : LhColors.inkSecondary,
+          color: states.contains(WidgetState.selected)
+              ? LhColors.blue
+              : LhColors.inkSecondary,
         ),
       ),
     ),
-    dividerTheme: const DividerThemeData(color: LhColors.hairline, thickness: 0.5, space: 0.5),
+    dividerTheme: const DividerThemeData(
+        color: LhColors.hairline, thickness: 0.5, space: 0.5),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: const Color(0xFFEBEBED),
       hintStyle: GoogleFonts.inter(color: LhColors.inkSecondary, fontSize: 16),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
     ),
   );
 }
 
 /// iOS Settings-style rounded icon tile.
+/// The app-wide FilledButton theme sets `minimumSize: Size.fromHeight(50)`,
+/// which means an *infinite* minimum width. That is right for full-width CTAs
+/// but makes the button unlayoutable anywhere the width is bounded (a Row, a
+/// ListTile trailing slot). Use this style for those inline buttons.
+ButtonStyle compactButtonStyle({double width = 66, double height = 34}) =>
+    FilledButton.styleFrom(
+      backgroundColor: LhColors.navy,
+      foregroundColor: Colors.white,
+      minimumSize: Size(width, height),
+      padding: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+    );
+
+/// Style for a FilledButton in an AlertDialog's action row. Without it the
+/// theme's infinite minimum width overflows the dialog's OverflowBar, which
+/// then stacks Cancel above the confirm button instead of placing them side by
+/// side.
+ButtonStyle dialogButtonStyle({Color? background}) => FilledButton.styleFrom(
+      backgroundColor: background ?? LhColors.navy,
+      foregroundColor: Colors.white,
+      minimumSize: const Size(0, 44),
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11)),
+      textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+    );
+
 class IconTile extends StatelessWidget {
   final IconData icon;
   final Color color;
   final double size;
-  const IconTile({super.key, required this.icon, required this.color, this.size = 44});
+  const IconTile(
+      {super.key, required this.icon, required this.color, this.size = 44});
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +212,8 @@ class InsetGroup extends StatelessWidget {
               for (var i = 0; i < children.length; i++) ...[
                 children[i],
                 if (i != children.length - 1)
-                  const Padding(padding: EdgeInsets.only(left: 60), child: Divider()),
+                  const Padding(
+                      padding: EdgeInsets.only(left: 60), child: Divider()),
               ]
             ],
           ),

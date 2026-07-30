@@ -91,13 +91,16 @@ final _steps = <_Step>[
       'First, tap Sign In on the Profile tab. You can register with your email '
           'address, like a Gmail account, and a password you choose. There is '
           'also a phone option that texts you a six digit code.',
-      _Mock('Sign In', [
-        _Block(_B.segments, options: ['Email', 'Phone'], selected: 0),
-        _Block(_B.field, title: 'Full name'),
-        _Block(_B.field, title: 'Email (e.g. you@gmail.com)'),
-        _Block(_B.field, title: 'Password (6+ characters)'),
-        _Block(_B.button, title: 'Create Account'),
-      ], highlight: 4)),
+      _Mock(
+          'Sign In',
+          [
+            _Block(_B.segments, options: ['Email', 'Phone'], selected: 0),
+            _Block(_B.field, title: 'Full name'),
+            _Block(_B.field, title: 'Email (e.g. you@gmail.com)'),
+            _Block(_B.field, title: 'Password (6+ characters)'),
+            _Block(_B.button, title: 'Create Account'),
+          ],
+          highlight: 4)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -107,23 +110,26 @@ final _steps = <_Step>[
           'and order. Business owner if you run a service, store, or truck. '
           'Delivery partner if you want to earn delivering orders. You can '
           'switch anytime from your Profile.',
-      _Mock('How will you use LocalHive?', [
-        _Block(_B.row,
-            icon: _cIcon,
-            color: LhColors.blue,
-            title: 'Customer',
-            subtitle: 'Book services, order from stores & trucks'),
-        _Block(_B.row,
-            icon: _oIcon,
-            color: LhColors.indigo,
-            title: 'Business owner',
-            subtitle: 'Manage your orders and listings'),
-        _Block(_B.row,
-            icon: _dIcon,
-            color: LhColors.orange,
-            title: 'Delivery partner',
-            subtitle: 'Claim and deliver orders'),
-      ], highlight: 0)),
+      _Mock(
+          'How will you use LocalHive?',
+          [
+            _Block(_B.row,
+                icon: _cIcon,
+                color: LhColors.blue,
+                title: 'Customer',
+                subtitle: 'Book services, order from stores & trucks'),
+            _Block(_B.row,
+                icon: _oIcon,
+                color: LhColors.indigo,
+                title: 'Business owner',
+                subtitle: 'Manage your orders and listings'),
+            _Block(_B.row,
+                icon: _dIcon,
+                color: LhColors.orange,
+                title: 'Delivery partner',
+                subtitle: 'Claim and deliver orders'),
+          ],
+          highlight: 0)),
   // ═══════════ Customer — Home services ═══════════
   const _Step(
       _cust,
@@ -133,23 +139,26 @@ final _steps = <_Step>[
       'Let us book a house cleaning. From the home screen, tap Home Services. '
           'The flag chip at the top right shows your area, detected from your '
           'phone location or your internet connection.',
-      _Mock('LocalHive', [
-        _Block(_B.row,
-            icon: CupertinoIcons.sparkles,
-            color: LhColors.indigo,
-            title: 'Home Services',
-            subtitle: 'Book 3–4 hour visits'),
-        _Block(_B.row,
-            icon: CupertinoIcons.cart_fill,
-            color: LhColors.green,
-            title: 'Indian Stores',
-            subtitle: 'Pickup or delivery'),
-        _Block(_B.row,
-            icon: CupertinoIcons.car_detailed,
-            color: LhColors.orange,
-            title: 'Food Trucks',
-            subtitle: 'Pre-order ahead'),
-      ], highlight: 0)),
+      _Mock(
+          'LocalHive',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.sparkles,
+                color: LhColors.indigo,
+                title: 'Home Services',
+                subtitle: 'Book 3–4 hour visits'),
+            _Block(_B.row,
+                icon: CupertinoIcons.cart_fill,
+                color: LhColors.green,
+                title: 'Indian Stores',
+                subtitle: 'Pickup or delivery'),
+            _Block(_B.row,
+                icon: CupertinoIcons.car_detailed,
+                color: LhColors.orange,
+                title: 'Food Trucks',
+                subtitle: 'Pre-order ahead'),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -158,26 +167,29 @@ final _steps = <_Step>[
       'You see each provider\'s rating, number of reviews, hourly rate, and '
           'the hours they are available. The blue tick means they are ID '
           'verified and background checked. Tap Maria.',
-      _Mock('Home Services', [
-        _Block(_B.row,
-            icon: _cIcon,
-            color: LhColors.indigo,
-            title: 'Maria G. ✓',
-            subtitle: '⭐ 4.9 (212) · Available 8 AM – 6 PM · Edison, NJ',
-            trailing: '\$28/hr'),
-        _Block(_B.row,
-            icon: _cIcon,
-            color: LhColors.indigo,
-            title: 'Dave R. ✓',
-            subtitle: '⭐ 4.8 (158) · Handyman · Edison, NJ',
-            trailing: '\$45/hr'),
-        _Block(_B.row,
-            icon: _cIcon,
-            color: LhColors.indigo,
-            title: 'Lakshmi P. ✓',
-            subtitle: '⭐ 4.7 (96) · Move-in cleaning',
-            trailing: '\$30/hr'),
-      ], highlight: 0)),
+      _Mock(
+          'Home Services',
+          [
+            _Block(_B.row,
+                icon: _cIcon,
+                color: LhColors.indigo,
+                title: 'Maria G. ✓',
+                subtitle: '⭐ 4.9 (212) · Available 8 AM – 6 PM · Edison, NJ',
+                trailing: '\$28/hr'),
+            _Block(_B.row,
+                icon: _cIcon,
+                color: LhColors.indigo,
+                title: 'Dave R. ✓',
+                subtitle: '⭐ 4.8 (158) · Handyman · Edison, NJ',
+                trailing: '\$45/hr'),
+            _Block(_B.row,
+                icon: _cIcon,
+                color: LhColors.indigo,
+                title: 'Lakshmi P. ✓',
+                subtitle: '⭐ 4.7 (96) · Move-in cleaning',
+                trailing: '\$30/hr'),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -185,16 +197,19 @@ final _steps = <_Step>[
       'Step 5 — Pick your day',
       'Choose which day you want the visit. Today, tomorrow, or up to four '
           'days ahead. Tap Tomorrow.',
-      _Mock('Maria G.', [
-        _Block(_B.note, title: 'DAY'),
-        _Block(_B.chips,
-            options: ['Today', 'Tomorrow', 'In 2 days', 'In 3 days'],
-            selected: 1),
-        _Block(_B.note, title: 'START TIME'),
-        _Block(_B.chips,
-            options: ['8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM'],
-            selected: 1),
-      ], highlight: 1)),
+      _Mock(
+          'Maria G.',
+          [
+            _Block(_B.note, title: 'DAY'),
+            _Block(_B.chips,
+                options: ['Today', 'Tomorrow', 'In 2 days', 'In 3 days'],
+                selected: 1),
+            _Block(_B.note, title: 'START TIME'),
+            _Block(_B.chips,
+                options: ['8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM'],
+                selected: 1),
+          ],
+          highlight: 1)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -202,14 +217,17 @@ final _steps = <_Step>[
       'Step 6 — Pick time and duration',
       'Now choose the start time and how many hours you need. Most cleanings '
           'take three or four hours. Tap ten A M, then three hours.',
-      _Mock('Maria G.', [
-        _Block(_B.note, title: 'START TIME'),
-        _Block(_B.chips,
-            options: ['8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM'],
-            selected: 1),
-        _Block(_B.note, title: 'DURATION'),
-        _Block(_B.chips, options: ['3 hours', '4 hours'], selected: 0),
-      ], highlight: 3)),
+      _Mock(
+          'Maria G.',
+          [
+            _Block(_B.note, title: 'START TIME'),
+            _Block(_B.chips,
+                options: ['8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM'],
+                selected: 1),
+            _Block(_B.note, title: 'DURATION'),
+            _Block(_B.chips, options: ['3 hours', '4 hours'], selected: 0),
+          ],
+          highlight: 3)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -218,12 +236,15 @@ final _steps = <_Step>[
       'Enter the address where you want the service, plus your name, mobile '
           'number and email. Your mobile is how we text you updates, and how '
           'the provider can reach you if needed.',
-      _Mock('Maria G.', [
-        _Block(_B.note, title: 'SERVICE ADDRESS & CONTACT'),
-        _Block(_B.field, title: '45 Oak Tree Road, Edison, NJ 08820'),
-        _Block(_B.field, title: 'Your name'),
-        _Block(_B.field, title: 'Mobile (SMS updates)'),
-      ], highlight: 1)),
+      _Mock(
+          'Maria G.',
+          [
+            _Block(_B.note, title: 'SERVICE ADDRESS & CONTACT'),
+            _Block(_B.field, title: '45 Oak Tree Road, Edison, NJ 08820'),
+            _Block(_B.field, title: 'Your name'),
+            _Block(_B.field, title: 'Mobile (SMS updates)'),
+          ],
+          highlight: 1)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -233,25 +254,28 @@ final _steps = <_Step>[
           'dollars is eighty four dollars, plus a flat twelve percent platform '
           'fee. Maria receives the full eighty four dollars. You are only '
           'charged after the job is done. Tap Book.',
-      _Mock('Maria G.', [
-        _Block(_B.row,
-            icon: CupertinoIcons.money_dollar_circle_fill,
-            color: LhColors.navy,
-            title: '3 hrs × \$28/hr',
-            trailing: '\$84.00'),
-        _Block(_B.row,
-            icon: CupertinoIcons.percent,
-            color: LhColors.navy,
-            title: 'Platform fee (12%)',
-            trailing: '\$10.08'),
-        _Block(_B.row,
-            icon: CupertinoIcons.checkmark_seal_fill,
-            color: LhColors.green,
-            title: 'Total',
-            subtitle: 'Maria receives \$84.00 after completion',
-            trailing: '\$94.08'),
-        _Block(_B.button, title: 'Book for \$94.08'),
-      ], highlight: 3)),
+      _Mock(
+          'Maria G.',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.money_dollar_circle_fill,
+                color: LhColors.navy,
+                title: '3 hrs × \$28/hr',
+                trailing: '\$84.00'),
+            _Block(_B.row,
+                icon: CupertinoIcons.percent,
+                color: LhColors.navy,
+                title: 'Platform fee (12%)',
+                trailing: '\$10.08'),
+            _Block(_B.row,
+                icon: CupertinoIcons.checkmark_seal_fill,
+                color: LhColors.green,
+                title: 'Total',
+                subtitle: 'Maria receives \$84.00 after completion',
+                trailing: '\$94.08'),
+            _Block(_B.button, title: 'Book for \$94.08'),
+          ],
+          highlight: 3)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -259,19 +283,22 @@ final _steps = <_Step>[
       'Step 9 — Your request is sent',
       'Maria is notified instantly by WhatsApp or text message. You get a '
           'confirmation too. Nobody has to call anybody.',
-      _Mock('Request sent', [
-        _Block(_B.sms,
-            title: 'To Maria',
-            subtitle:
-                'LocalHive: NEW JOB REQUEST — House cleaning · Tomorrow 10:00 AM '
-                '· 3 hrs at 45 Oak Tree Road, Edison. Open your Provider '
-                'Dashboard to accept.'),
-        _Block(_B.sms,
-            title: 'To you',
-            subtitle:
-                'LocalHive: your request to Maria G. was sent. We will notify '
-                'you when it is accepted.'),
-      ], highlight: 0)),
+      _Mock(
+          'Request sent',
+          [
+            _Block(_B.sms,
+                title: 'To Maria',
+                subtitle:
+                    'LocalHive: NEW JOB REQUEST — House cleaning · Tomorrow 10:00 AM '
+                    '· 3 hrs at 45 Oak Tree Road, Edison. Open your Provider '
+                    'Dashboard to accept.'),
+            _Block(_B.sms,
+                title: 'To you',
+                subtitle:
+                    'LocalHive: your request to Maria G. was sent. We will notify '
+                    'you when it is accepted.'),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -279,14 +306,17 @@ final _steps = <_Step>[
       'Step 10 — Track it in Bookings',
       'The Bookings tab shows every booking and order with its live status: '
           'requested, accepted, on the way, and completed.',
-      _Mock('Bookings', [
-        _Block(_B.row,
-            icon: CupertinoIcons.calendar_badge_plus,
-            color: LhColors.indigo,
-            title: 'Maria G.',
-            subtitle: 'House cleaning · Tomorrow 10 AM · 3 hrs',
-            trailing: 'Accepted'),
-      ], highlight: 0)),
+      _Mock(
+          'Bookings',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.calendar_badge_plus,
+                color: LhColors.indigo,
+                title: 'Maria G.',
+                subtitle: 'House cleaning · Tomorrow 10 AM · 3 hrs',
+                trailing: 'Accepted'),
+          ],
+          highlight: 0)),
   // ═══════════ Customer — Indian store ═══════════
   const _Step(
       _cust,
@@ -295,18 +325,21 @@ final _steps = <_Step>[
       'Step 11 — Order groceries',
       'Now a grocery order. Tap Indian Stores and pick your shop. You see '
           'ratings and what each store specialises in.',
-      _Mock('Indian Stores', [
-        _Block(_B.row,
-            icon: CupertinoIcons.cart_fill,
-            color: LhColors.green,
-            title: 'Patel Brothers Express',
-            subtitle: '⭐ 4.8 (431) · Groceries, spices, fresh produce'),
-        _Block(_B.row,
-            icon: CupertinoIcons.cart_fill,
-            color: LhColors.green,
-            title: 'Desi Bazaar',
-            subtitle: '⭐ 4.6 (189) · Snacks, sweets, pooja items'),
-      ], highlight: 0)),
+      _Mock(
+          'Indian Stores',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.cart_fill,
+                color: LhColors.green,
+                title: 'Patel Brothers Express',
+                subtitle: '⭐ 4.8 (431) · Groceries, spices, fresh produce'),
+            _Block(_B.row,
+                icon: CupertinoIcons.cart_fill,
+                color: LhColors.green,
+                title: 'Desi Bazaar',
+                subtitle: '⭐ 4.6 (189) · Snacks, sweets, pooja items'),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -314,21 +347,24 @@ final _steps = <_Step>[
       'Step 12 — Add items to your cart',
       'Tap Add on anything you need. Use plus and minus to change quantities. '
           'The cart total updates live at the bottom of the screen.',
-      _Mock('Patel Brothers Express', [
-        _Block(_B.row,
-            icon: CupertinoIcons.bag_fill,
-            color: LhColors.green,
-            title: 'Basmati Rice 10 lb',
-            subtitle: '\$14.99 / bag',
-            trailing: 'Add'),
-        _Block(_B.row,
-            icon: CupertinoIcons.bag_fill,
-            color: LhColors.green,
-            title: 'Toor Dal 4 lb',
-            subtitle: '\$7.49 / bag',
-            trailing: '1'),
-        _Block(_B.button, title: 'View Cart · 2 items · \$25.14'),
-      ], highlight: 0)),
+      _Mock(
+          'Patel Brothers Express',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.bag_fill,
+                color: LhColors.green,
+                title: 'Basmati Rice 10 lb',
+                subtitle: '\$14.99 / bag',
+                trailing: 'Add'),
+            _Block(_B.row,
+                icon: CupertinoIcons.bag_fill,
+                color: LhColors.green,
+                title: 'Toor Dal 4 lb',
+                subtitle: '\$7.49 / bag',
+                trailing: '1'),
+            _Block(_B.button, title: 'View Cart · 2 items · \$25.14'),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -337,13 +373,16 @@ final _steps = <_Step>[
       'Choose Pickup to collect it yourself, or Delivery for four dollars '
           'ninety nine. If you pick up, tell the store when you will arrive so '
           'your order is ready and waiting.',
-      _Mock('Order · Patel Brothers', [
-        _Block(_B.segments,
-            options: ['Pickup', 'Delivery +\$4.99'], selected: 0),
-        _Block(_B.note, title: 'WHEN WILL YOU ARRIVE?'),
-        _Block(_B.chips,
-            options: ['In 15 min', 'In 30 min', 'In 45 min'], selected: 1),
-      ], highlight: 0)),
+      _Mock(
+          'Order · Patel Brothers',
+          [
+            _Block(_B.segments,
+                options: ['Pickup', 'Delivery +\$4.99'], selected: 0),
+            _Block(_B.note, title: 'WHEN WILL YOU ARRIVE?'),
+            _Block(_B.chips,
+                options: ['In 15 min', 'In 30 min', 'In 45 min'], selected: 1),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -352,20 +391,23 @@ final _steps = <_Step>[
       'If you chose delivery, enter your address. The total shows your items, '
           'the twelve percent platform fee, and the delivery fee — no '
           'surprises. Tap Place Delivery Order.',
-      _Mock('Order · Patel Brothers', [
-        _Block(_B.field, title: 'Delivery address (street, city, state)'),
-        _Block(_B.row,
-            icon: CupertinoIcons.percent,
-            color: LhColors.navy,
-            title: 'Platform fee (12%)',
-            trailing: '\$3.02'),
-        _Block(_B.row,
-            icon: CupertinoIcons.cube_box_fill,
-            color: LhColors.orange,
-            title: 'Delivery fee',
-            trailing: '\$4.99'),
-        _Block(_B.button, title: 'Place Delivery Order · \$33.15'),
-      ], highlight: 3)),
+      _Mock(
+          'Order · Patel Brothers',
+          [
+            _Block(_B.field, title: 'Delivery address (street, city, state)'),
+            _Block(_B.row,
+                icon: CupertinoIcons.percent,
+                color: LhColors.navy,
+                title: 'Platform fee (12%)',
+                trailing: '\$3.02'),
+            _Block(_B.row,
+                icon: CupertinoIcons.cube_box_fill,
+                color: LhColors.orange,
+                title: 'Delivery fee',
+                trailing: '\$4.99'),
+            _Block(_B.button, title: 'Place Delivery Order · \$33.15'),
+          ],
+          highlight: 3)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -374,14 +416,17 @@ final _steps = <_Step>[
       'For deliveries you get a four digit code by text. Give this code to the '
           'delivery partner only when your order actually arrives. It proves '
           'the food reached you and protects everyone.',
-      _Mock('Your delivery OTP', [
-        _Block(_B.otp, title: '4 7 2 9'),
-        _Block(_B.sms,
-            title: 'Text message',
-            subtitle:
-                'LocalHive: your order at Patel Brothers is placed. Your '
-                'delivery OTP is 4729 — share it ONLY when your order arrives.'),
-      ], highlight: 0)),
+      _Mock(
+          'Your delivery OTP',
+          [
+            _Block(_B.otp, title: '4 7 2 9'),
+            _Block(_B.sms,
+                title: 'Text message',
+                subtitle:
+                    'LocalHive: your order at Patel Brothers is placed. Your '
+                    'delivery OTP is 4729 — share it ONLY when your order arrives.'),
+          ],
+          highlight: 0)),
   // ═══════════ Customer — Food truck ═══════════
   const _Step(
       _cust,
@@ -390,14 +435,17 @@ final _steps = <_Step>[
       'Step 16 — Find food trucks near you',
       'Tap Food Trucks, then the Map button to see every truck pinned on a '
           'live map. Tap a pin to open that truck\'s menu.',
-      _Mock('Food Trucks', [
-        _Block(_B.map, title: 'Bombay Street Eats · Oak Tree Rd, Edison'),
-        _Block(_B.row,
-            icon: CupertinoIcons.car_detailed,
-            color: LhColors.orange,
-            title: 'Bombay Street Eats ✓',
-            subtitle: '⭐ 4.9 (310) · Vada pav, pav bhaji · open till 9 PM'),
-      ], highlight: 0)),
+      _Mock(
+          'Food Trucks',
+          [
+            _Block(_B.map, title: 'Bombay Street Eats · Oak Tree Rd, Edison'),
+            _Block(_B.row,
+                icon: CupertinoIcons.car_detailed,
+                color: LhColors.orange,
+                title: 'Bombay Street Eats ✓',
+                subtitle: '⭐ 4.9 (310) · Vada pav, pav bhaji · open till 9 PM'),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -406,15 +454,18 @@ final _steps = <_Step>[
       'Tap the bell on any truck to follow it. Enter your mobile number, and '
           'the moment that truck parks nearby you get a text telling you '
           'exactly where it is. No more guessing.',
-      _Mock('Bombay Street Eats', [
-        _Block(_B.row,
-            icon: CupertinoIcons.bell_fill,
-            color: LhColors.orange,
-            title: 'Alert me when this truck arrives',
-            subtitle: 'We text you the moment it parks nearby'),
-        _Block(_B.field, title: 'Mobile number for the alert'),
-        _Block(_B.button, title: 'Notify Me'),
-      ], highlight: 0)),
+      _Mock(
+          'Bombay Street Eats',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.bell_fill,
+                color: LhColors.orange,
+                title: 'Alert me when this truck arrives',
+                subtitle: 'We text you the moment it parks nearby'),
+            _Block(_B.field, title: 'Mobile number for the alert'),
+            _Block(_B.button, title: 'Notify Me'),
+          ],
+          highlight: 0)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -422,21 +473,24 @@ final _steps = <_Step>[
       'Step 18 — Pre-order and skip the line',
       'Add what you want, choose pickup, and tell them when you are coming. '
           'Your food is hot and bagged when you walk up — no queue.',
-      _Mock('Bombay Street Eats', [
-        _Block(_B.row,
-            icon: CupertinoIcons.bag_fill,
-            color: LhColors.orange,
-            title: 'Chicken Biryani',
-            subtitle: '\$12.99 / box',
-            trailing: '1'),
-        _Block(_B.row,
-            icon: CupertinoIcons.bag_fill,
-            color: LhColors.orange,
-            title: 'Masala Chai',
-            subtitle: '\$2.50 / cup',
-            trailing: 'Add'),
-        _Block(_B.button, title: 'Place Pickup Order · \$14.55'),
-      ], highlight: 2)),
+      _Mock(
+          'Bombay Street Eats',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.bag_fill,
+                color: LhColors.orange,
+                title: 'Chicken Biryani',
+                subtitle: '\$12.99 / box',
+                trailing: '1'),
+            _Block(_B.row,
+                icon: CupertinoIcons.bag_fill,
+                color: LhColors.orange,
+                title: 'Masala Chai',
+                subtitle: '\$2.50 / cup',
+                trailing: 'Add'),
+            _Block(_B.button, title: 'Place Pickup Order · \$14.55'),
+          ],
+          highlight: 2)),
   const _Step(
       _cust,
       LhColors.blue,
@@ -444,14 +498,17 @@ final _steps = <_Step>[
       'Step 19 — The truck texts you',
       'When the owner announces arrival, every follower gets this message '
           'instantly — with the exact street corner.',
-      _Mock('Arrival alert', [
-        _Block(_B.sms,
-            title: 'Text message',
-            subtitle:
-                'LocalHive: Bombay Street Eats has ARRIVED at Oak Tree Rd & '
-                'Wood Ave — come grab your favourites or pre-order in the app '
-                'to skip the line!'),
-      ], highlight: 0)),
+      _Mock(
+          'Arrival alert',
+          [
+            _Block(_B.sms,
+                title: 'Text message',
+                subtitle:
+                    'LocalHive: Bombay Street Eats has ARRIVED at Oak Tree Rd & '
+                    'Wood Ave — come grab your favourites or pre-order in the app '
+                    'to skip the line!'),
+          ],
+          highlight: 0)),
   // ═══════════ Business owner ═══════════
   const _Step(
       _own,
@@ -461,23 +518,26 @@ final _steps = <_Step>[
       'Now the business side. From Profile, tap Become a provider and choose '
           'what you offer: home services, an Indian store, a food truck, or '
           'delivery.',
-      _Mock('Become a Provider', [
-        _Block(_B.row,
-            icon: CupertinoIcons.sparkles,
-            color: LhColors.indigo,
-            title: 'Home services',
-            subtitle: 'Cleaning, handyman work'),
-        _Block(_B.row,
-            icon: CupertinoIcons.cart_fill,
-            color: LhColors.green,
-            title: 'Indian store',
-            subtitle: 'Grocery or retail with pickup / delivery'),
-        _Block(_B.row,
-            icon: CupertinoIcons.car_detailed,
-            color: LhColors.orange,
-            title: 'Food truck',
-            subtitle: 'Mobile food with live location'),
-      ], highlight: 2)),
+      _Mock(
+          'Become a Provider',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.sparkles,
+                color: LhColors.indigo,
+                title: 'Home services',
+                subtitle: 'Cleaning, handyman work'),
+            _Block(_B.row,
+                icon: CupertinoIcons.cart_fill,
+                color: LhColors.green,
+                title: 'Indian store',
+                subtitle: 'Grocery or retail with pickup / delivery'),
+            _Block(_B.row,
+                icon: CupertinoIcons.car_detailed,
+                color: LhColors.orange,
+                title: 'Food truck',
+                subtitle: 'Mobile food with live location'),
+          ],
+          highlight: 2)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -486,13 +546,15 @@ final _steps = <_Step>[
       'Enter your business name and city, then set the hours you are '
           'available, from and to. Customers see this window, and you only get '
           'jobs inside it.',
-      _Mock('Your business', [
-        _Block(_B.field, title: 'Business name (e.g. Bombay Street Eats)'),
-        _Block(_B.field, title: 'City, State (e.g. Edison, NJ)'),
-        _Block(_B.note, title: 'I AM AVAILABLE'),
-        _Block(_B.chips,
-            options: ['From 10 AM', 'To 9 PM'], selected: 0),
-      ], highlight: 3)),
+      _Mock(
+          'Your business',
+          [
+            _Block(_B.field, title: 'Business name (e.g. Bombay Street Eats)'),
+            _Block(_B.field, title: 'City, State (e.g. Edison, NJ)'),
+            _Block(_B.note, title: 'I AM AVAILABLE'),
+            _Block(_B.chips, options: ['From 10 AM', 'To 9 PM'], selected: 0),
+          ],
+          highlight: 3)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -501,19 +563,23 @@ final _steps = <_Step>[
       'You confirm you operate as an independent business responsible for your '
           'own licences and taxes, and you consent to identity verification — '
           'plus a background check for home services. Then submit.',
-      _Mock('Verification', [
-        _Block(_B.row,
-            icon: CupertinoIcons.person_badge_plus_fill,
-            color: LhColors.blue,
-            title: 'Identity check (KYC)',
-            subtitle: 'Government ID + selfie; sets up your payout account'),
-        _Block(_B.row,
-            icon: CupertinoIcons.doc_checkmark_fill,
-            color: LhColors.green,
-            title: 'Background check',
-            subtitle: 'Home services only, with your written consent'),
-        _Block(_B.button, title: 'Submit Application'),
-      ], highlight: 2)),
+      _Mock(
+          'Verification',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.person_badge_plus_fill,
+                color: LhColors.blue,
+                title: 'Identity check (KYC)',
+                subtitle:
+                    'Government ID + selfie; sets up your payout account'),
+            _Block(_B.row,
+                icon: CupertinoIcons.doc_checkmark_fill,
+                color: LhColors.green,
+                title: 'Background check',
+                subtitle: 'Home services only, with your written consent'),
+            _Block(_B.button, title: 'Submit Application'),
+          ],
+          highlight: 2)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -521,13 +587,16 @@ final _steps = <_Step>[
       'Step 23 — Wait for approval',
       'Your Profile shows the live status of your application while the '
           'LocalHive team reviews it. You get a text the moment it is decided.',
-      _Mock('Profile', [
-        _Block(_B.row,
-            icon: CupertinoIcons.clock_fill,
-            color: LhColors.orange,
-            title: 'Application under review',
-            subtitle: 'Bombay Street Eats — verifying your details'),
-      ], highlight: 0)),
+      _Mock(
+          'Profile',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.clock_fill,
+                color: LhColors.orange,
+                title: 'Application under review',
+                subtitle: 'Bombay Street Eats — verifying your details'),
+          ],
+          highlight: 0)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -535,19 +604,22 @@ final _steps = <_Step>[
       'Step 24 — Approved, you are live',
       'Once approved, your listing is published to the public catalog '
           'instantly and customers can find and book you.',
-      _Mock('Approved', [
-        _Block(_B.sms,
-            title: 'Text message',
-            subtitle:
-                'LocalHive: your application for "Bombay Street Eats" is '
-                'APPROVED! Your listing is live — customers can find and book '
-                'you now.'),
-        _Block(_B.row,
-            icon: CupertinoIcons.checkmark_seal_fill,
-            color: LhColors.green,
-            title: 'Application approved',
-            subtitle: 'Bombay Street Eats is live'),
-      ], highlight: 0)),
+      _Mock(
+          'Approved',
+          [
+            _Block(_B.sms,
+                title: 'Text message',
+                subtitle:
+                    'LocalHive: your application for "Bombay Street Eats" is '
+                    'APPROVED! Your listing is live — customers can find and book '
+                    'you now.'),
+            _Block(_B.row,
+                icon: CupertinoIcons.checkmark_seal_fill,
+                color: LhColors.green,
+                title: 'Application approved',
+                subtitle: 'Bombay Street Eats is live'),
+          ],
+          highlight: 0)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -556,14 +628,18 @@ final _steps = <_Step>[
       'When you sign in, LocalHive opens straight on your Dashboard, and this '
           'banner tells you how many orders are waiting. The Dashboard tab '
           'also carries a live count badge.',
-      _Mock('LocalHive', [
-        _Block(_B.banner, title: '2 orders waiting — tap to open your Dashboard'),
-        _Block(_B.row,
-            icon: CupertinoIcons.sparkles,
-            color: LhColors.indigo,
-            title: 'Browse as a customer too',
-            subtitle: 'Your customer view still works'),
-      ], highlight: 0)),
+      _Mock(
+          'LocalHive',
+          [
+            _Block(_B.banner,
+                title: '2 orders waiting — tap to open your Dashboard'),
+            _Block(_B.row,
+                icon: CupertinoIcons.sparkles,
+                color: LhColors.indigo,
+                title: 'Browse as a customer too',
+                subtitle: 'Your customer view still works'),
+          ],
+          highlight: 0)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -573,24 +649,27 @@ final _steps = <_Step>[
           'with a Directions button that pins it on a map, when they are '
           'arriving for pickups, and exactly what you earn after the platform '
           'fee.',
-      _Mock('Provider Dashboard', [
-        _Block(_B.row,
-            icon: CupertinoIcons.location_solid,
-            color: LhColors.navy,
-            title: '45 Oak Tree Road, Edison, NJ',
-            subtitle: 'Tap Directions to navigate',
-            trailing: 'Directions'),
-        _Block(_B.row,
-            icon: _cIcon,
-            color: LhColors.navy,
-            title: 'Demo Customer',
-            subtitle: '+1 732 555 0123'),
-        _Block(_B.row,
-            icon: CupertinoIcons.money_dollar_circle_fill,
-            color: LhColors.green,
-            title: 'You earn \$84.00',
-            subtitle: 'Customer pays \$94.08'),
-      ], highlight: 0)),
+      _Mock(
+          'Provider Dashboard',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.location_solid,
+                color: LhColors.navy,
+                title: '45 Oak Tree Road, Edison, NJ',
+                subtitle: 'Tap Directions to navigate',
+                trailing: 'Directions'),
+            _Block(_B.row,
+                icon: _cIcon,
+                color: LhColors.navy,
+                title: 'Demo Customer',
+                subtitle: '+1 732 555 0123'),
+            _Block(_B.row,
+                icon: CupertinoIcons.money_dollar_circle_fill,
+                color: LhColors.green,
+                title: 'You earn \$84.00',
+                subtitle: 'Customer pays \$94.08'),
+          ],
+          highlight: 0)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -598,15 +677,18 @@ final _steps = <_Step>[
       'Step 27 — Accept the job',
       'Tap Accept and the customer is texted immediately that you are coming. '
           'Or Decline, and they are told to choose someone else.',
-      _Mock('Provider Dashboard', [
-        _Block(_B.row,
-            icon: CupertinoIcons.doc_text_fill,
-            color: LhColors.orange,
-            title: 'House cleaning · Tomorrow 10 AM · 3 hrs',
-            subtitle: 'You earn \$84.00',
-            trailing: 'Requested'),
-        _Block(_B.button, title: 'Accept'),
-      ], highlight: 1)),
+      _Mock(
+          'Provider Dashboard',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.doc_text_fill,
+                color: LhColors.orange,
+                title: 'House cleaning · Tomorrow 10 AM · 3 hrs',
+                subtitle: 'You earn \$84.00',
+                trailing: 'Requested'),
+            _Block(_B.button, title: 'Accept'),
+          ],
+          highlight: 1)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -615,15 +697,18 @@ final _steps = <_Step>[
       'For store and truck orders you tap through the stages: Accept and start '
           'Preparing, then Mark Ready, then Delivered or handed over. Each tap '
           'texts the customer automatically.',
-      _Mock('Provider Dashboard', [
-        _Block(_B.row,
-            icon: CupertinoIcons.bag_fill,
-            color: LhColors.orange,
-            title: 'Pickup order · 2 items',
-            subtitle: 'Customer arriving: In 30 min',
-            trailing: 'Preparing'),
-        _Block(_B.button, title: 'Mark Ready for Pickup'),
-      ], highlight: 1)),
+      _Mock(
+          'Provider Dashboard',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.bag_fill,
+                color: LhColors.orange,
+                title: 'Pickup order · 2 items',
+                subtitle: 'Customer arriving: In 30 min',
+                trailing: 'Preparing'),
+            _Block(_B.button, title: 'Mark Ready for Pickup'),
+          ],
+          highlight: 1)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -631,15 +716,18 @@ final _steps = <_Step>[
       'Step 29 — Send a delivery to the board',
       'If the order is for delivery, marking it Ready posts it to the delivery '
           'job board where any partner nearby can claim it.',
-      _Mock('Provider Dashboard', [
-        _Block(_B.row,
-            icon: CupertinoIcons.cube_box_fill,
-            color: LhColors.orange,
-            title: 'Delivery order · 1 item',
-            subtitle: 'Deliver to 456 Wood Ave, Iselin',
-            trailing: 'Ready'),
-        _Block(_B.button, title: 'Mark Ready & Request Delivery Partner'),
-      ], highlight: 1)),
+      _Mock(
+          'Provider Dashboard',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.cube_box_fill,
+                color: LhColors.orange,
+                title: 'Delivery order · 1 item',
+                subtitle: 'Deliver to 456 Wood Ave, Iselin',
+                trailing: 'Ready'),
+            _Block(_B.button, title: 'Mark Ready & Request Delivery Partner'),
+          ],
+          highlight: 1)),
   const _Step(
       _own,
       LhColors.indigo,
@@ -648,11 +736,15 @@ final _steps = <_Step>[
       'Tap the megaphone on your Dashboard, type where you are parked, and '
           'every customer following your truck is texted instantly. The dialog '
           'even tells you how many followers will hear it.',
-      _Mock('Announce arrival', [
-        _Block(_B.note, title: '12 customers follow Bombay Street Eats'),
-        _Block(_B.field, title: 'Where are you? (e.g. Oak Tree Rd & Wood Ave)'),
-        _Block(_B.button, title: 'Announce'),
-      ], highlight: 2)),
+      _Mock(
+          'Announce arrival',
+          [
+            _Block(_B.note, title: '12 customers follow Bombay Street Eats'),
+            _Block(_B.field,
+                title: 'Where are you? (e.g. Oak Tree Rd & Wood Ave)'),
+            _Block(_B.button, title: 'Announce'),
+          ],
+          highlight: 2)),
   // ═══════════ Delivery partner ═══════════
   const _Step(
       _del,
@@ -662,15 +754,19 @@ final _steps = <_Step>[
       'Students and gig workers can sign up to deliver. Choose Delivery '
           'partner, then set the hours you are free — for example five P M to '
           'ten P M after classes.',
-      _Mock('Become a Provider', [
-        _Block(_B.row,
-            icon: _dIcon,
-            color: LhColors.blue,
-            title: 'Delivery partner',
-            subtitle: 'Students & gig workers — deliver on your own schedule'),
-        _Block(_B.note, title: 'I AM AVAILABLE'),
-        _Block(_B.chips, options: ['From 5 PM', 'To 10 PM'], selected: 0),
-      ], highlight: 0)),
+      _Mock(
+          'Become a Provider',
+          [
+            _Block(_B.row,
+                icon: _dIcon,
+                color: LhColors.blue,
+                title: 'Delivery partner',
+                subtitle:
+                    'Students & gig workers — deliver on your own schedule'),
+            _Block(_B.note, title: 'I AM AVAILABLE'),
+            _Block(_B.chips, options: ['From 5 PM', 'To 10 PM'], selected: 0),
+          ],
+          highlight: 0)),
   const _Step(
       _del,
       LhColors.orange,
@@ -679,19 +775,22 @@ final _steps = <_Step>[
       'Once approved, the Deliveries tab shows two numbers at a glance: how '
           'many deliveries you are already carrying, and how many jobs are '
           'open to claim right now.',
-      _Mock('Delivery Jobs', [
-        _Block(_B.row,
-            icon: _dIcon,
-            color: LhColors.navy,
-            title: 'My deliveries: 1',
-            subtitle: 'Open to claim: 3'),
-        _Block(_B.row,
-            icon: CupertinoIcons.bag_fill,
-            color: LhColors.orange,
-            title: 'Patel Brothers Express',
-            subtitle: 'Deliver to 456 Wood Ave, Iselin',
-            trailing: '\$4.99'),
-      ], highlight: 0)),
+      _Mock(
+          'Delivery Jobs',
+          [
+            _Block(_B.row,
+                icon: _dIcon,
+                color: LhColors.navy,
+                title: 'My deliveries: 1',
+                subtitle: 'Open to claim: 3'),
+            _Block(_B.row,
+                icon: CupertinoIcons.bag_fill,
+                color: LhColors.orange,
+                title: 'Patel Brothers Express',
+                subtitle: 'Deliver to 456 Wood Ave, Iselin',
+                trailing: '\$4.99'),
+          ],
+          highlight: 0)),
   const _Step(
       _del,
       LhColors.orange,
@@ -699,15 +798,18 @@ final _steps = <_Step>[
       'Step 33 — Grab jobs on your route',
       'Jobs going the same way as a delivery you already have are marked "On '
           'your way". Claim two and earn twice in one trip.',
-      _Mock('Delivery Jobs', [
-        _Block(_B.row,
-            icon: CupertinoIcons.bag_fill,
-            color: LhColors.orange,
-            title: 'Desi Bazaar · On your way!',
-            subtitle: 'Deliver to 460 Wood Ave, Iselin',
-            trailing: '\$4.99'),
-        _Block(_B.button, title: 'Claim This Delivery'),
-      ], highlight: 1)),
+      _Mock(
+          'Delivery Jobs',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.bag_fill,
+                color: LhColors.orange,
+                title: 'Desi Bazaar · On your way!',
+                subtitle: 'Deliver to 460 Wood Ave, Iselin',
+                trailing: '\$4.99'),
+            _Block(_B.button, title: 'Claim This Delivery'),
+          ],
+          highlight: 1)),
   const _Step(
       _del,
       LhColors.orange,
@@ -717,15 +819,18 @@ final _steps = <_Step>[
           'each with a Directions button and the customer\'s phone number. Tap '
           'Mark Picked Up when you have the order — the customer is told you '
           'are on the way.',
-      _Mock('Delivery Jobs', [
-        _Block(_B.row,
-            icon: CupertinoIcons.location_solid,
-            color: LhColors.navy,
-            title: 'Deliver to: 456 Wood Ave, Iselin',
-            subtitle: 'Customer: +1 732 555 0123',
-            trailing: 'Directions'),
-        _Block(_B.button, title: 'Mark Picked Up'),
-      ], highlight: 1)),
+      _Mock(
+          'Delivery Jobs',
+          [
+            _Block(_B.row,
+                icon: CupertinoIcons.location_solid,
+                color: LhColors.navy,
+                title: 'Deliver to: 456 Wood Ave, Iselin',
+                subtitle: 'Customer: +1 732 555 0123',
+                trailing: 'Directions'),
+            _Block(_B.button, title: 'Mark Picked Up'),
+          ],
+          highlight: 1)),
   const _Step(
       _del,
       LhColors.orange,
@@ -734,10 +839,13 @@ final _steps = <_Step>[
       'At the door, ask for the four digit code from their order message and '
           'type it in. A wrong code is rejected. Once it matches, the delivery '
           'is complete and your fee is queued for payout.',
-      _Mock('Confirm delivery', [
-        _Block(_B.otp, title: '4 7 2 9'),
-        _Block(_B.button, title: 'Confirm Delivery'),
-      ], highlight: 0)),
+      _Mock(
+          'Confirm delivery',
+          [
+            _Block(_B.otp, title: '4 7 2 9'),
+            _Block(_B.button, title: 'Confirm Delivery'),
+          ],
+          highlight: 0)),
   // ═══════════ Admin ═══════════
   const _Step(
       _adm,
@@ -747,13 +855,16 @@ final _steps = <_Step>[
       'Finally, the platform owner. Every application to offer services, sell '
           'groceries, run a truck, or deliver arrives in the Review tab, and '
           'the badge shows how many are waiting.',
-      _Mock('LocalHive', [
-        _Block(_B.row,
-            icon: _aIcon,
-            color: LhColors.green,
-            title: 'Review tab',
-            subtitle: '3 applications awaiting your review'),
-      ], highlight: 0)),
+      _Mock(
+          'LocalHive',
+          [
+            _Block(_B.row,
+                icon: _aIcon,
+                color: LhColors.green,
+                title: 'Review tab',
+                subtitle: '3 applications awaiting your review'),
+          ],
+          highlight: 0)),
   const _Step(
       _adm,
       LhColors.green,
@@ -762,19 +873,22 @@ final _steps = <_Step>[
       'Each application shows the business name, category, city, availability '
           'window, and the applicant\'s email and phone — everything you need '
           'to verify them.',
-      _Mock('Provider Applications', [
-        _Block(_B.row,
-            icon: _oIcon,
-            color: LhColors.indigo,
-            title: 'Chennai Cash & Carry',
-            subtitle: 'Indian store · Parsippany, NJ · 9 AM – 8 PM',
-            trailing: 'Awaiting'),
-        _Block(_B.row,
-            icon: _cIcon,
-            color: LhColors.navy,
-            title: 'owner@chennai.example',
-            subtitle: '+1 732 555 0456'),
-      ], highlight: 0)),
+      _Mock(
+          'Provider Applications',
+          [
+            _Block(_B.row,
+                icon: _oIcon,
+                color: LhColors.indigo,
+                title: 'Chennai Cash & Carry',
+                subtitle: 'Indian store · Parsippany, NJ · 9 AM – 8 PM',
+                trailing: 'Awaiting'),
+            _Block(_B.row,
+                icon: _cIcon,
+                color: LhColors.navy,
+                title: 'owner@chennai.example',
+                subtitle: '+1 732 555 0456'),
+          ],
+          highlight: 0)),
   const _Step(
       _adm,
       LhColors.green,
@@ -783,15 +897,18 @@ final _steps = <_Step>[
       'Tap Approve and their listing goes live immediately with a '
           'congratulations text. Or Decline with a clear reason, which is sent '
           'to them so they can fix it and reapply.',
-      _Mock('Provider Applications', [
-        _Block(_B.row,
-            icon: _oIcon,
-            color: LhColors.indigo,
-            title: 'Chennai Cash & Carry',
-            subtitle: 'Indian store · Parsippany, NJ',
-            trailing: 'Awaiting'),
-        _Block(_B.button, title: 'Approve'),
-      ], highlight: 1)),
+      _Mock(
+          'Provider Applications',
+          [
+            _Block(_B.row,
+                icon: _oIcon,
+                color: LhColors.indigo,
+                title: 'Chennai Cash & Carry',
+                subtitle: 'Indian store · Parsippany, NJ',
+                trailing: 'Awaiting'),
+            _Block(_B.button, title: 'Approve'),
+          ],
+          highlight: 1)),
   const _Step(
       _adm,
       LhColors.green,
@@ -929,8 +1046,8 @@ class _DemoTourScreenState extends State<DemoTourScreen>
               children: [
                 for (final p in personas)
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 4, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                     child: ChoiceChip(
                       label: Text(p, style: const TextStyle(fontSize: 12)),
                       selected: s.persona == p,
@@ -965,8 +1082,7 @@ class _DemoTourScreenState extends State<DemoTourScreen>
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                child:
-                    _MockPhone(mock: s.mock, pulse: _pulse, accent: s.color),
+                child: _MockPhone(mock: s.mock, pulse: _pulse, accent: s.color),
               ),
             ),
           ),
@@ -998,7 +1114,8 @@ class _DemoTourScreenState extends State<DemoTourScreen>
                           context,
                           MaterialPageRoute(
                               builder: (_) => const SystemCheckScreen())),
-                      icon: const Icon(CupertinoIcons.checkmark_shield, size: 16),
+                      icon:
+                          const Icon(CupertinoIcons.checkmark_shield, size: 16),
                       label: const Text('Run a live system check'),
                       style: OutlinedButton.styleFrom(
                           minimumSize: const Size.fromHeight(42)),
@@ -1111,12 +1228,10 @@ class _MockPhone extends StatelessWidget {
         _B.banner => Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                color: LhColors.navy,
-                borderRadius: BorderRadius.circular(12)),
+                color: LhColors.navy, borderRadius: BorderRadius.circular(12)),
             child: Row(children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                     color: LhColors.orange,
                     borderRadius: BorderRadius.circular(8)),
@@ -1140,8 +1255,7 @@ class _MockPhone extends StatelessWidget {
             height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-                color: LhColors.navy,
-                borderRadius: BorderRadius.circular(12)),
+                color: LhColors.navy, borderRadius: BorderRadius.circular(12)),
             child: Text(b.title ?? '',
                 style: const TextStyle(
                     color: Colors.white,
@@ -1154,8 +1268,8 @@ class _MockPhone extends StatelessWidget {
             children: [
               for (var i = 0; i < (b.options?.length ?? 0); i++)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 11, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                   decoration: BoxDecoration(
                     color: i == b.selected ? LhColors.navy : LhColors.surface,
                     borderRadius: BorderRadius.circular(16),
@@ -1165,9 +1279,8 @@ class _MockPhone extends StatelessWidget {
                       style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
-                          color: i == b.selected
-                              ? Colors.white
-                              : LhColors.ink)),
+                          color:
+                              i == b.selected ? Colors.white : LhColors.ink)),
                 ),
             ],
           ),
@@ -1189,8 +1302,7 @@ class _MockPhone extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 9),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color:
-                          i == b.selected ? LhColors.blue : LhColors.surface,
+                      color: i == b.selected ? LhColors.blue : LhColors.surface,
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: LhColors.hairline),
                     ),
@@ -1198,9 +1310,8 @@ class _MockPhone extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
-                            color: i == b.selected
-                                ? Colors.white
-                                : LhColors.ink)),
+                            color:
+                                i == b.selected ? Colors.white : LhColors.ink)),
                   ),
                 ),
             ],

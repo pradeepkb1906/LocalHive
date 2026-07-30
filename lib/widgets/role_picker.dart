@@ -6,14 +6,27 @@ import '../theme.dart';
 /// Airbnb-style account-type chooser, shown after sign-up and from Profile.
 Future<void> showRolePicker(BuildContext context, {bool dismissible = true}) {
   const roles = [
-    ('customer', CupertinoIcons.person_fill, LhColors.blue, 'Customer',
-        'Book services, order from stores & trucks'),
-    ('provider', CupertinoIcons.briefcase_fill, LhColors.indigo,
-        'Business owner',
-        'Home services, Indian store, or food truck — manage your orders'),
-    ('delivery', CupertinoIcons.cube_box_fill, LhColors.orange,
-        'Delivery partner',
-        'Students & gig workers — claim and deliver orders'),
+    (
+      'customer',
+      CupertinoIcons.person_fill,
+      LhColors.blue,
+      'Customer',
+      'Book services, order from stores & trucks'
+    ),
+    (
+      'provider',
+      CupertinoIcons.briefcase_fill,
+      LhColors.indigo,
+      'Business owner',
+      'Home services, Indian store, or food truck — manage your orders'
+    ),
+    (
+      'delivery',
+      CupertinoIcons.cube_box_fill,
+      LhColors.orange,
+      'Delivery partner',
+      'Students & gig workers — claim and deliver orders'
+    ),
   ];
   return showModalBottomSheet(
     context: context,
@@ -48,8 +61,8 @@ Future<void> showRolePicker(BuildContext context, {bool dismissible = true}) {
                         width: AppState.instance.role == r.$1 ? 2 : 0.5),
                   ),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 6),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     leading: IconTile(icon: r.$2, color: r.$3),
                     title: Text(r.$4,
                         style: const TextStyle(

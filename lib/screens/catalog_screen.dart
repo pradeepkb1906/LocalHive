@@ -56,7 +56,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(CupertinoIcons.bell_fill, color: LhColors.orange, size: 40),
+        icon: const Icon(CupertinoIcons.bell_fill,
+            color: LhColors.orange, size: 40),
         title: Text('Alert me when ${widget.provider.name} arrives'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -68,8 +69,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
             TextField(
               controller: phoneCtl,
               keyboardType: TextInputType.phone,
-              decoration:
-                  const InputDecoration(hintText: 'Mobile number for the alert'),
+              decoration: const InputDecoration(
+                  hintText: 'Mobile number for the alert'),
             ),
           ],
         ),
@@ -78,6 +79,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           FilledButton(
+              style: dialogButtonStyle(),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Notify Me')),
         ],
@@ -93,23 +95,31 @@ class _CatalogScreenState extends State<CatalogScreen> {
               'You\'ll be alerted when ${widget.provider.name} arrives!')));
     }
   }
+
   final _address = TextEditingController();
   static const _deliveryFee = 4.99;
   String _pickupEta = 'In 30 min';
-  static const _etaOptions = ['In 15 min', 'In 30 min', 'In 45 min', 'In 1 hour'];
+  static const _etaOptions = [
+    'In 15 min',
+    'In 30 min',
+    'In 45 min',
+    'In 1 hour'
+  ];
 
-  double get _subtotal => _cart.entries.fold(0, (sum, e) => sum + e.key.price * e.value);
+  double get _subtotal =>
+      _cart.entries.fold(0, (sum, e) => sum + e.key.price * e.value);
   double get _fee => _subtotal * platformFeePct;
   double get _total => _subtotal + _fee + (_delivery ? _deliveryFee : 0);
   int get _count => _cart.values.fold(0, (a, b) => a + b);
 
-  Color get _tint =>
-      widget.provider.category == 'indian_store' ? LhColors.green : LhColors.orange;
+  Color get _tint => widget.provider.category == 'indian_store'
+      ? LhColors.green
+      : LhColors.orange;
 
   void _checkout() {
     if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Please sign in to place an order.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please sign in to place an order.')));
       Navigator.push(
           context, MaterialPageRoute(builder: (_) => const SignInScreen()));
       return;
@@ -122,143 +132,152 @@ class _CatalogScreenState extends State<CatalogScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheet) => Padding(
-        padding: EdgeInsets.fromLTRB(
-            20, 20, 20, 20 + MediaQuery.of(ctx).viewInsets.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Order · ${widget.provider.name}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 14),
-            SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(
-                    value: false,
-                    label: Text('Pickup'),
-                    icon: Icon(CupertinoIcons.bag)),
-                ButtonSegment(
-                    value: true,
-                    label: Text('Delivery +\$4.99'),
-                    icon: Icon(CupertinoIcons.cube_box)),
+          padding: EdgeInsets.fromLTRB(
+              20, 20, 20, 20 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Order · ${widget.provider.name}',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 14),
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(
+                      value: false,
+                      label: Text('Pickup'),
+                      icon: Icon(CupertinoIcons.bag)),
+                  ButtonSegment(
+                      value: true,
+                      label: Text('Delivery +\$4.99'),
+                      icon: Icon(CupertinoIcons.cube_box)),
+                ],
+                selected: {_delivery},
+                onSelectionChanged: (s) =>
+                    setSheet(() => setState(() => _delivery = s.first)),
+              ),
+              if (_delivery) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _address,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                      hintText: 'Delivery address (street, city, state)'),
+                ),
+              ] else ...[
+                const SizedBox(height: 12),
+                const Text('When will you arrive?',
+                    style:
+                        TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: _etaOptions
+                      .map((e) => ChoiceChip(
+                          label: Text(e),
+                          selected: _pickupEta == e,
+                          onSelected: (_) =>
+                              setSheet(() => setState(() => _pickupEta = e))))
+                      .toList(),
+                ),
               ],
-              selected: {_delivery},
-              onSelectionChanged: (s) =>
-                  setSheet(() => setState(() => _delivery = s.first)),
-            ),
-            if (_delivery) ...[
-              const SizedBox(height: 12),
-              TextField(
-                controller: _address,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                    hintText: 'Delivery address (street, city, state)'),
-              ),
-            ] else ...[
-              const SizedBox(height: 12),
-              const Text('When will you arrive?',
-                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: _etaOptions
-                    .map((e) => ChoiceChip(
-                        label: Text(e),
-                        selected: _pickupEta == e,
-                        onSelected: (_) => setSheet(
-                            () => setState(() => _pickupEta = e))))
-                    .toList(),
-              ),
-            ],
-            const SizedBox(height: 14),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    ..._cart.entries.map((e) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 3),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Flexible(
-                                  child: Text('${e.value} × ${e.key.name}',
-                                      style: const TextStyle(fontSize: 14.5))),
-                              Text('\$${(e.key.price * e.value).toStringAsFixed(2)}',
-                                  style: const TextStyle(fontSize: 14.5)),
-                            ],
-                          ),
-                        )),
-                    const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10), child: Divider()),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Platform fee (12%)', style: TextStyle(fontSize: 14.5)),
-                        Text('\$${_fee.toStringAsFixed(2)}',
-                            style: const TextStyle(fontSize: 14.5)),
-                      ],
-                    ),
-                    if (_delivery) ...[
-                      const SizedBox(height: 4),
-                      const Row(
+              const SizedBox(height: 14),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      ..._cart.entries.map((e) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 3),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                    child: Text('${e.value} × ${e.key.name}',
+                                        style:
+                                            const TextStyle(fontSize: 14.5))),
+                                Text(
+                                    '\$${(e.key.price * e.value).toStringAsFixed(2)}',
+                                    style: const TextStyle(fontSize: 14.5)),
+                              ],
+                            ),
+                          )),
+                      const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Divider()),
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Delivery fee', style: TextStyle(fontSize: 14.5)),
-                          Text('\$4.99', style: TextStyle(fontSize: 14.5)),
+                          const Text('Platform fee (12%)',
+                              style: TextStyle(fontSize: 14.5)),
+                          Text('\$${_fee.toStringAsFixed(2)}',
+                              style: const TextStyle(fontSize: 14.5)),
+                        ],
+                      ),
+                      if (_delivery) ...[
+                        const SizedBox(height: 4),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Delivery fee',
+                                style: TextStyle(fontSize: 14.5)),
+                            Text('\$4.99', style: TextStyle(fontSize: 14.5)),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Total',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 17)),
+                          Text('\$${_total.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 17)),
                         ],
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Total',
-                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
-                        Text('\$${_total.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 17)),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {
-                if (_delivery && _address.text.trim().length < 8) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-                      content: Text('Enter the full delivery address.')));
-                  return;
-                }
-                AppState.instance.addBooking(Booking(
-                  widget.provider.name,
-                  '${_delivery ? 'Delivery' : 'Pickup'} order · '
-                      '$_count item${_count > 1 ? 's' : ''}',
-                  'Placed',
-                  _total,
-                  providerId: widget.provider.id,
-                  category: widget.provider.category,
-                  address: _delivery ? _address.text.trim() : '',
-                  customerName: AppState.instance.userName ?? '',
-                  customerPhone: AppState.instance.userPhone ?? '',
-                  customerEmail: AppState.instance.userEmail ?? '',
-                  fulfillment: _delivery ? 'delivery' : 'pickup',
-                  pickupEta: _delivery ? '' : _pickupEta,
-                ));
-                Navigator.pop(ctx);
-                setState(() => _cart.clear());
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(_delivery
-                        ? 'Order placed for delivery — track it in the Bookings tab.'
-                        : 'Pickup order placed — track it in the Bookings tab.')));
-              },
-              child: Text(_delivery ? 'Place Delivery Order' : 'Place Pickup Order'),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () {
+                  if (_delivery && _address.text.trim().length < 8) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                        content: Text('Enter the full delivery address.')));
+                    return;
+                  }
+                  AppState.instance.addBooking(Booking(
+                    widget.provider.name,
+                    '${_delivery ? 'Delivery' : 'Pickup'} order · '
+                        '$_count item${_count > 1 ? 's' : ''}',
+                    'Placed',
+                    _total,
+                    providerId: widget.provider.id,
+                    category: widget.provider.category,
+                    address: _delivery ? _address.text.trim() : '',
+                    customerName: AppState.instance.userName ?? '',
+                    customerPhone: AppState.instance.userPhone ?? '',
+                    customerEmail: AppState.instance.userEmail ?? '',
+                    fulfillment: _delivery ? 'delivery' : 'pickup',
+                    pickupEta: _delivery ? '' : _pickupEta,
+                  ));
+                  Navigator.pop(ctx);
+                  setState(() => _cart.clear());
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(_delivery
+                          ? 'Order placed for delivery — track it in the Bookings tab.'
+                          : 'Pickup order placed — track it in the Bookings tab.')));
+                },
+                child: Text(
+                    _delivery ? 'Place Delivery Order' : 'Place Pickup Order'),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
@@ -272,7 +291,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
         actions: [
           if (widget.provider.category == 'food_truck')
             IconButton(
-              tooltip: _following ? 'Arrival alerts on' : 'Notify me on arrival',
+              tooltip:
+                  _following ? 'Arrival alerts on' : 'Notify me on arrival',
               icon: Icon(
                   _following ? CupertinoIcons.bell_fill : CupertinoIcons.bell,
                   size: 20,
@@ -306,12 +326,19 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 const Icon(CupertinoIcons.location_solid,
                     size: 12, color: LhColors.inkSecondary),
                 const SizedBox(width: 3),
-                Text('${widget.provider.city}  ·  ',
-                    style: const TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
-                const Icon(CupertinoIcons.star_fill, size: 12, color: LhColors.amber),
+                Flexible(
+                  child: Text('${widget.provider.city}  ·  ',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13, color: LhColors.inkSecondary)),
+                ),
+                const Icon(CupertinoIcons.star_fill,
+                    size: 12, color: LhColors.amber),
                 const SizedBox(width: 3),
                 Text('${widget.provider.rating}',
-                    style: const TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                    style: const TextStyle(
+                        fontSize: 13, color: LhColors.inkSecondary)),
               ],
             ),
           ),
@@ -327,7 +354,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 for (var i = 0; i < widget.items.length; i++) ...[
                   _itemRow(widget.items[i]),
                   if (i != widget.items.length - 1)
-                    const Padding(padding: EdgeInsets.only(left: 66), child: Divider()),
+                    const Padding(
+                        padding: EdgeInsets.only(left: 66), child: Divider()),
                 ]
               ],
             ),
@@ -359,7 +387,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
             radius: 19,
             backgroundColor: _tint.withValues(alpha: 0.14),
             child: Text(item.name.substring(0, 1),
-                style: TextStyle(color: _tint, fontSize: 15, fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    color: _tint, fontSize: 15, fontWeight: FontWeight.w700)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -367,11 +396,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.name,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 2),
                 Text('\$${item.price.toStringAsFixed(2)} / ${item.unit}',
-                    style:
-                        const TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                    style: const TextStyle(
+                        fontSize: 13, color: LhColors.inkSecondary)),
               ],
             ),
           ),

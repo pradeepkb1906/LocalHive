@@ -52,7 +52,8 @@ class CatalogItem {
 class Booking {
   final String providerName;
   final String detail;
-  final String status; // Requested | Accepted | Declined | Completed | Preparing
+  final String
+      status; // Requested | Accepted | Declined | Completed | Preparing
   final double amount;
   final String id; // Firestore doc id ('' for local/mock)
   final String providerId;
@@ -82,7 +83,8 @@ class Booking {
   });
 }
 
-const platformFeePct = 0.12; // 12% platform fee, shown transparently at checkout
+const platformFeePct =
+    0.12; // 12% platform fee, shown transparently at checkout
 
 const homeServiceProviders = [
   Provider(
@@ -214,6 +216,8 @@ const truckMenu = [
 ];
 
 final myBookings = <Booking>[
-  const Booking('Maria G.', 'House cleaning · Sat 10 AM · 3 hrs', 'Confirmed', 94.08),
-  const Booking('Bombay Street Eats', 'Pickup order · 2 items', 'Ready at 6:30 PM', 13.49),
+  const Booking(
+      'Maria G.', 'House cleaning · Sat 10 AM · 3 hrs', 'Confirmed', 94.08),
+  const Booking('Bombay Street Eats', 'Pickup order · 2 items',
+      'Ready at 6:30 PM', 13.49),
 ];

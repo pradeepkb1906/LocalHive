@@ -42,19 +42,22 @@ class _BookingScreenState extends State<BookingScreen> {
   void _confirm() {
     if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Please sign in to book — it keeps your booking secure.')));
+          content:
+              Text('Please sign in to book — it keeps your booking secure.')));
       Navigator.push(
           context, MaterialPageRoute(builder: (_) => const SignInScreen()));
       return;
     }
     if (_address.text.trim().length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Enter the full service address (street, city, state).')));
+          content:
+              Text('Enter the full service address (street, city, state).')));
       return;
     }
     if (_name.text.trim().isEmpty || _phone.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Enter your name and phone so the provider can reach you.')));
+          content: Text(
+              'Enter your name and phone so the provider can reach you.')));
       return;
     }
     AppState.instance.addBooking(Booking(
@@ -72,7 +75,8 @@ class _BookingScreenState extends State<BookingScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(CupertinoIcons.paperplane_fill, color: LhColors.blue, size: 44),
+        icon: const Icon(CupertinoIcons.paperplane_fill,
+            color: LhColors.blue, size: 44),
         title: const Text('Request sent'),
         content: Text(
             '${widget.provider.name} · ${_dayLabel(_dayOffset)} at $_slot for $_hours hours.\n\n'
@@ -82,6 +86,7 @@ class _BookingScreenState extends State<BookingScreen> {
             'after the job is completed.'),
         actions: [
           FilledButton(
+            style: dialogButtonStyle(),
             onPressed: () {
               Navigator.pop(ctx);
               Navigator.pop(context);
@@ -147,9 +152,15 @@ class _BookingScreenState extends State<BookingScreen> {
                           const Icon(CupertinoIcons.star_fill,
                               size: 13, color: LhColors.amber),
                           const SizedBox(width: 3),
-                          Text('${p.rating} (${p.reviews} reviews) · Background checked',
-                              style: const TextStyle(
-                                  fontSize: 12.5, color: LhColors.inkSecondary)),
+                          Expanded(
+                            child: Text(
+                                '${p.rating} (${p.reviews} reviews) · Background checked',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: LhColors.inkSecondary)),
+                          ),
                         ]),
                         if (p.availability.isNotEmpty) ...[
                           const SizedBox(height: 4),
@@ -214,7 +225,8 @@ class _BookingScreenState extends State<BookingScreen> {
             controller: _address,
             textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
-                hintText: 'Street address, city, state (where the pro should come)'),
+                hintText:
+                    'Street address, city, state (where the pro should come)'),
           ),
           const SizedBox(height: 10),
           TextField(
@@ -229,7 +241,8 @@ class _BookingScreenState extends State<BookingScreen> {
                 child: TextField(
                   controller: _phone,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(hintText: 'Mobile (SMS updates)'),
+                  decoration:
+                      const InputDecoration(hintText: 'Mobile (SMS updates)'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -237,7 +250,8 @@ class _BookingScreenState extends State<BookingScreen> {
                 child: TextField(
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(hintText: 'Email (receipts)'),
+                  decoration:
+                      const InputDecoration(hintText: 'Email (receipts)'),
                 ),
               ),
             ],
@@ -254,7 +268,8 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SizedBox(height: 8),
                   _row('Platform fee (12%)', '\$${_fee.toStringAsFixed(2)}'),
                   const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10), child: Divider()),
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Divider()),
                   _row('Total', '\$${_total.toStringAsFixed(2)}', bold: true),
                   const SizedBox(height: 8),
                   Align(
@@ -290,7 +305,10 @@ class _BookingScreenState extends State<BookingScreen> {
         fontSize: bold ? 17 : 14.5);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Flexible(child: Text(label, style: style)), Text(value, style: style)],
+      children: [
+        Flexible(child: Text(label, style: style)),
+        Text(value, style: style)
+      ],
     );
   }
 }

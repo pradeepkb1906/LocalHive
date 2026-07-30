@@ -62,10 +62,8 @@ class _SystemCheckScreenState extends State<SystemCheckScreen> {
     });
 
     await _add('Catalog read (customer browse)', () async {
-      final snap = await db
-          .collection('providers')
-          .where('live', isEqualTo: true)
-          .get();
+      final snap =
+          await db.collection('providers').where('live', isEqualTo: true).get();
       final byCat = <String, int>{};
       for (final d in snap.docs) {
         final c = (d.data()['category'] ?? '?') as String;
@@ -92,7 +90,8 @@ class _SystemCheckScreenState extends State<SystemCheckScreen> {
 
     await _add('Account & role', () async {
       final u = fb.currentUser;
-      if (u == null) return 'Signed out — browsing as guest (sign in to test writes)';
+      if (u == null)
+        return 'Signed out — browsing as guest (sign in to test writes)';
       return 'Signed in as ${u.email ?? u.phoneNumber ?? u.uid} · '
           'role: ${AppState.instance.role}';
     });

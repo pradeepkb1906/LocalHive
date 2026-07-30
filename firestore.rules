@@ -64,7 +64,11 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/delivery_jobs/$(bookingId))
                .data.deliveryPersonId == request.auth.uid;
       }
-      allow read: if isCustomer() || isProviderOwner();
+      // The assigned partner reads the booking for the customer's phone and
+      // the delivery OTP. Those are deliberately NOT on delivery_jobs, which
+      // every signed-in partner can browse.
+      allow read: if isCustomer() || isProviderOwner()
+        || isAssignedDeliveryPerson();
       allow update: if (isCustomer() || isProviderOwner()
             || isAssignedDeliveryPerson())
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -75,14 +79,23 @@ service cloud.firestore {
     // Delivery job board: store owners post Ready orders here (doc id ==
     // booking id); any signed-in delivery partner can view and claim an
     // unassigned job; only the assignee can update it afterwards.
+    //
+    // Every signed-in user can read this collection, so it must never hold
+    // customer contact details or the delivery OTP — those stay on the booking.
+    // The assignee also writes their live GPS position here for the customer's
+    // tracking map.
     match /delivery_jobs/{jobId} {
       allow read: if signedIn();
       allow create: if signedIn()
-        && request.resource.data.deliveryPersonId == '';
+        && request.resource.data.deliveryPersonId == ''
+        && !request.resource.data.keys().hasAny(
+             ['otp', 'customerPhone', 'customerEmail']);
       allow update: if signedIn()
         && (resource.data.deliveryPersonId == request.auth.uid
             || (resource.data.deliveryPersonId == ''
-                && request.resource.data.deliveryPersonId == request.auth.uid));
+                && request.resource.data.deliveryPersonId == request.auth.uid))
+        && !request.resource.data.keys().hasAny(
+             ['otp', 'customerPhone', 'customerEmail']);
       allow delete: if false;
     }
 

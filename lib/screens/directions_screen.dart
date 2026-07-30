@@ -107,8 +107,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                         ),
                       )
                     : FlutterMap(
-                        options: MapOptions(
-                            initialCenter: _point!, initialZoom: 15),
+                        options:
+                            MapOptions(initialCenter: _point!, initialZoom: 15),
                         children: [
                           TileLayer(
                             urlTemplate:
@@ -145,7 +145,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                             ),
                           ]),
                           const RichAttributionWidget(attributions: [
-                            TextSourceAttribution('© OpenStreetMap contributors')
+                            TextSourceAttribution(
+                                '© OpenStreetMap contributors')
                           ]),
                         ],
                       ),

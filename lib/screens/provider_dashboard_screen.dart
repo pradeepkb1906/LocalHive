@@ -43,7 +43,8 @@ class ProviderDashboardScreen extends StatelessWidget {
                   value: truck,
                   isExpanded: true,
                   items: trucks
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t.name)))
+                      .map((t) =>
+                          DropdownMenuItem(value: t, child: Text(t.name)))
                       .toList(),
                   onChanged: (t) => setDlg(() => truck = t ?? truck),
                 ),
@@ -67,6 +68,7 @@ class ProviderDashboardScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           FilledButton(
+              style: dialogButtonStyle(),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Announce')),
         ],
@@ -109,17 +111,20 @@ class ProviderDashboardScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(CupertinoIcons.tray, size: 44, color: LhColors.hairline),
+                    Icon(CupertinoIcons.tray,
+                        size: 44, color: LhColors.hairline),
                     SizedBox(height: 12),
                     Text('No job requests yet',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
                     SizedBox(height: 4),
                     Text(
                         'Sign in and get your listing approved — bookings for '
                         'your listings appear here, and you are notified by '
                         'SMS and email.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                        style: TextStyle(
+                            fontSize: 13, color: LhColors.inkSecondary)),
                   ],
                 ),
               ),
@@ -143,7 +148,11 @@ class _JobCard extends StatelessWidget {
 
   Color get _statusColor => switch (job.status) {
         'Requested' || 'Placed' => LhColors.orange,
-        'Accepted' || 'Preparing' || 'Ready' || 'Out for delivery' => LhColors.blue,
+        'Accepted' ||
+        'Preparing' ||
+        'Ready' ||
+        'Out for delivery' =>
+          LhColors.blue,
         'Completed' || 'Delivered' => LhColors.green,
         'Declined' => const Color(0xFFFF3B30),
         _ => LhColors.inkSecondary,
@@ -157,10 +166,10 @@ class _JobCard extends StatelessWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(switch (status) {
-        'Accepted' =>
-          'Job accepted — the customer has been notified.',
+        'Accepted' => 'Job accepted — the customer has been notified.',
         'Declined' => 'Job declined — the customer has been notified.',
-        'Preparing' => 'Order accepted — customer notified you are preparing it.',
+        'Preparing' =>
+          'Order accepted — customer notified you are preparing it.',
         'Ready' => job.fulfillment == 'delivery'
             ? 'Marked ready — posted to the delivery job board, customer notified.'
             : 'Marked ready — customer notified to come pick it up.',
@@ -231,15 +240,16 @@ class _JobCard extends StatelessWidget {
             ),
             if (job.fulfillment == 'pickup' && job.pickupEta.isNotEmpty) ...[
               const SizedBox(height: 6),
-              _row(CupertinoIcons.time,
-                  'Customer arriving: ${job.pickupEta}'),
+              _row(CupertinoIcons.time, 'Customer arriving: ${job.pickupEta}'),
             ],
             const SizedBox(height: 6),
-            _row(CupertinoIcons.person_fill,
+            _row(
+                CupertinoIcons.person_fill,
                 '${job.customerName.isEmpty ? 'Customer' : job.customerName}'
                 '${job.customerPhone.isEmpty ? '' : ' · ${job.customerPhone}'}'),
             const SizedBox(height: 6),
-            _row(CupertinoIcons.money_dollar_circle_fill,
+            _row(
+                CupertinoIcons.money_dollar_circle_fill,
                 'You earn \$${(job.amount / (1 + platformFeePct)).toStringAsFixed(2)} '
                 '(customer pays \$${job.amount.toStringAsFixed(2)})'),
             if (job.status == 'Requested') ...[
@@ -271,7 +281,8 @@ class _JobCard extends StatelessWidget {
               const SizedBox(height: 14),
               FilledButton(
                 onPressed: () => _update(context, 'Completed'),
-                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(42)),
+                style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(42)),
                 child: const Text('Mark Job Complete'),
               ),
             ] else if (job.status == 'Placed') ...[
@@ -287,12 +298,14 @@ class _JobCard extends StatelessWidget {
               const SizedBox(height: 14),
               FilledButton(
                 onPressed: () => _update(context, 'Ready'),
-                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(42)),
+                style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(42)),
                 child: Text(job.fulfillment == 'delivery'
                     ? 'Mark Ready & Request Delivery Partner'
                     : 'Mark Ready for Pickup'),
               ),
-            ] else if (job.status == 'Ready' && job.fulfillment != 'delivery') ...[
+            ] else if (job.status == 'Ready' &&
+                job.fulfillment != 'delivery') ...[
               const SizedBox(height: 14),
               FilledButton(
                 onPressed: () => _update(context, 'Delivered'),
@@ -301,7 +314,8 @@ class _JobCard extends StatelessWidget {
                     minimumSize: const Size.fromHeight(42)),
                 child: const Text('Handed Over — Mark Delivered'),
               ),
-            ] else if (job.status == 'Ready' && job.fulfillment == 'delivery') ...[
+            ] else if (job.status == 'Ready' &&
+                job.fulfillment == 'delivery') ...[
               const SizedBox(height: 14),
               OutlinedButton(
                 onPressed: () => _update(context, 'Delivered'),

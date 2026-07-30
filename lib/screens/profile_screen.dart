@@ -49,7 +49,9 @@ class ProfileScreen extends StatelessWidget {
                               ? s.userName!.substring(0, 1).toUpperCase()
                               : '?',
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600),
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -57,23 +59,27 @@ class ProfileScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(s.signedIn ? (s.userName ?? 'Member') : 'Guest',
-                                style:
-                                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                            Text(
+                                s.signedIn ? (s.userName ?? 'Member') : 'Guest',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 2),
                             Text(
                                 s.signedIn
                                     ? (s.userPhone ?? 'Signed in')
                                     : 'Sign in to book services & track orders',
                                 style: const TextStyle(
-                                    fontSize: 13, color: LhColors.inkSecondary)),
+                                    fontSize: 13,
+                                    color: LhColors.inkSecondary)),
                           ],
                         ),
                       ),
                       if (!s.signedIn)
                         TextButton(
-                          onPressed: () => Navigator.push(context,
-                              MaterialPageRoute(builder: (_) => const SignInScreen())),
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SignInScreen())),
                           child: const Text('Sign In'),
                         ),
                     ],
@@ -154,7 +160,8 @@ class ProfileScreen extends StatelessWidget {
                             fontSize: 15, fontWeight: FontWeight.w600)),
                     subtitle: const Text(
                         'Switch between customer, business, and delivery modes.',
-                        style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                        style: TextStyle(
+                            fontSize: 13, color: LhColors.inkSecondary)),
                     trailing: const Icon(CupertinoIcons.chevron_right,
                         size: 18, color: LhColors.hairline),
                     onTap: () => showRolePicker(context),
@@ -165,9 +172,15 @@ class ProfileScreen extends StatelessWidget {
               InsetGroup(
                 header: 'About',
                 children: const [
-                  _LinkTile(icon: CupertinoIcons.doc_plaintext, title: 'Terms of Service'),
-                  _LinkTile(icon: CupertinoIcons.shield_fill, title: 'Privacy Policy'),
-                  _LinkTile(icon: CupertinoIcons.question_circle_fill, title: 'Help & Support'),
+                  _LinkTile(
+                      icon: CupertinoIcons.doc_plaintext,
+                      title: 'Terms of Service'),
+                  _LinkTile(
+                      icon: CupertinoIcons.shield_fill,
+                      title: 'Privacy Policy'),
+                  _LinkTile(
+                      icon: CupertinoIcons.question_circle_fill,
+                      title: 'Help & Support'),
                   _SystemCheckTile(),
                 ],
               ),
@@ -178,7 +191,8 @@ class ProfileScreen extends StatelessWidget {
                     title: const Center(
                         child: Text('Sign Out',
                             style: TextStyle(
-                                color: Color(0xFFFF3B30), fontWeight: FontWeight.w600))),
+                                color: Color(0xFFFF3B30),
+                                fontWeight: FontWeight.w600))),
                     onTap: () => s.signOut(),
                   ),
                 ),
@@ -189,7 +203,8 @@ class ProfileScreen extends StatelessWidget {
                     s.firebaseReady
                         ? 'LocalHive 0.2.0 · Connected'
                         : 'LocalHive 0.2.0 · Offline demo mode',
-                    style: const TextStyle(fontSize: 12, color: LhColors.inkSecondary)),
+                    style: const TextStyle(
+                        fontSize: 12, color: LhColors.inkSecondary)),
               ),
             ],
           );
@@ -208,8 +223,10 @@ class _LinkTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: IconTile(icon: icon, color: LhColors.inkSecondary, size: 32),
-      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-      trailing: const Icon(CupertinoIcons.chevron_right, size: 18, color: LhColors.hairline),
+      title: Text(title,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+      trailing: const Icon(CupertinoIcons.chevron_right,
+          size: 18, color: LhColors.hairline),
       onTap: () {},
     );
   }
@@ -294,6 +311,7 @@ class _SignInScreenState extends State<SignInScreen> {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           FilledButton(
+              style: dialogButtonStyle(),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Send Reset Link')),
         ],
@@ -336,8 +354,8 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
     setState(() => _busy = true);
-    final err =
-        await AppState.instance.verifyCode(_code.text.trim(), _name.text.trim());
+    final err = await AppState.instance
+        .verifyCode(_code.text.trim(), _name.text.trim());
     if (!mounted) return;
     setState(() => _busy = false);
     if (err != null) {
@@ -355,12 +373,14 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     final connected = AppState.instance.firebaseReady;
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign In'), actions: const [LocationChip()]),
+      appBar:
+          AppBar(title: const Text('Sign In'), actions: const [LocationChip()]),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           const SizedBox(height: 8),
-          const Icon(CupertinoIcons.person_crop_circle_fill, size: 64, color: LhColors.navy),
+          const Icon(CupertinoIcons.person_crop_circle_fill,
+              size: 64, color: LhColors.navy),
           const SizedBox(height: 12),
           const Center(
             child: Text('Welcome to LocalHive',
@@ -372,14 +392,21 @@ class _SignInScreenState extends State<SignInScreen> {
                 _emailMode
                     ? 'Use your email (e.g. Gmail) and a password you set'
                     : 'Sign in with your phone number',
-                style: const TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
+                style: const TextStyle(
+                    fontSize: 14, color: LhColors.inkSecondary)),
           ),
           const SizedBox(height: 20),
           Center(
             child: SegmentedButton<bool>(
               segments: const [
-                ButtonSegment(value: true, label: Text('Email'), icon: Icon(CupertinoIcons.envelope)),
-                ButtonSegment(value: false, label: Text('Phone'), icon: Icon(CupertinoIcons.phone)),
+                ButtonSegment(
+                    value: true,
+                    label: Text('Email'),
+                    icon: Icon(CupertinoIcons.envelope)),
+                ButtonSegment(
+                    value: false,
+                    label: Text('Phone'),
+                    icon: Icon(CupertinoIcons.phone)),
               ],
               selected: {_emailMode},
               onSelectionChanged: (s) => setState(() => _emailMode = s.first),
@@ -398,20 +425,24 @@ class _SignInScreenState extends State<SignInScreen> {
             TextField(
               controller: _email,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(hintText: 'Email (e.g. you@gmail.com)'),
+              decoration:
+                  const InputDecoration(hintText: 'Email (e.g. you@gmail.com)'),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _password,
               obscureText: true,
-              decoration: const InputDecoration(hintText: 'Password (6+ characters)'),
+              decoration:
+                  const InputDecoration(hintText: 'Password (6+ characters)'),
             ),
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _busy ? null : _emailSubmit,
               child: _busy
                   ? const SizedBox(
-                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : Text(_registering ? 'Create Account' : 'Sign In'),
             ),
             TextButton(
@@ -451,46 +482,59 @@ class _SignInScreenState extends State<SignInScreen> {
               for (final a in demoAccounts)
                 Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    dense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                    leading: IconTile(icon: a.icon, color: a.color, size: 32),
-                    title: Text(a.label,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    child: Row(
                       children: [
-                        Text(a.description,
-                            style: const TextStyle(
-                                fontSize: 11.5, color: LhColors.inkSecondary)),
-                        Text('${a.email} · ${a.password}',
-                            style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: LhColors.ink)),
+                        IconTile(icon: a.icon, color: a.color, size: 34),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(a.label,
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 1),
+                              Text(a.description,
+                                  style: const TextStyle(
+                                      fontSize: 11.5,
+                                      color: LhColors.inkSecondary)),
+                              const SizedBox(height: 3),
+                              Text('${a.email}  ·  ${a.password}',
+                                  style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: LhColors.ink)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 66,
+                          height: 34,
+                          child: FilledButton(
+                            onPressed: _busy
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _email.text = a.email;
+                                      _password.text = a.password;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                '${a.label} credentials filled — tap Sign In.'),
+                                            duration:
+                                                const Duration(seconds: 2)));
+                                  },
+                            style: compactButtonStyle(),
+                            child: const Text('Use'),
+                          ),
+                        ),
                       ],
-                    ),
-                    trailing: FilledButton(
-                      onPressed: _busy
-                          ? null
-                          : () {
-                              setState(() {
-                                _email.text = a.email;
-                                _password.text = a.password;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text(
-                                          '${a.label} credentials filled — tap Sign In.'),
-                                      duration: const Duration(seconds: 2)));
-                            },
-                      style: FilledButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16)),
-                      child: const Text('Use'),
                     ),
                   ),
                 ),
@@ -510,39 +554,46 @@ class _SignInScreenState extends State<SignInScreen> {
             TextField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration:
-                  const InputDecoration(hintText: 'US mobile number, e.g. 732 555 0123'),
+              decoration: const InputDecoration(
+                  hintText: 'US mobile number, e.g. 732 555 0123'),
             ),
             const SizedBox(height: 8),
             Text(
                 connected
                     ? 'We’ll text you a 6-digit verification code.'
                     : 'Offline demo — any 6-digit code will be accepted.',
-                style: const TextStyle(fontSize: 12, color: LhColors.inkSecondary)),
+                style: const TextStyle(
+                    fontSize: 12, color: LhColors.inkSecondary)),
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _busy ? null : _sendCode,
               child: _busy
                   ? const SizedBox(
-                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Send Code'),
             ),
           ] else ...[
             Text('Enter the 6-digit code sent to ${_phone.text}',
-                style: const TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
+                style: const TextStyle(
+                    fontSize: 14, color: LhColors.inkSecondary)),
             const SizedBox(height: 12),
             TextField(
               controller: _code,
               keyboardType: TextInputType.number,
               maxLength: 6,
-              decoration: const InputDecoration(hintText: '••••••', counterText: ''),
+              decoration:
+                  const InputDecoration(hintText: '••••••', counterText: ''),
             ),
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _busy ? null : _verify,
               child: _busy
                   ? const SizedBox(
-                      width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Verify & Sign In'),
             ),
             TextButton(
@@ -556,7 +607,6 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 }
 
-
 class _SystemCheckTile extends StatelessWidget {
   const _SystemCheckTile();
 
@@ -564,7 +614,9 @@ class _SystemCheckTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const IconTile(
-          icon: CupertinoIcons.checkmark_shield, color: LhColors.green, size: 32),
+          icon: CupertinoIcons.checkmark_shield,
+          color: LhColors.green,
+          size: 32),
       title: const Text('System check',
           style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
       subtitle: const Text('Verify the app is connected and every flow works',

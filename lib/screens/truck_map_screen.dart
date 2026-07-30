@@ -24,7 +24,9 @@ class TruckMapScreen extends StatelessWidget {
           );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Food Trucks Near You'), actions: const [LocationChip()]),
+      appBar: AppBar(
+          title: const Text('Food Trucks Near You'),
+          actions: const [LocationChip()]),
       body: FlutterMap(
         options: MapOptions(initialCenter: center, initialZoom: 13),
         children: [
@@ -75,7 +77,9 @@ class TruckMapScreen extends StatelessWidget {
             ],
           ),
           const RichAttributionWidget(
-            attributions: [TextSourceAttribution('© OpenStreetMap contributors')],
+            attributions: [
+              TextSourceAttribution('© OpenStreetMap contributors')
+            ],
           ),
         ],
       ),

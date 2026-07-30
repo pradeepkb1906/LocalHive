@@ -39,8 +39,8 @@ class AdminReviewScreen extends StatelessWidget {
                         size: 44, color: LhColors.hairline),
                     SizedBox(height: 12),
                     Text('No applications yet',
-                        style:
-                            TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
                     SizedBox(height: 4),
                     Text(
                         'When someone applies to offer services, sell groceries, '
@@ -141,7 +141,7 @@ class _ApplicationCard extends StatelessWidget {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: LhColors.green),
+              style: dialogButtonStyle(background: LhColors.green),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Approve & Publish')),
         ],
@@ -151,9 +151,9 @@ class _ApplicationCard extends StatelessWidget {
     await FirebaseService.instance.approveApplication(app);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              '${app['businessName']} approved — listing is live and the '
-              'applicant has been notified.')));
+          content:
+              Text('${app['businessName']} approved — listing is live and the '
+                  'applicant has been notified.')));
     }
   }
 
@@ -186,8 +186,7 @@ class _ApplicationCard extends StatelessWidget {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           FilledButton(
-              style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF3B30)),
+              style: dialogButtonStyle(background: const Color(0xFFFF3B30)),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Decline')),
         ],
@@ -246,7 +245,8 @@ class _ApplicationCard extends StatelessWidget {
                   'Available ${app['availableFrom']} – ${app['availableTo']}'),
             ],
             const SizedBox(height: 6),
-            _row(CupertinoIcons.person,
+            _row(
+                CupertinoIcons.person,
                 '${app['applicantEmail']}'
                 '${'${app['applicantPhone']}'.isEmpty ? '' : ' · ${app['applicantPhone']}'}'),
             if ('${app['reviewNote'] ?? ''}'.isNotEmpty) ...[

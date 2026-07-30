@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import '../firebase_config.dart';
 import '../models/data.dart';
+import 'courier_beacon.dart';
 
 /// Thin wrapper around Firebase. The app degrades gracefully: if
 /// initialization fails (offline, missing config), everything falls back to
@@ -17,6 +18,17 @@ class FirebaseService {
   bool ready = false;
   FirebaseAuth? _auth;
   FirebaseFirestore? _db;
+
+  /// Firestore listeners are expensive: creating one per widget build causes
+  /// a rebuild storm that freezes the UI. Streams are created once per
+  /// (query, user) and shared.
+  final Map<String, Stream> _streams = {};
+
+  Stream<T> _shared<T>(String key, Stream<T> Function() create) =>
+      _streams.putIfAbsent('$key|$_uid', () => create().asBroadcastStream())
+          as Stream<T>;
+
+  void _resetStreams() => _streams.clear();
 
   Future<void> init() async {
     try {
@@ -47,7 +59,8 @@ class FirebaseService {
     return _auth!.signInWithPhoneNumber(phoneNumber);
   }
 
-  Future<UserCredential> confirmSmsCode(ConfirmationResult result, String code) {
+  Future<UserCredential> confirmSmsCode(
+      ConfirmationResult result, String code) {
     return result.confirm(code);
   }
 
@@ -68,7 +81,11 @@ class FirebaseService {
     }
   }
 
-  Future<void> signOut() async => _auth?.signOut();
+  Future<void> signOut() async {
+    _resetStreams();
+    CourierBeacon.instance.reset(); // stop sharing location on sign-out
+    await _auth?.signOut();
+  }
 
   // ---- Firestore ----
 
@@ -76,7 +93,8 @@ class FirebaseService {
 
   // ---- Auth: email + password ----
 
-  Future<String?> signUpWithEmail(String email, String password, String name) async {
+  Future<String?> signUpWithEmail(
+      String email, String password, String name) async {
     try {
       final cred = await _auth!
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -107,8 +125,7 @@ class FirebaseService {
     String providerOwnerId = '';
     if (b.providerId.isNotEmpty) {
       try {
-        final prov =
-            await _db!.collection('providers').doc(b.providerId).get();
+        final prov = await _db!.collection('providers').doc(b.providerId).get();
         providerOwnerId = (prov.data()?['ownerId'] ?? '') as String;
       } catch (_) {}
     }
@@ -232,10 +249,8 @@ class FirebaseService {
       String provPhone = '', provEmail = '';
       if (booking.providerId.isNotEmpty) {
         try {
-          final doc = await _db!
-              .collection('providers')
-              .doc(booking.providerId)
-              .get();
+          final doc =
+              await _db!.collection('providers').doc(booking.providerId).get();
           final m = doc.data() ?? {};
           provPhone = (m['phone'] ?? '') as String;
           provEmail = (m['email'] ?? '') as String;
@@ -258,30 +273,32 @@ class FirebaseService {
   }
 
   /// Count of orders needing the owner's attention (new or in progress).
-  Stream<int> pendingOwnerJobsCount() {
-    const active = {'Placed', 'Requested', 'Preparing', 'Ready'};
-    return providerJobsStream()
-        .map((jobs) => jobs.where((j) => active.contains(j.status)).length);
-  }
+  Stream<int> pendingOwnerJobsCount() => _shared('ownerCount', () {
+        const active = {'Placed', 'Requested', 'Preparing', 'Ready'};
+        return providerJobsStream()
+            .map((jobs) => jobs.where((j) => active.contains(j.status)).length);
+      });
 
   /// Incoming jobs/orders for listings owned by the signed-in provider.
   Stream<List<Booking>> providerJobsStream() {
     if (!ready || currentUser == null) return Stream.value(const []);
-    return _db!
-        .collection('bookings')
-        .where('providerOwnerId', isEqualTo: _uid)
-        .snapshots()
-        .map((snap) {
-      final docs = snap.docs.toList()
-        ..sort((a, b) {
-          final ta = a.data()['createdAt'];
-          final tb = b.data()['createdAt'];
-          if (ta is! Timestamp) return -1;
-          if (tb is! Timestamp) return 1;
-          return tb.compareTo(ta);
-        });
-      return docs.map(_bookingFromDoc).toList();
-    });
+    return _shared(
+        'providerJobs',
+        () => _db!
+                .collection('bookings')
+                .where('providerOwnerId', isEqualTo: _uid)
+                .snapshots()
+                .map((snap) {
+              final docs = snap.docs.toList()
+                ..sort((a, b) {
+                  final ta = a.data()['createdAt'];
+                  final tb = b.data()['createdAt'];
+                  if (ta is! Timestamp) return -1;
+                  if (tb is! Timestamp) return 1;
+                  return tb.compareTo(ta);
+                });
+              return docs.map(_bookingFromDoc).toList();
+            }));
   }
 
   Booking _bookingFromDoc(QueryDocumentSnapshot<Map<String, dynamic>> d) {
@@ -347,10 +364,7 @@ class FirebaseService {
 
   Future<void> unfollowTruck(String truckId) async {
     if (!ready || currentUser == null) return;
-    await _db!
-        .collection('truck_followers')
-        .doc('${truckId}_$_uid')
-        .delete();
+    await _db!.collection('truck_followers').doc('${truckId}_$_uid').delete();
   }
 
   Future<bool> isFollowingTruck(String truckId) async {
@@ -437,15 +451,17 @@ class FirebaseService {
   // ---- Delivery job board ----
 
   /// Store owner sends a Ready delivery order to the job board.
+  ///
+  /// The job board is readable by every signed-in partner so open jobs can be
+  /// browsed, so it deliberately carries NO customer contact details and NOT
+  /// the delivery OTP. Those live on the booking, which only the customer, the
+  /// business owner and the *assigned* partner can read.
   Future<void> createDeliveryJob(Booking b, {double fee = 4.99}) async {
     if (!ready || b.id.isEmpty) return;
     await _db!.collection('delivery_jobs').doc(b.id).set({
       'storeName': b.providerName,
       'orderDetail': b.detail,
       'dropAddress': b.address,
-      'customerPhone': b.customerPhone, // delivery partner needs to reach them
-      'customerEmail': b.customerEmail,
-      'otp': b.otp, // partner must collect this from the customer to complete
       'fee': fee,
       'status': 'Open',
       'deliveryPersonId': '',
@@ -453,14 +469,68 @@ class FirebaseService {
     });
   }
 
+  /// The private half of a delivery job: customer phone/email and the OTP.
+  /// Readable only once this partner is assigned (enforced by rules).
+  Future<Map<String, dynamic>?> deliveryJobPrivate(String jobId) async {
+    if (!ready) return null;
+    try {
+      final doc = await _db!.collection('bookings').doc(jobId).get();
+      if (!doc.exists) return null;
+      final d = doc.data()!;
+      return {
+        'otp': (d['otp'] ?? '') as String,
+        'customerPhone': (d['customerPhone'] ?? '') as String,
+        'customerEmail': (d['customerEmail'] ?? '') as String,
+      };
+    } catch (e) {
+      debugPrint('deliveryJobPrivate failed: $e');
+      return null;
+    }
+  }
+
+  // ---- Live courier tracking ----
+
+  /// The assigned partner's device publishes its GPS position here while a
+  /// delivery is in progress. The customer's tracking map reads it live.
+  Future<void> publishCourierPosition(String jobId, double lat, double lng,
+      {double speedMps = 0}) async {
+    if (!ready) return;
+    try {
+      await _db!.collection('delivery_jobs').doc(jobId).update({
+        'courierLat': lat,
+        'courierLng': lng,
+        'courierSpeedMps': speedMps,
+        'courierAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      // A dropped position update is not worth interrupting a delivery for.
+      debugPrint('publishCourierPosition failed: $e');
+    }
+  }
+
+  /// Live view of a single delivery job — the customer's tracking map.
+  Stream<Map<String, dynamic>?> deliveryJobStream(String jobId) {
+    if (!ready) return Stream.value(null);
+    return _shared(
+        'deliveryJob:$jobId',
+        () => _db!
+            .collection('delivery_jobs')
+            .doc(jobId)
+            .snapshots()
+            .map((d) => d.exists ? {...d.data()!, 'id': d.id} : null));
+  }
+
   Stream<List<Map<String, dynamic>>> deliveryJobsStream() {
     if (!ready || currentUser == null) return Stream.value(const []);
-    return _db!.collection('delivery_jobs').snapshots().map((snap) => snap.docs
-        .map((d) => {...d.data(), 'id': d.id})
-        .where((j) =>
-            j['status'] != 'Delivered' &&
-            (j['deliveryPersonId'] == '' || j['deliveryPersonId'] == _uid))
-        .toList());
+    return _shared(
+        'deliveryJobs',
+        () => _db!.collection('delivery_jobs').snapshots().map((snap) => snap
+            .docs
+            .map((d) => {...d.data(), 'id': d.id})
+            .where((j) =>
+                j['status'] != 'Delivered' &&
+                (j['deliveryPersonId'] == '' || j['deliveryPersonId'] == _uid))
+            .toList()));
   }
 
   Future<void> claimDeliveryJob(String jobId) async {
@@ -503,21 +573,23 @@ class FirebaseService {
 
   Stream<List<Booking>> bookingsStream() {
     if (!ready) return const Stream.empty();
-    return _db!
-        .collection('bookings')
-        .where('userId', isEqualTo: _uid)
-        .snapshots()
-        .map((snap) {
-      final docs = snap.docs.toList()
-        ..sort((a, b) {
-          final ta = a.data()['createdAt'];
-          final tb = b.data()['createdAt'];
-          if (ta is! Timestamp) return -1;
-          if (tb is! Timestamp) return 1;
-          return tb.compareTo(ta);
-        });
-      return docs.map(_bookingFromDoc).toList();
-    });
+    return _shared(
+        'bookings',
+        () => _db!
+                .collection('bookings')
+                .where('userId', isEqualTo: _uid)
+                .snapshots()
+                .map((snap) {
+              final docs = snap.docs.toList()
+                ..sort((a, b) {
+                  final ta = a.data()['createdAt'];
+                  final tb = b.data()['createdAt'];
+                  if (ta is! Timestamp) return -1;
+                  if (tb is! Timestamp) return 1;
+                  return tb.compareTo(ta);
+                });
+              return docs.map(_bookingFromDoc).toList();
+            }));
   }
 
   Future<void> submitProviderApplication({
@@ -537,9 +609,7 @@ class FirebaseService {
     final listing = await _db!.collection('providers').add({
       'name': businessName,
       'category': type,
-      'subtitle': type == 'delivery'
-          ? 'Delivery partner'
-          : 'New on LocalHive',
+      'subtitle': type == 'delivery' ? 'Delivery partner' : 'New on LocalHive',
       'rating': 5.0,
       'reviews': 0,
       'hourlyRate': type == 'home_service' ? 30.0 : 0.0,
@@ -582,17 +652,19 @@ class FirebaseService {
   /// All provider applications, newest first — admin only (rules enforce it).
   Stream<List<Map<String, dynamic>>> applicationsStream() {
     if (!ready || currentUser == null) return Stream.value(const []);
-    return _db!.collection('provider_applications').snapshots().map((snap) {
-      final docs = snap.docs.toList()
-        ..sort((a, b) {
-          final ta = a.data()['createdAt'];
-          final tb = b.data()['createdAt'];
-          if (ta is! Timestamp) return -1;
-          if (tb is! Timestamp) return 1;
-          return tb.compareTo(ta);
-        });
-      return docs.map((d) => {...d.data(), 'id': d.id}).toList();
-    });
+    return _shared(
+        'applications',
+        () => _db!.collection('provider_applications').snapshots().map((snap) {
+              final docs = snap.docs.toList()
+                ..sort((a, b) {
+                  final ta = a.data()['createdAt'];
+                  final tb = b.data()['createdAt'];
+                  if (ta is! Timestamp) return -1;
+                  if (tb is! Timestamp) return 1;
+                  return tb.compareTo(ta);
+                });
+              return docs.map((d) => {...d.data(), 'id': d.id}).toList();
+            }));
   }
 
   /// Approve: publish the applicant's listing and tell them the good news.
@@ -614,7 +686,8 @@ class FirebaseService {
       'reviewedAt': FieldValue.serverTimestamp(),
       'reviewNote': '',
     });
-    await _notifyApplicant(app,
+    await _notifyApplicant(
+        app,
         'LocalHive: your application for "${app['businessName']}" is APPROVED! '
         'Your listing is live — customers can find and book you now. '
         'Open the app to manage orders.');
@@ -632,7 +705,8 @@ class FirebaseService {
       'reviewedBy': _uid,
       'reviewedAt': FieldValue.serverTimestamp(),
     });
-    await _notifyApplicant(app,
+    await _notifyApplicant(
+        app,
         'LocalHive: we could not approve "${app['businessName']}" yet. '
         'Reason: $note. Reply to this message or reapply once resolved.');
   }
@@ -654,46 +728,50 @@ class FirebaseService {
   /// The signed-in user's own application status (for the Profile card).
   Stream<Map<String, dynamic>?> myApplicationStream() {
     if (!ready || currentUser == null) return Stream.value(null);
-    return _db!
-        .collection('provider_applications')
-        .where('userId', isEqualTo: _uid)
-        .snapshots()
-        .map((snap) => snap.docs.isEmpty
-            ? null
-            : {...snap.docs.first.data(), 'id': snap.docs.first.id});
+    return _shared(
+        'myApplication',
+        () => _db!
+            .collection('provider_applications')
+            .where('userId', isEqualTo: _uid)
+            .snapshots()
+            .map((snap) => snap.docs.isEmpty
+                ? null
+                : {...snap.docs.first.data(), 'id': snap.docs.first.id}));
   }
 
   /// Live catalog for one category. Only `live: true` listings are shown.
   /// Equality-only filters use Firestore index merging — no composite index.
   Stream<List<Provider>> providersStream(String category) {
     if (!ready) return const Stream.empty();
-    return _db!
-        .collection('providers')
-        .where('category', isEqualTo: category)
-        .where('live', isEqualTo: true)
-        .snapshots()
-        .map((snap) {
-      final list = snap.docs.map((d) {
-        final m = d.data();
-        return Provider(
-          id: d.id,
-          name: (m['name'] ?? '') as String,
-          category: category,
-          subtitle: (m['subtitle'] ?? '') as String,
-          rating: ((m['rating'] ?? 0) as num).toDouble(),
-          reviews: ((m['reviews'] ?? 0) as num).toInt(),
-          hourlyRate: ((m['hourlyRate'] ?? 0) as num).toDouble(),
-          city: (m['city'] ?? '') as String,
-          verified: (m['verified'] ?? false) as bool,
-          emoji: '',
-          lat: ((m['lat'] ?? 0) as num).toDouble(),
-          lng: ((m['lng'] ?? 0) as num).toDouble(),
-          availableFrom: (m['availableFrom'] ?? '') as String,
-          availableTo: (m['availableTo'] ?? '') as String,
-        );
-      }).toList()
-        ..sort((a, b) => b.rating.compareTo(a.rating));
-      return list;
-    });
+    return _shared(
+        'providers-\$category',
+        () => _db!
+                .collection('providers')
+                .where('category', isEqualTo: category)
+                .where('live', isEqualTo: true)
+                .snapshots()
+                .map((snap) {
+              final list = snap.docs.map((d) {
+                final m = d.data();
+                return Provider(
+                  id: d.id,
+                  name: (m['name'] ?? '') as String,
+                  category: category,
+                  subtitle: (m['subtitle'] ?? '') as String,
+                  rating: ((m['rating'] ?? 0) as num).toDouble(),
+                  reviews: ((m['reviews'] ?? 0) as num).toInt(),
+                  hourlyRate: ((m['hourlyRate'] ?? 0) as num).toDouble(),
+                  city: (m['city'] ?? '') as String,
+                  verified: (m['verified'] ?? false) as bool,
+                  emoji: '',
+                  lat: ((m['lat'] ?? 0) as num).toDouble(),
+                  lng: ((m['lng'] ?? 0) as num).toDouble(),
+                  availableFrom: (m['availableFrom'] ?? '') as String,
+                  availableTo: (m['availableTo'] ?? '') as String,
+                );
+              }).toList()
+                ..sort((a, b) => b.rating.compareTo(a.rating));
+              return list;
+            }));
   }
 }

@@ -178,13 +178,24 @@ for status in ("Preparing", "Ready"):
                  doc_body({"status": status}), token=owner)
 check("delivery: owner prepares and marks Ready", st == 200)
 
+# The job board is readable by every signed-in partner, so it must not carry
+# the customer's contact details or the delivery OTP.
+st, _ = http("POST", f"{FS}/delivery_jobs?documentId={deliv_id}_leak", doc_body({
+    "storeName": "Leak Test", "orderDetail": "x", "dropAddress": "x",
+    "otp": otp, "fee": 1.0, "status": "Open", "deliveryPersonId": "",
+}), token=owner)
+check("rules: a job carrying the OTP is rejected", st == 403)
+
 st, _ = http("POST", f"{FS}/delivery_jobs?documentId={deliv_id}", doc_body({
     "storeName": "Bombay Street Eats", "orderDetail": "Delivery order · 1 item",
-    "dropAddress": "456 Wood Ave, Iselin, NJ", "customerPhone": REAL_PHONE,
-    "customerEmail": "", "otp": otp, "fee": 4.99, "status": "Open",
-    "deliveryPersonId": "",
+    "dropAddress": "456 Wood Ave, Iselin, NJ",
+    "fee": 4.99, "status": "Open", "deliveryPersonId": "",
 }), token=owner)
 check("delivery: owner posts job to the board", st == 200)
+
+# An unassigned partner must not be able to read the booking that holds the OTP.
+st, _ = http("GET", f"{FS}/{deliv}", token=other)
+check("rules: unassigned partner cannot read the order's OTP", st == 403)
 
 # stranger (acting as delivery partner) claims it
 st, _ = http("PATCH",
@@ -206,10 +217,40 @@ st2, _ = http("PATCH", f"{FS}/{deliv}?updateMask.fieldPaths=status",
 check("delivery: assigned partner sets Out-for-delivery on the order",
       st == 200 and st2 == 200)
 
-# OTP verification (as the app does): read job, compare, then complete
-st, jd = http("GET", f"{FS}/delivery_jobs/{deliv_id}", token=other)
-job_otp = get_field(jd, "otp")
-check("delivery: partner sees the expected OTP on the job", job_otp == otp)
+# ---- Live courier tracking ----
+# The assigned partner's device publishes GPS positions onto the job.
+route = [(40.5651, -74.3229), (40.5702, -74.3181), (40.5744, -74.3120)]
+track_ok = True
+for lat, lng in route:
+    st, _ = http("PATCH",
+                 f"{FS}/delivery_jobs/{deliv_id}"
+                 "?updateMask.fieldPaths=courierLat"
+                 "&updateMask.fieldPaths=courierLng"
+                 "&updateMask.fieldPaths=courierSpeedMps",
+                 doc_body({"courierLat": lat, "courierLng": lng,
+                           "courierSpeedMps": 6.5}), token=other)
+    track_ok = track_ok and st == 200
+check("tracking: assigned partner publishes GPS positions", track_ok)
+
+# The customer reads the courier's live position for their map.
+st, td = http("GET", f"{FS}/delivery_jobs/{deliv_id}", token=cust)
+got_lat = get_field(td, "courierLat")
+check("tracking: customer sees the courier's live position",
+      st == 200 and abs(float(got_lat) - route[-1][0]) < 1e-6,
+      f"status {st}, lat {got_lat}")
+
+# A partner who is not assigned must not be able to spoof the position.
+st, _ = http("PATCH",
+             f"{FS}/delivery_jobs/{deliv_id}?updateMask.fieldPaths=courierLat",
+             doc_body({"courierLat": 0.0}), token=cust)
+check("rules: only the assigned partner can move the courier pin", st == 403)
+
+# OTP verification (as the app does): the assigned partner reads it from the
+# booking — not from the job board — then completes the delivery.
+st, bd = http("GET", f"{FS}/{deliv}", token=other)
+job_otp = get_field(bd, "otp")
+check("delivery: assigned partner reads the OTP from the booking",
+      st == 200 and job_otp == otp, f"status {st}")
 wrong = "0000" if otp != "0000" else "1111"
 check("delivery: wrong OTP is rejected (client gate)", wrong != job_otp)
 st, _ = http("PATCH", f"{FS}/delivery_jobs/{deliv_id}?updateMask.fieldPaths=status",

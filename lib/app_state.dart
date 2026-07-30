@@ -40,8 +40,9 @@ class AppState extends ChangeNotifier {
 
   bool get firebaseReady => _fb.ready;
   bool get signedIn => _fb.currentUser != null || _localName != null;
-  String? get userName =>
-      _fb.currentUser?.displayName?.isNotEmpty == true ? _fb.currentUser!.displayName : _localName;
+  String? get userName => _fb.currentUser?.displayName?.isNotEmpty == true
+      ? _fb.currentUser!.displayName
+      : _localName;
   String? get userPhone => _fb.currentUser?.phoneNumber;
 
   /// Called once after Firebase init: react to auth changes + live bookings.
@@ -78,7 +79,8 @@ class AppState extends ChangeNotifier {
 
   /// Step 1 of sign-in: send the SMS code. Returns an error message or null.
   Future<String?> sendCode(String phone) async {
-    if (!_fb.ready) return null; // offline demo mode: skip straight to code entry
+    if (!_fb.ready)
+      return null; // offline demo mode: skip straight to code entry
     try {
       _pendingSms = await _fb.sendSmsCode(normalizeUsPhone(phone));
       return null;
@@ -112,7 +114,8 @@ class AppState extends ChangeNotifier {
 
   /// Email/password auth (register with any email, e.g. a Gmail address,
   /// plus a password the user sets). Returns error text or null.
-  Future<String?> signUpEmail(String email, String password, String name) async {
+  Future<String?> signUpEmail(
+      String email, String password, String name) async {
     if (!_fb.ready) {
       _localName = name;
       notifyListeners();

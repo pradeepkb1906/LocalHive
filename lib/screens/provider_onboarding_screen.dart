@@ -12,7 +12,8 @@ class ProviderOnboardingScreen extends StatefulWidget {
   const ProviderOnboardingScreen({super.key});
 
   @override
-  State<ProviderOnboardingScreen> createState() => _ProviderOnboardingScreenState();
+  State<ProviderOnboardingScreen> createState() =>
+      _ProviderOnboardingScreenState();
 }
 
 class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
@@ -26,20 +27,55 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
   String _availFrom = '9 AM';
   String _availTo = '6 PM';
   static const _hours = [
-    '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM',
-    '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM',
-    '10 PM', '11 PM'
+    '6 AM',
+    '7 AM',
+    '8 AM',
+    '9 AM',
+    '10 AM',
+    '11 AM',
+    '12 PM',
+    '1 PM',
+    '2 PM',
+    '3 PM',
+    '4 PM',
+    '5 PM',
+    '6 PM',
+    '7 PM',
+    '8 PM',
+    '9 PM',
+    '10 PM',
+    '11 PM'
   ];
 
   static const _types = [
-    ('home_service', CupertinoIcons.sparkles, LhColors.indigo, 'Home services',
-        'Cleaning, handyman work, and other in-home services'),
-    ('indian_store', CupertinoIcons.cart_fill, LhColors.green, 'Indian store',
-        'Grocery or retail store with pickup / delivery orders'),
-    ('food_truck', CupertinoIcons.car_detailed, LhColors.orange, 'Food truck',
-        'Mobile food business with live location and pre-orders'),
-    ('delivery', CupertinoIcons.cube_box_fill, LhColors.blue, 'Delivery partner',
-        'Students & gig workers — deliver orders on your own schedule'),
+    (
+      'home_service',
+      CupertinoIcons.sparkles,
+      LhColors.indigo,
+      'Home services',
+      'Cleaning, handyman work, and other in-home services'
+    ),
+    (
+      'indian_store',
+      CupertinoIcons.cart_fill,
+      LhColors.green,
+      'Indian store',
+      'Grocery or retail store with pickup / delivery orders'
+    ),
+    (
+      'food_truck',
+      CupertinoIcons.car_detailed,
+      LhColors.orange,
+      'Food truck',
+      'Mobile food business with live location and pre-orders'
+    ),
+    (
+      'delivery',
+      CupertinoIcons.cube_box_fill,
+      LhColors.blue,
+      'Delivery partner',
+      'Students & gig workers — deliver orders on your own schedule'
+    ),
   ];
 
   void _next() {
@@ -47,7 +83,8 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
       _toast('Choose what you want to offer.');
       return;
     }
-    if (_step == 1 && (_businessName.text.trim().isEmpty || _city.text.trim().isEmpty)) {
+    if (_step == 1 &&
+        (_businessName.text.trim().isEmpty || _city.text.trim().isEmpty)) {
       _toast('Enter your business name and city.');
       return;
     }
@@ -57,7 +94,8 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
         return;
       }
       if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
-        _toast('Please sign in first — your application must be linked to your account.');
+        _toast(
+            'Please sign in first — your application must be linked to your account.');
         Navigator.push(
             context, MaterialPageRoute(builder: (_) => const SignInScreen()));
         return;
@@ -71,13 +109,15 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          icon: const Icon(CupertinoIcons.checkmark_seal_fill, color: LhColors.green, size: 44),
+          icon: const Icon(CupertinoIcons.checkmark_seal_fill,
+              color: LhColors.green, size: 44),
           title: const Text('Application submitted'),
           content: const Text(
               'Your application is now with the LocalHive team for review. '
               'You will get a text the moment it is approved — then your listing goes live.'),
           actions: [
             FilledButton(
+              style: dialogButtonStyle(),
               onPressed: () {
                 Navigator.pop(ctx);
                 Navigator.pop(context);
@@ -98,7 +138,9 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Become a Provider'), actions: const [LocationChip()]),
+      appBar: AppBar(
+          title: const Text('Become a Provider'),
+          actions: const [LocationChip()]),
       body: Column(
         children: [
           Padding(
@@ -125,10 +167,12 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
               children: [
                 if (_step == 0) ...[
                   const Text('What do you offer?',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   const Text('Pick the category that fits your business.',
-                      style: TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
+                      style: TextStyle(
+                          fontSize: 14, color: LhColors.inkSecondary)),
                   const SizedBox(height: 20),
                   ..._types.map((t) {
                     final selected = _type == t.$1;
@@ -138,23 +182,25 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                           side: BorderSide(
-                              color: selected ? LhColors.blue : LhColors.hairline,
+                              color:
+                                  selected ? LhColors.blue : LhColors.hairline,
                               width: selected ? 2 : 0.5),
                         ),
                         child: ListTile(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
                           leading: IconTile(icon: t.$2, color: t.$3),
                           title: Text(t.$4,
-                              style:
-                                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
                           subtitle: Text(t.$5,
                               style: const TextStyle(
                                   fontSize: 13, color: LhColors.inkSecondary)),
                           trailing: selected
                               ? const Icon(CupertinoIcons.checkmark_circle_fill,
                                   color: LhColors.blue)
-                              : const Icon(CupertinoIcons.circle, color: LhColors.hairline),
+                              : const Icon(CupertinoIcons.circle,
+                                  color: LhColors.hairline),
                           onTap: () => setState(() => _type = t.$1),
                         ),
                       ),
@@ -162,30 +208,37 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
                   }),
                 ] else if (_step == 1) ...[
                   const Text('Your business',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   const Text('Shown to customers on your listing.',
-                      style: TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
+                      style: TextStyle(
+                          fontSize: 14, color: LhColors.inkSecondary)),
                   const SizedBox(height: 20),
                   TextField(
                     controller: _businessName,
                     textCapitalization: TextCapitalization.words,
                     decoration: const InputDecoration(
-                        hintText: 'Business or display name (e.g., "Maria\'s Cleaning")'),
+                        hintText:
+                            'Business or display name (e.g., "Maria\'s Cleaning")'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _city,
                     textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(hintText: 'City, State (e.g., Edison, NJ)'),
+                    decoration: const InputDecoration(
+                        hintText: 'City, State (e.g., Edison, NJ)'),
                   ),
                   const SizedBox(height: 20),
                   const Text('I am available',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  const Text('Customers see this window; jobs and deliveries '
+                  const Text(
+                      'Customers see this window; jobs and deliveries '
                       'are only expected within it.',
-                      style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                      style: TextStyle(
+                          fontSize: 13, color: LhColors.inkSecondary)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -214,11 +267,13 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
                   ),
                 ] else ...[
                   const Text('Verification',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   const Text(
                       'US law and LocalHive policy require identity verification before you can accept jobs.',
-                      style: TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
+                      style: TextStyle(
+                          fontSize: 14, color: LhColors.inkSecondary)),
                   const SizedBox(height: 20),
                   InsetGroup(
                     header: 'What happens next',
@@ -229,10 +284,12 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
                             color: LhColors.blue,
                             size: 32),
                         title: Text('Identity check (KYC)',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600)),
                         subtitle: Text(
                             'Government ID + selfie via Stripe Identity. Also sets up your secure payout account.',
-                            style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                            style: TextStyle(
+                                fontSize: 13, color: LhColors.inkSecondary)),
                       ),
                       ListTile(
                         leading: IconTile(
@@ -240,17 +297,20 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
                             color: LhColors.green,
                             size: 32),
                         title: Text('Background check',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600)),
                         subtitle: Text(
                             'Home-service providers only. FCRA-compliant screening with your written consent.',
-                            style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+                            style: TextStyle(
+                                fontSize: 13, color: LhColors.inkSecondary)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   CheckboxListTile(
                     value: _agreeContractor,
-                    onChanged: (v) => setState(() => _agreeContractor = v ?? false),
+                    onChanged: (v) =>
+                        setState(() => _agreeContractor = v ?? false),
                     controlAffinity: ListTileControlAffinity.leading,
                     title: const Text(
                         'I understand I operate as an independent business, responsible for my own licenses, permits, and taxes.',
