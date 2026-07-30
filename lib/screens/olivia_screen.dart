@@ -9,7 +9,6 @@ import '../services/olivia/olivia_session.dart';
 import '../services/olivia/olivia_voice.dart';
 import '../theme.dart';
 import '../widgets/olivia/olivia_avatar.dart';
-import '../widgets/olivia/olivia_lipsync.dart';
 import '../widgets/olivia/olivia_stage.dart';
 import '../widgets/olivia/olivia_video.dart';
 import '../widgets/olivia/order_confirm_card.dart';
@@ -232,10 +231,9 @@ class _OliviaScreenState extends State<OliviaScreen> {
       color: LhColors.surface,
       child: Column(
         children: [
-          // Olivia is her video clip. If it cannot play, the next best thing
-          // is the set of mouth frames cut from that same clip driven by her
-          // speech, then the still photo, then the drawn face. Each one crops
-          // to fill this box, so they all sit in exactly the same place.
+          // Olivia is her video clip. If it truly cannot play, she is her
+          // still photo — deliberately not the old mouth-frame animation,
+          // which read as flicker on a phone held at face distance.
           SizedBox(
             height: height,
             width: double.infinity,
@@ -246,21 +244,14 @@ class _OliviaScreenState extends State<OliviaScreen> {
                 speaking: _voice.isSpeaking,
                 listening: listening,
                 thinking: state == OliviaState.thinking,
-                fallback: OliviaLipSync(
-                  expand: true,
-                  mouthOpen: mouth,
-                  speaking: _voice.isSpeaking,
-                  listening: listening,
-                  thinking: state == OliviaState.thinking,
-                  // The drawn face is a circle, so it centres in the space
-                  // rather than filling it.
-                  fallback: Center(
-                    child: OliviaAvatar(
-                      size: height - 24,
-                      mouthOpen: mouth,
-                      listening: listening,
-                      thinking: state == OliviaState.thinking,
-                    ),
+                // The drawn face is a circle, so it centres in the space
+                // rather than filling it.
+                fallback: Center(
+                  child: OliviaAvatar(
+                    size: height - 24,
+                    mouthOpen: mouth,
+                    listening: listening,
+                    thinking: state == OliviaState.thinking,
                   ),
                 ),
               ),
