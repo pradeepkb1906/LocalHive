@@ -102,6 +102,30 @@ void main() {
       expect(bottom, greaterThan(mouth + 0.02));
     });
 
+    test('the raw element crop shows her face in a wide desktop strip', () {
+      // 2000x650: cover scales her portrait to ~2965px tall. Bottom-pinned
+      // would show only sweater; the position must slide up to her face.
+      final pos = OliviaStage.objectPositionFor(const Size(2000, 650));
+      final pct = double.parse(pos.split(' ')[1].replaceAll('%', ''));
+      final scaledH = 2000 * source.height / source.width;
+      final top = pct / 100 * (scaledH - 650) / scaledH;
+      final bottom = top + 650 / scaledH;
+      // The strip is only ~22% of her height — hair-top AND mouth cannot both
+      // fit. Priority for someone who is talking: eyes and mouth.
+      const eyes = 0.47;
+      expect(top, lessThan(eyes - 0.02), reason: 'her eyes must be in view');
+      expect(bottom, greaterThan(mouth + 0.01), reason: 'and her mouth');
+    });
+
+    test('the raw element crop pins her sweater on a phone-tall box', () {
+      final pos = OliviaStage.objectPositionFor(const Size(390, 500));
+      final pct = double.parse(pos.split(' ')[1].replaceAll('%', ''));
+      final scaledH = 390 * source.height / source.width;
+      final top = pct / 100 * (scaledH - 500) / scaledH;
+      expect(top + 500 / scaledH, closeTo(1.0, 0.02),
+          reason: 'bottom of the frame — her sweater — stays in shot');
+    });
+
     testWidgets('keeps its own shape when not asked to fill', (t) async {
       await t.pumpWidget(harness(Center(
         child: SizedBox(

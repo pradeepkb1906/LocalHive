@@ -81,14 +81,36 @@ class OliviaStage extends StatelessWidget {
   static Alignment cropFor(double full, double visible) {
     final excess = full - visible;
     if (excess <= 0) return Alignment.center;
-    final top = math
+    final top = topFor(full, visible);
+    // OverflowBox places the child at (1 + y) / 2 of the excess.
+    return Alignment(0, (2 * top / excess - 1).clamp(-1.0, 1.0));
+  }
+
+  /// The pixels cropped off the top of a [full]-tall frame shown in a
+  /// [visible]-tall box. Shared by the OverflowBox path and the raw web
+  /// element's CSS object-position, so both crop identically.
+  static double topFor(double full, double visible) {
+    final excess = full - visible;
+    if (excess <= 0) return 0;
+    return math
         .min(
           _bandBottom * full - visible,
           math.max(_bandTop * full, _faceCentre * full - visible / 2),
         )
         .clamp(0.0, excess);
-    // OverflowBox places the child at (1 + y) / 2 of the excess.
-    return Alignment(0, (2 * top / excess - 1).clamp(-1.0, 1.0));
+  }
+
+  /// The CSS object-position for a raw cover-cropping element in a box of
+  /// [boxSize]. Percentage semantics: P% aligns the frame's P% line with the
+  /// box's P% line, so the fraction cropped off the top is P * (1 - visible).
+  static String objectPositionFor(Size boxSize) {
+    if (boxSize.width <= 0 || boxSize.height <= 0) return '50% 50%';
+    final scaledH = boxSize.width * portrait.height / portrait.width;
+    if (scaledH <= boxSize.height) return '50% 50%';
+    final hidden = scaledH - boxSize.height;
+    final p =
+        (topFor(scaledH, boxSize.height) / hidden * 100).clamp(0.0, 100.0);
+    return '50% ${p.toStringAsFixed(1)}%';
   }
 
   Color get _ring {
