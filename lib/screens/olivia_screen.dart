@@ -41,10 +41,10 @@ class _OliviaScreenState extends State<OliviaScreen> {
 
   static const _greeting =
       "Hi, I'm Olivia. Tell me what you need — food from a truck nearby, "
-      'groceries from an Indian store, or a cleaner for a few hours.';
+      'groceries from a local store, or a cleaner for a few hours.';
 
   static const _openers = [
-    'Any biryani near me right now?',
+    'Any tacos near me right now?',
     'I need a cleaner tomorrow morning',
     'Order groceries for delivery',
     'Where is my order?',
@@ -560,7 +560,7 @@ class _OliviaScreenState extends State<OliviaScreen> {
               const SizedBox(height: 6),
               const Text(
                   'She will take your order by voice — a food truck nearby, '
-                  'groceries from an Indian store, or a cleaner for a few '
+                  'groceries from a local store, or a cleaner for a few '
                   'hours. Everything else in LocalHive works now.',
                   textAlign: TextAlign.center,
                   style:

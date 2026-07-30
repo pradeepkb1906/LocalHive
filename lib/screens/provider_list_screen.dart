@@ -83,7 +83,7 @@ class ProviderListScreen extends StatelessWidget {
                               provider: p,
                               items: category == 'indian_store'
                                   ? storeCatalog
-                                  : truckMenu)));
+                                  : truckMenuFor(p.cuisine))));
                 }
               },
               child: Padding(

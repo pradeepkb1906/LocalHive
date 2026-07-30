@@ -45,8 +45,8 @@ class TruckMapScreen extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) =>
-                              CatalogScreen(provider: t, items: truckMenu)),
+                          builder: (_) => CatalogScreen(
+                              provider: t, items: truckMenuFor(t.cuisine))),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,

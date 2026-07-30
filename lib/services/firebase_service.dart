@@ -824,6 +824,7 @@ class FirebaseService {
             lng: ((m['lng'] ?? 0) as num).toDouble(),
             availableFrom: (m['availableFrom'] ?? '') as String,
             availableTo: (m['availableTo'] ?? '') as String,
+            cuisine: (m['cuisine'] ?? '') as String,
           ),
           (m['ownerId'] ?? '') as String,
         );
@@ -896,6 +897,7 @@ class FirebaseService {
                   lng: ((m['lng'] ?? 0) as num).toDouble(),
                   availableFrom: (m['availableFrom'] ?? '') as String,
                   availableTo: (m['availableTo'] ?? '') as String,
+                  cuisine: (m['cuisine'] ?? '') as String,
                 );
               }).toList()
                 ..sort((a, b) => b.rating.compareTo(a.rating));

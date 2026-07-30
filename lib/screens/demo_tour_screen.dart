@@ -64,7 +64,7 @@ final _steps = <_Step>[
       _cIcon,
       'Welcome to LocalHive',
       'LocalHive brings three local services into one app: home services like '
-          'cleaning and handyman work, Indian grocery stores, and food trucks. '
+          'cleaning and handyman work, grocery stores, and food trucks. '
           'This tour walks you through every flow, step by step.',
       _Mock('LocalHive', [
         _Block(_B.row,
@@ -75,7 +75,7 @@ final _steps = <_Step>[
         _Block(_B.row,
             icon: CupertinoIcons.cart_fill,
             color: LhColors.green,
-            title: 'Indian Stores',
+            title: 'Stores',
             subtitle: 'Groceries & essentials'),
         _Block(_B.row,
             icon: CupertinoIcons.car_detailed,
@@ -150,7 +150,7 @@ final _steps = <_Step>[
             _Block(_B.row,
                 icon: CupertinoIcons.cart_fill,
                 color: LhColors.green,
-                title: 'Indian Stores',
+                title: 'Stores',
                 subtitle: 'Pickup or delivery'),
             _Block(_B.row,
                 icon: CupertinoIcons.car_detailed,
@@ -323,7 +323,7 @@ final _steps = <_Step>[
       LhColors.blue,
       _cIcon,
       'Step 11 — Order groceries',
-      'Now a grocery order. Tap Indian Stores and pick your shop. You see '
+      'Now a grocery order. Tap Stores and pick your shop. You see '
           'ratings and what each store specialises in.',
       _Mock(
           'Indian Stores',
@@ -516,7 +516,7 @@ final _steps = <_Step>[
       _oIcon,
       'Step 20 — Apply to list your business',
       'Now the business side. From Profile, tap Become a provider and choose '
-          'what you offer: home services, an Indian store, a food truck, or '
+          'what you offer: home services, a store, a food truck, or '
           'delivery.',
       _Mock(
           'Become a Provider',
@@ -529,7 +529,7 @@ final _steps = <_Step>[
             _Block(_B.row,
                 icon: CupertinoIcons.cart_fill,
                 color: LhColors.green,
-                title: 'Indian store',
+                title: 'Grocery store',
                 subtitle: 'Grocery or retail with pickup / delivery'),
             _Block(_B.row,
                 icon: CupertinoIcons.car_detailed,
@@ -880,7 +880,7 @@ final _steps = <_Step>[
                 icon: _oIcon,
                 color: LhColors.indigo,
                 title: 'Chennai Cash & Carry',
-                subtitle: 'Indian store · Parsippany, NJ · 9 AM – 8 PM',
+                subtitle: 'Store · Parsippany, NJ · 9 AM – 8 PM',
                 trailing: 'Awaiting'),
             _Block(_B.row,
                 icon: _cIcon,
@@ -904,7 +904,7 @@ final _steps = <_Step>[
                 icon: _oIcon,
                 color: LhColors.indigo,
                 title: 'Chennai Cash & Carry',
-                subtitle: 'Indian store · Parsippany, NJ',
+                subtitle: 'Store · Parsippany, NJ',
                 trailing: 'Awaiting'),
             _Block(_B.button, title: 'Approve'),
           ],

@@ -18,7 +18,7 @@ Future<void> showRolePicker(BuildContext context, {bool dismissible = true}) {
       CupertinoIcons.briefcase_fill,
       LhColors.indigo,
       'Business owner',
-      'Home services, Indian store, or food truck — manage your orders'
+      'Home services, store, or food truck — manage your orders'
     ),
     (
       'delivery',

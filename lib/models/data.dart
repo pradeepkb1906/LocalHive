@@ -18,6 +18,11 @@ class Provider {
   final String availableFrom; // e.g. '9 AM'
   final String availableTo; // e.g. '6 PM'
 
+  /// Food trucks only: what kind of food this truck serves. One of
+  /// 'american' | 'mexican' | 'chinese' | 'italian' | 'indian'; empty means
+  /// unknown, which gets the American menu — the safe default for a US truck.
+  final String cuisine;
+
   const Provider({
     required this.id,
     required this.name,
@@ -33,6 +38,7 @@ class Provider {
     this.lng = 0,
     this.availableFrom = '',
     this.availableTo = '',
+    this.cuisine = '',
   });
 
   bool get hasLocation => lat != 0 || lng != 0;
@@ -227,6 +233,7 @@ const foodTrucks = [
       id: 'ft1',
       name: 'Bombay Street Eats',
       category: 'food_truck',
+      cuisine: 'indian',
       subtitle: 'Vada pav · pav bhaji · open till 9 PM',
       rating: 4.9,
       reviews: 310,
@@ -238,6 +245,7 @@ const foodTrucks = [
       id: 'ft2',
       name: 'Hyderabad House on Wheels',
       category: 'food_truck',
+      cuisine: 'indian',
       subtitle: 'Biryani · haleem · open till 10 PM',
       rating: 4.8,
       reviews: 275,
@@ -249,6 +257,7 @@ const foodTrucks = [
       id: 'ft3',
       name: 'Chaat Chowk Truck',
       category: 'food_truck',
+      cuisine: 'indian',
       subtitle: 'Pani puri · bhel · sev puri',
       rating: 4.7,
       reviews: 142,
@@ -258,18 +267,58 @@ const foodTrucks = [
       lng: -74.3355),
 ];
 
+/// Everyday groceries any US store carries. Kept brand-free and cuisine-free
+/// so one catalog serves every store in every city.
 const storeCatalog = [
-  CatalogItem('Basmati Rice 10 lb', 14.99, 'bag', '🍚'),
-  CatalogItem('Toor Dal 4 lb', 7.49, 'bag', '🫘'),
-  CatalogItem('Fresh Dosa Batter', 5.99, 'tub', '🥞'),
-  CatalogItem('Garam Masala', 3.99, '100 g', '🌶️'),
-  CatalogItem('Paneer', 6.49, '14 oz', '🧀'),
-  CatalogItem('Frozen Samosas (12)', 8.99, 'box', '🥟'),
-  CatalogItem('Mango Pickle', 4.49, 'jar', '🥭'),
-  CatalogItem('Atta Whole Wheat 20 lb', 18.99, 'bag', '🌾'),
+  CatalogItem('Rice 10 lb', 12.99, 'bag', '🍚'),
+  CatalogItem('Eggs', 4.49, 'dozen', '🥚'),
+  CatalogItem('Whole Milk', 3.99, 'gallon', '🥛'),
+  CatalogItem('Bread', 3.49, 'loaf', '🍞'),
+  CatalogItem('Chicken Breast 2 lb', 8.99, 'pack', '🍗'),
+  CatalogItem('Pasta', 2.49, '1 lb box', '🍝'),
+  CatalogItem('Olive Oil', 9.99, '500 ml', '🫒'),
+  CatalogItem('Fresh Produce Box', 14.99, 'box', '🥬'),
 ];
 
-const truckMenu = [
+/// One menu per cuisine, so a taco truck sells tacos and a noodle truck sells
+/// noodles. Chosen per provider via [truckMenuFor].
+const _americanMenu = [
+  CatalogItem('Classic Cheeseburger', 9.99, 'each', '🍔'),
+  CatalogItem('BBQ Pulled Pork Sandwich', 10.49, 'each', '🥪'),
+  CatalogItem('All-Beef Hot Dog', 5.49, 'each', '🌭'),
+  CatalogItem('Loaded Fries', 6.99, 'basket', '🍟'),
+  CatalogItem('Vanilla Milkshake', 5.49, 'cup', '🥤'),
+  CatalogItem('Apple Pie Slice', 3.99, 'slice', '🥧'),
+];
+
+const _mexicanMenu = [
+  CatalogItem('Tacos al Pastor', 9.49, '3 pc', '🌮'),
+  CatalogItem('Chicken Quesadilla', 9.99, 'each', '🫓'),
+  CatalogItem('Carne Asada Burrito', 11.49, 'each', '🌯'),
+  CatalogItem('Chips & Guacamole', 5.99, 'basket', '🥑'),
+  CatalogItem('Street Corn (Elote)', 4.49, 'each', '🌽'),
+  CatalogItem('Horchata', 3.99, 'cup', '🥤'),
+];
+
+const _chineseMenu = [
+  CatalogItem('Chicken Fried Rice', 10.49, 'box', '🍚'),
+  CatalogItem('Vegetable Chow Mein', 9.49, 'box', '🍜'),
+  CatalogItem('Kung Pao Chicken', 11.99, 'box', '🌶️'),
+  CatalogItem('Pork Dumplings', 7.99, '6 pc', '🥟'),
+  CatalogItem('Spring Rolls', 5.49, '4 pc', '🥢'),
+  CatalogItem('Bubble Tea', 5.49, 'cup', '🧋'),
+];
+
+const _italianMenu = [
+  CatalogItem('Margherita Slice', 4.99, 'slice', '🍕'),
+  CatalogItem('Pepperoni Slice', 5.49, 'slice', '🍕'),
+  CatalogItem('Chicken Parm Sandwich', 10.99, 'each', '🥖'),
+  CatalogItem('Penne Alfredo', 11.49, 'box', '🍝'),
+  CatalogItem('Garlic Knots', 4.99, '6 pc', '🧄'),
+  CatalogItem('Cannoli', 4.49, 'each', '🍰'),
+];
+
+const _indianMenu = [
   CatalogItem('Vada Pav', 4.50, 'each', '🍔'),
   CatalogItem('Pav Bhaji', 8.99, 'plate', '🍲'),
   CatalogItem('Chicken Biryani', 12.99, 'box', '🍛'),
@@ -277,6 +326,23 @@ const truckMenu = [
   CatalogItem('Masala Chai', 2.50, 'cup', '☕'),
   CatalogItem('Mango Lassi', 4.99, 'cup', '🥭'),
 ];
+
+/// The menu a given truck actually serves.
+///
+/// American is the default for a truck with no recorded cuisine: every truck
+/// seeded before cuisines existed was Indian, so those carry
+/// cuisine: 'indian' explicitly, and an unknown truck in a US city is more
+/// likely burgers than biryani.
+List<CatalogItem> truckMenuFor(String cuisine) => switch (cuisine) {
+      'mexican' => _mexicanMenu,
+      'chinese' => _chineseMenu,
+      'italian' => _italianMenu,
+      'indian' => _indianMenu,
+      _ => _americanMenu,
+    };
+
+/// The historic single truck menu — the demo trucks are all Indian.
+const truckMenu = _indianMenu;
 
 final myBookings = <Booking>[
   const Booking(

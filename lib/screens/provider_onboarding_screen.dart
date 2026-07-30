@@ -59,7 +59,7 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
       'indian_store',
       CupertinoIcons.cart_fill,
       LhColors.green,
-      'Indian store',
+      'Grocery store',
       'Grocery or retail store with pickup / delivery orders'
     ),
     (

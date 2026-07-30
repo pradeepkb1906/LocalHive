@@ -178,7 +178,7 @@ class HomeTab extends StatelessWidget {
           const SizedBox(height: 16),
           TextField(
             decoration: const InputDecoration(
-              hintText: 'Search cleaners, groceries, biryani',
+              hintText: 'Search cleaners, groceries, tacos',
               prefixIcon: Icon(CupertinoIcons.search,
                   color: LhColors.inkSecondary, size: 20),
             ),
@@ -356,10 +356,10 @@ class HomeTab extends StatelessWidget {
           _CategoryCard(
             icon: CupertinoIcons.cart_fill,
             tint: LhColors.green,
-            title: 'Indian Stores',
+            title: 'Stores',
             subtitle:
                 'Groceries & essentials. Order ahead for pickup or delivery.',
-            onTap: () => _open(context, 'indian_store', 'Indian Stores'),
+            onTap: () => _open(context, 'indian_store', 'Stores'),
           ),
           const SizedBox(height: 12),
           _CategoryCard(

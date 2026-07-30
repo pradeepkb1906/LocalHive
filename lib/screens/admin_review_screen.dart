@@ -120,7 +120,7 @@ class _ApplicationCard extends StatelessWidget {
   String get _typeLabel =>
       switch (_s('type').isEmpty ? _s('category') : _s('type')) {
         'home_service' => 'Home services',
-        'indian_store' => 'Indian store',
+        'indian_store' => 'Store',
         'food_truck' => 'Food truck',
         'delivery' => 'Delivery partner',
         '' => 'Not specified',

@@ -66,7 +66,7 @@ class OliviaTools {
                   'type': 'string',
                   'enum': _categories,
                   'description':
-                      'food_truck for cooked food to eat now — biryani, chaat, '
+                      'food_truck for cooked food to eat now — burgers, tacos, noodles, '
                           'vada pav, dosa, chai. indian_store for groceries and '
                           'ingredients to cook with — rice, dal, spices, paneer. '
                           'home_service for cleaners and handymen. If the '
@@ -388,11 +388,11 @@ class OliviaTools {
   /// than as evidence that nothing is nearby.
   static const _serviceRadiusKm = 300.0;
 
-  /// Menus are per-category, not per-business: every store shares one grocery
-  /// list and every truck one menu.
-  List<CatalogItem> _menuFor(String category) => switch (category) {
+  /// Every store shares one grocery list; a truck's menu depends on its
+  /// cuisine, so a taco truck reads back tacos and not biryani.
+  List<CatalogItem> _menuFor(Provider p) => switch (p.category) {
         'indian_store' => storeCatalog,
-        'food_truck' => truckMenu,
+        'food_truck' => truckMenuFor(p.cuisine),
         _ => const <CatalogItem>[],
       };
 
@@ -423,7 +423,7 @@ class OliviaTools {
         'note': 'Home services are booked by the hour, not from a menu.',
       };
     }
-    final items = _menuFor(provider.category);
+    final items = _menuFor(provider);
     return {
       'business': provider.name,
       'items': items
@@ -521,7 +521,7 @@ class OliviaTools {
       };
     }
 
-    final menu = _menuFor(provider.category);
+    final menu = _menuFor(provider);
     final rawItems = (args['items'] as List?) ?? const [];
     final lines = <DraftLine>[];
     final unmatched = <String>[];

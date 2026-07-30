@@ -8,7 +8,7 @@ import '../theme.dart';
 import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
-/// Order-ahead catalog for Indian stores and food trucks. Placing an order
+/// Order-ahead catalog for stores and food trucks. Placing an order
 /// records a real booking in AppState.
 class CatalogScreen extends StatefulWidget {
   final Provider provider;

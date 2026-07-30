@@ -19,7 +19,7 @@ void main() {
     for (final label in const [
       'Just talk to Olivia',
       'Home Services',
-      'Indian Stores',
+      'Stores',
       'Food Trucks',
     ]) {
       await tester.scrollUntilVisible(
