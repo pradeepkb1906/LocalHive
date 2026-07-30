@@ -103744,7 +103744,7 @@ A.ep.prototype={}
 A.d5.prototype={}
 A.Pj.prototype={
 G(a){var s=null
-return A.hH(A.hY(B.eb,s,B.a6S),s,A.qf(new A.a8y(),$.eC().a03(),t.b5),s,s)}}
+return A.hH(A.hY(B.eb,s,B.a6R),s,A.qf(new A.a8y(),$.eC().a03(),t.b5),s,s)}}
 A.a8y.prototype={
 $2(a,b){var s,r,q,p,o,n,m=null,l=b.b,k=l==null
 if(k&&b.c==null)return B.eN
@@ -103756,7 +103756,7 @@ s=k.fN(l,new A.a8x())
 q=A.T(s,s.$ti.i("D.E"))
 if(k.gaa(l))return B.I7
 k=t.p
-s=A.b([A.eF(new A.aA(B.e3,A.bi(A.b([A.c6(A.bA(A.b([A.W(""+r.length,m,m,m,B.a4u,m,m),B.a7Z],k),B.n,B.k,B.m),1),A.cO(m,m,B.q,B.aA,m,m,m,34,m,m,m,m,0.5),A.c6(A.bA(A.b([A.W(""+q.length,m,m,m,B.a5d,m,m),B.a6l],k),B.n,B.k,B.m),1)],k),B.n,B.k,B.m,0),m),m,m,m,m),B.ao],k)
+s=A.b([A.eF(new A.aA(B.e3,A.bi(A.b([A.c6(A.bA(A.b([A.W(""+r.length,m,m,m,B.a4u,m,m),B.a7Z],k),B.n,B.k,B.m),1),A.cO(m,m,B.q,B.aA,m,m,m,34,m,m,m,m,0.5),A.c6(A.bA(A.b([A.W(""+q.length,m,m,m,B.a5d,m,m),B.a6k],k),B.n,B.k,B.m),1)],k),B.n,B.k,B.m,0),m),m,m,m,m),B.ao],k)
 p=A.T(r,t.a)
 B.b.J(p,q)
 o=p.length
@@ -103823,14 +103823,14 @@ if(s.dY(p).length!==0)B.b.J(i,A.b([B.c_,s.rI(B.mU,"Available "+s.dY(p)+" \u2013 
 if(s.gTC().length!==0)B.b.J(i,A.b([B.c_,s.rI(B.rr,s.gTC())],h))
 if(s.dY("about").length!==0)B.b.J(i,A.b([B.c_,s.rI(B.mS,s.dY("about"))],h))
 if(s.dY(o).length!==0)B.b.J(i,A.b([B.c_,s.rI(B.Mx,"Note: "+s.dY(o))],h))
-if(l)B.b.J(i,A.b([B.bZ,A.bi(A.b([A.c6(A.dS(B.a7_,new A.azj(s,a),A.kh(B.E,r,B.cu,r,r,r,r)),1),B.fK,A.c6(A.Ut(B.oB,new A.azk(s,a),A.ys(r,r,r,r,r,r,r,r,r,B.by,r,B.cu,r,r,r,r,r,r,r,r)),1)],h),B.n,B.k,B.m,0)],h))
+if(l)B.b.J(i,A.b([B.bZ,A.bi(A.b([A.c6(A.dS(B.a6Z,new A.azj(s,a),A.kh(B.E,r,B.cu,r,r,r,r)),1),B.fK,A.c6(A.Ut(B.oB,new A.azk(s,a),A.ys(r,r,r,r,r,r,r,r,r,B.by,r,B.cu,r,r,r,r,r,r,r,r)),1)],h),B.n,B.k,B.m,0)],h))
 return A.eF(new A.aA(B.aP,A.bA(i,B.a0,B.k,B.m),r),r,r,r,r)},
 rI(a,b){var s=null
 return A.bi(A.b([A.iI(a,B.am,s,15),B.dC,A.c6(A.W(b,s,s,s,B.DT,s,s),1)],t.p),B.a0,B.k,B.m,0)}}
 A.azf.prototype={
 $1(a){var s=null,r="businessName",q=this.a
 q=A.W("Approve "+(q.dY(r).length===0?"this business":q.dY(r))+"?",s,s,s,s,s,s)
-return A.ot(A.b([A.hl(B.fO,s,s,new A.azd(a),s,s),A.dS(B.a6h,new A.aze(a),A.ra(B.E))],t.p),B.a6v,B.No,q)},
+return A.ot(A.b([A.hl(B.fO,s,s,new A.azd(a),s,s),A.dS(B.a6g,new A.aze(a),A.ra(B.E))],t.p),B.a6u,B.No,q)},
 $S:40}
 A.azd.prototype={
 $0(){A.bB(this.a,!1).dR(!1)
@@ -103844,7 +103844,7 @@ A.azi.prototype={
 $1(a){var s,r,q=null,p="businessName",o=this.a
 o=A.W("Decline "+(o.dY(p).length===0?"this business":o.dY(p))+"?",q,q,q,q,q,q)
 s=t.p
-r=A.bA(A.b([B.a7s,B.ao,A.fG(this.b,B.Ol,q,q,q,2,!1,q,q,q,B.a5,B.ca,q)],s),B.n,B.k,B.an)
+r=A.bA(A.b([B.a7q,B.ao,A.fG(this.b,B.Ol,q,q,q,2,!1,q,q,q,B.a5,B.ca,q)],s),B.n,B.k,B.an)
 return A.ot(A.b([A.hl(B.fO,q,q,new A.azg(a),q,q),A.dS(B.oB,new A.azh(a),A.ra(B.by))],s),r,B.NJ,o)},
 $S:40}
 A.azg.prototype={
@@ -103939,7 +103939,7 @@ A.azP.prototype={
 $1(a){var s=null,r=this.a,q=r.a.c,p=q.b,o=B.n2[r.e],n=r.f,m=r.d
 q=q.r*m
 q=A.W(p+" \xb7 "+o+" at "+n+" for "+m+" hours.\n\n"+p+" has been notified and will accept shortly \u2014 you'll get an SMS and email the moment they do. Track it in the Bookings tab. You pay $"+B.d.a9(q+q*0.12,2)+" directly to them once the job is done \u2014 nothing is charged in the app.",s,s,s,s,s,s)
-return A.ot(A.b([A.dS(B.E4,new A.azN(r,a),A.ra(s))],t.p),q,B.MY,B.a6e)},
+return A.ot(A.b([A.dS(B.E4,new A.azN(r,a),A.ra(s))],t.p),q,B.MY,B.a6d)},
 $S:40}
 A.azN.prototype={
 $0(){A.bB(this.b,!1).dR(null)
@@ -103999,7 +103999,7 @@ break A}if("Declined"===j){i=B.by
 break A}i=B.Q
 break A}p=A.b([A.lA(!1,B.m5,h,h,!0,h,h,!0,h,new A.eZ(p,o,36,h),h,h,h,h,h,!1,h,h,h,h,m,h,n,h,A.bA(A.b([l,B.cv,A.W(k.c,h,h,h,new A.o(!0,i,h,h,h,h,12,B.a9,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h),h,h)],e),B.dY,B.cr,B.m),h)],e)
 if(s.h(g,q).Q==="delivery"&&B.b.n(B.So,s.h(g,q).c)&&s.h(g,q).e.length!==0){o=new A.aJ(9,9)
-p.push(new A.aA(B.Lb,A.bi(A.b([B.Ng,B.dC,B.LA,new A.c1(h,32,A.dS(B.a7n,new A.a9m(a,g,q),A.kh(B.W,B.j,new A.C(74,32),B.a4,new A.cj(new A.ca(o,o,o,o),B.r),h,B.kD)),h)],e),B.n,B.k,B.m,0),h))}if(q!==s.gF(g)-1)p.push(B.WL)
+p.push(new A.aA(B.Lb,A.bi(A.b([B.Ng,B.dC,B.LA,new A.c1(h,32,A.dS(B.a7l,new A.a9m(a,g,q),A.kh(B.W,B.j,new A.C(74,32),B.a4,new A.cj(new A.ca(o,o,o,o),B.r),h,B.kD)),h)],e),B.n,B.k,B.m,0),h))}if(q!==s.gF(g)-1)p.push(B.WL)
 B.b.J(r,p)}f.push(A.eF(A.bA(r,B.n,B.k,B.m),B.bK,h,h,h))}f.push(B.bP)
 f.push(B.Ie)
 return A.kt(f,h,B.m4,h,B.Y,!1)},
@@ -104091,7 +104091,7 @@ r=a.a
 q=B.c.a_(r,0,1)
 p=t.p
 r=A.b([A.aaa(s,A.W(q,n,n,n,A.hm(n,n,o.a.c.c==="indian_store"?B.E:B.Q,n,n,n,n,n,n,n,n,15,n,n,B.a1,n,n,!0,n,n,n,n,n,n,n,n),n,n),19),B.dB,A.c6(A.bA(A.b([A.W(r,n,n,n,B.ox,n,n),B.cv,A.W("$"+B.d.a9(a.b,2)+" / "+a.c,n,n,n,B.aC,n,n)],p),B.a0,B.k,B.m),1)],p)
-if(m===0)r.push(A.Ut(B.a6W,new A.aB_(o,a),A.ys(n,n,n,n,n,n,n,n,n,n,n,B.a_P,B.j8,n,n,n,n,n,n,n)))
+if(m===0)r.push(A.Ut(B.a6V,new A.aB_(o,a),A.ys(n,n,n,n,n,n,n,n,n,n,n,B.a_P,B.j8,n,n,n,n,n,n,n)))
 else r.push(A.bi(A.b([A.kl(n,n,B.NA,n,n,new A.aB0(o,m,a),n,n,n,B.fS),A.e2(A.fy(A.W(""+m,n,n,n,B.oA,n,n),n,n),n,22),A.kl(n,n,B.N8,n,n,new A.aB1(o,a,m),n,n,n,B.fS)],p),B.n,B.k,B.an,0))
 return new A.aA(B.Lc,A.bi(r,B.n,B.k,B.m,0),n)}}
 A.aBc.prototype={
@@ -104108,8 +104108,8 @@ A.aB6.prototype={
 $0(){return this.a.f=!1},
 $S:0}
 A.aB7.prototype={
-$1(a){var s=null,r=A.W("Alert me when "+this.a.a.c.b+" arrives",s,s,s,s,s,s),q=t.p,p=A.bA(A.b([B.a7t,B.bZ,A.fG(this.b,B.Od,s,B.kz,s,1,!1,s,s,s,B.a5,B.ca,s)],q),B.n,B.k,B.an)
-return A.ot(A.b([A.hl(B.fO,s,s,new A.aB3(a),s,s),A.dS(B.a74,new A.aB4(a),A.ra(s))],q),p,B.N2,r)},
+$1(a){var s=null,r=A.W("Alert me when "+this.a.a.c.b+" arrives",s,s,s,s,s,s),q=t.p,p=A.bA(A.b([B.a7r,B.bZ,A.fG(this.b,B.Od,s,B.kz,s,1,!1,s,s,s,B.a5,B.ca,s)],q),B.n,B.k,B.an)
+return A.ot(A.b([A.hl(B.fO,s,s,new A.aB3(a),s,s),A.dS(B.a73,new A.aB4(a),A.ra(s))],q),p,B.N2,r)},
 $S:40}
 A.aB3.prototype={
 $0(){A.bB(this.a,!1).dR(!1)
@@ -104140,16 +104140,16 @@ m=A.b([A.W("Order \xb7 "+n.a.c.b,p,p,p,B.DQ,p,p),B.bZ,A.aYm(new A.aAP(n,b),B.SP,
 if(n.e)B.b.J(m,A.b([B.ao,A.fG(n.r,B.Oh,p,p,p,1,!1,p,p,p,B.a5,B.dF,p)],l))
 else{s=t.fD
 s=A.T(new A.X(B.RS,new A.aAQ(n,b),s),s.i("am.E"))
-B.b.J(m,A.b([B.ao,B.a6A,B.di,A.Js(s,0,8)],l))}m.push(B.bZ)
+B.b.J(m,A.b([B.ao,B.a6z,B.di,A.Js(s,0,8)],l))}m.push(B.bZ)
 s=n.d
 r=A.n(s).i("ee<1,2>")
 q=t.l7
 s=A.T(A.hg(new A.ee(s,r),new A.aAR(),r.i("D.E"),q),q)
 s.push(B.yE)
-s.push(A.bi(A.b([B.a7A,A.W("$"+B.d.a9(n.gKR()*0.12,2),p,p,p,B.fM,p,p)],l),B.n,B.da,B.m,0))
+s.push(A.bi(A.b([B.a7y,A.W("$"+B.d.a9(n.gKR()*0.12,2),p,p,p,B.fM,p,p)],l),B.n,B.da,B.m,0))
 if(n.e)B.b.J(s,A.b([B.bg,B.YQ],l))
 s.push(B.di)
-s.push(A.bi(A.b([B.a6f,A.W("$"+B.d.a9(n.gL0(),2),p,p,p,B.ov,p,p)],l),B.n,B.da,B.m,0))
+s.push(A.bi(A.b([B.a6e,A.W("$"+B.d.a9(n.gL0(),2),p,p,p,B.ov,p,p)],l),B.n,B.da,B.m,0))
 m.push(A.eF(new A.aA(B.aP,A.bA(s,B.n,B.k,B.m),p),p,p,p,p))
 m.push(B.er)
 m.push(A.dS(A.W(n.e?"Place Delivery Order":"Place Pickup Order",p,p,p,p,p,p),new A.aAS(n,a),p))
@@ -104267,7 +104267,7 @@ i=A.Z(r).i("ec<1,m>")
 s=i.i("aQ<D.E>")
 p=new A.abE(r,A.eK(new A.aQ(new A.ec(r,new A.abA(),i),new A.abB(),s),s.i("D.E")))
 s=t.p
-i=A.b([A.eF(new A.aA(B.e3,A.bi(A.b([A.c6(A.bA(A.b([A.W(""+r.length,k,k,k,B.a35,k,k),B.a7I],s),B.n,B.k,B.m),1),A.cO(k,k,B.q,B.aA,k,k,k,34,k,k,k,k,0.5),A.c6(A.bA(A.b([A.W(""+q.length,k,k,k,B.a1I,k,k),B.a82],s),B.n,B.k,B.m),1)],s),B.n,B.k,B.m,0),k),k,k,k,k)],s)
+i=A.b([A.eF(new A.aA(B.e3,A.bi(A.b([A.c6(A.bA(A.b([A.W(""+r.length,k,k,k,B.a35,k,k),B.a7H],s),B.n,B.k,B.m),1),A.cO(k,k,B.q,B.aA,k,k,k,34,k,k,k,k,0.5),A.c6(A.bA(A.b([A.W(""+q.length,k,k,k,B.a1I,k,k),B.a82],s),B.n,B.k,B.m),1)],s),B.n,B.k,B.m,0),k),k,k,k,k)],s)
 if(r.length!==0)B.b.J(i,A.b([B.bO,B.ads],s))
 i.push(B.bO)
 o=A.T(r,t.a)
@@ -104375,11 +104375,11 @@ case 15:case 11:if(a0.e!=null)a0.a3(t.L).f.du(A.f5(null,null,null,null,null,B.x,
 case 1:return A.t(q,r)}})
 return A.u($async$nK,r)},
 G(a){var s,r=this,q=null,p=r.c,o=A.a6(p.h(0,"status")),n=o==="Open",m=t.p,l=A.b([A.c6(A.W(A.j(p.h(0,"storeName")),q,q,q,B.cy,q,q),1)],m)
-if(r.d)l.push(A.cO(q,B.a6y,B.q,q,q,new A.bZ(B.E.dJ(0.12),q,q,A.cA(10),q,q,B.V),q,q,B.KR,B.Lu,q,q,q))
+if(r.d)l.push(A.cO(q,B.a6x,B.q,q,q,new A.bZ(B.E.dJ(0.12),q,q,A.cA(10),q,q,B.V),q,q,B.KR,B.Lu,q,q,q))
 s=p.h(0,"fee")
 l.push(A.W("$"+B.d.a9(A.dy(s==null?0:s),2),q,q,q,B.a3l,q,q))
 p=A.b([A.bi(l,B.n,B.k,B.m,0),B.c_,A.W(A.j(p.h(0,"orderDetail")),q,q,q,B.ia,q,q),B.c_,A.bi(A.b([B.Ny,B.ok,A.c6(A.W("Deliver to: "+A.j(p.h(0,"dropAddress")),q,q,q,B.oz,q,q),1),A.aRY(B.rz,B.E3,new A.aCD(r,a),A.IC(q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,B.fS))],m),B.a0,B.k,B.m,0)],m)
-if(!n)B.b.J(p,A.b([B.bg,A.bi(A.b([B.Nc,B.ok,B.LC,A.hl(B.a6r,q,q,new A.aCE(r,a),q,A.IC(q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,B.fS))],m),B.n,B.k,B.m,0)],m))
+if(!n)B.b.J(p,A.b([B.bg,A.bi(A.b([B.Nc,B.ok,B.LC,A.hl(B.a6q,q,q,new A.aCE(r,a),q,A.IC(q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,q,B.fS))],m),B.n,B.k,B.m,0)],m))
 p.push(B.ao)
 m=A.kh(n?B.z:B.W,q,B.cu,q,q,q,q)
 A:{if("Open"===o){n="Claim This Delivery"
@@ -104388,8 +104388,8 @@ break A}n="Mark Delivered"
 break A}p.push(A.dS(A.W(n,q,q,q,q,q,q),new A.aCF(r,a),m))
 return A.eF(new A.aA(B.aP,A.bA(p,B.a0,B.k,B.m),q),q,q,q,q)}}
 A.aCA.prototype={
-$1(a){var s=null,r=t.p,q=A.bA(A.b([B.a7U,B.ao,A.fG(this.a,B.Oc,s,B.DM,4,1,!1,s,s,B.a2a,B.bR,B.ca,s)],r),B.n,B.k,B.an)
-return A.ot(A.b([A.hl(B.fO,s,s,new A.aCy(a),s,s),A.dS(B.a6q,new A.aCz(a),A.ra(s))],r),q,B.MZ,B.a7F)},
+$1(a){var s=null,r=t.p,q=A.bA(A.b([B.a7T,B.ao,A.fG(this.a,B.Oc,s,B.DM,4,1,!1,s,s,B.a2a,B.bR,B.ca,s)],r),B.n,B.k,B.an)
+return A.ot(A.b([A.hl(B.fO,s,s,new A.aCy(a),s,s),A.dS(B.a6p,new A.aCz(a),A.ra(s))],r),q,B.MZ,B.a7E)},
 $S:40}
 A.aCy.prototype={
 $0(){A.bB(this.a,!1).dR(!1)
@@ -104493,7 +104493,7 @@ anf(a){var s=B.b.a38($.By,new A.aCH(a))
 if(s>=0){this.O(new A.aCI(this,s))
 this.o3()}},
 G(a){var s,r,q,p,o,n,m,l=this,k=null,j=$.By[l.d],i=l.e,h=i?"Mute narration":"Unmute narration",g=t.p
-h=A.hY(A.b([A.kl(k,k,A.iI(i?B.mT:B.MJ,k,k,20),k,k,new A.aCL(l),k,k,h,k),A.hl(B.a6Y,k,k,new A.aCM(a),k,k)],g),k,B.a6J)
+h=A.hY(A.b([A.kl(k,k,A.iI(i?B.mT:B.MJ,k,k,20),k,k,new A.aCL(l),k,k,h,k),A.hl(B.a6X,k,k,new A.aCM(a),k,k)],g),k,B.a6I)
 s=A.b([],g)
 for(i=j.a,r=0;r<4;++r){q=B.Ss[r]
 s.push(new A.aA(B.Lp,A.Q7(A.W(q,k,k,k,B.E1,k,k),new A.aCN(l,q),i===q),k))}i=A.e2(A.kt(s,k,B.L4,k,B.ay,!1),44,k)
@@ -104507,7 +104507,7 @@ o=A.b([A.W(j.d,k,k,k,B.a3r,k,k),B.c_,A.W(j.e,k,k,k,B.a5u,k,k)],g)
 if(l.d===$.By.length-1){p=A.ys(k,k,k,k,k,k,k,k,k,k,k,B.cu,k,k,k,k,k,k,k,k)
 B.b.J(o,A.b([B.bO,new A.Gc(!0,new A.aCO(a),k,k,k,p,k,k,!1,k,!0,k,new A.a1Z(B.a7Y,B.Nx,p,k,k),k)],g))}o.push(B.bZ)
 p=A.b([],g)
-if(l.d>0)p.push(A.c6(A.Ut(B.a6Q,new A.aCP(l),A.ys(k,k,k,k,k,k,k,k,k,k,k,B.Db,k,k,k,k,k,k,k,k)),1))
+if(l.d>0)p.push(A.c6(A.Ut(B.a6P,new A.aCP(l),A.ys(k,k,k,k,k,k,k,k,k,k,k,B.Db,k,k,k,k,k,k,k,k)),1))
 if(l.d>0)p.push(B.fK)
 m=A.kh(k,k,B.Db,k,k,k,k)
 p.push(A.c6(A.dS(A.W(l.d===$.By.length-1?"Start using LocalHive":"Next",k,k,k,k,k,k),new A.aCQ(l),m),2))
@@ -104578,7 +104578,7 @@ r=A.cO(g,s,B.q,g,g,new A.bZ(B.j,g,A.rA(B.aA,B.p,0.5),r,g,g,B.V),g,g,g,B.L2,g,g,g
 s=r
 break
 case 1:s=A.cA(12)
-r=A.cO(g,B.a6V,B.q,g,g,new A.bZ(B.Q,g,g,A.cA(8),g,g,B.V),g,g,g,B.f1,g,g,g)
+r=A.cO(g,B.a6U,B.q,g,g,new A.bZ(B.Q,g,g,A.cA(8),g,g,B.V),g,g,g,B.f1,g,g,g)
 q=a.d
 s=A.cO(g,A.bi(A.b([r,B.fK,A.c6(A.W(q==null?"":q,g,g,g,B.a46,g,g),1)],t.p),B.n,B.k,B.m,0),B.q,g,g,new A.bZ(B.W,g,g,s,g,g,B.V),g,g,g,B.m3,g,g,g)
 break
@@ -104700,7 +104700,7 @@ break
 case 6:case 1:return A.t(q,r)
 case 2:return A.r(o.at(-1),r)}})
 return A.u($async$AO,r)},
-G(a){var s,r,q,p,o,n=this,m=null,l=A.hY(m,m,B.a6K)
+G(a){var s,r,q,p,o,n=this,m=null,l=A.hY(m,m,B.a6J)
 if(n.f)s=B.eN
 else{s=n.d
 if(s==null){s=n.r
@@ -104716,7 +104716,7 @@ q=A.b([A.W(n.a.d,m,m,m,B.DU,m,m)],r)
 p=n.e
 if(p!=null)q.push(A.W(p,2,B.aw,m,B.cx,m,m))
 q=A.bi(A.b([B.Ne,B.dC,A.c6(A.bA(q,B.a0,B.k,B.m),1)],r),B.a0,B.k,B.m,0)
-return A.hH(l,m,A.bA(A.b([s,A.hG(!0,new A.aA(B.aP,A.bA(A.b([q,B.ao,new A.E0(!0,new A.aD0(n,a),m,m,m,m,B.q,m,!1,m,!0,m,new A.a01(B.a6i,B.Nr,m,m,m),m)],r),B.cG,B.k,B.m),m),!1,B.a4,!1)],r),B.n,B.k,B.m),m,m)}}
+return A.hH(l,m,A.bA(A.b([s,A.hG(!0,new A.aA(B.aP,A.bA(A.b([q,B.ao,new A.E0(!0,new A.aD0(n,a),m,m,m,m,B.q,m,!1,m,!0,m,new A.a01(B.a6h,B.Nr,m,m,m),m)],r),B.cG,B.k,B.m),m),!1,B.a4,!1)],r),B.n,B.k,B.m),m,m)}}
 A.aCY.prototype={
 $0(){var s=this.a
 s.f=!1
@@ -104761,7 +104761,7 @@ o=A.b([B.Vm],p)
 if(s!=null)o.push(s)
 o.push(B.Vn)
 o.push(B.Vl)
-return A.hH(n,n,r,A.bA(A.b([B.eW,new A.U8(q,o,new A.aEB(l),n)],p),B.n,B.k,B.an),new A.xz(B.ND,B.j,B.W,new A.aEC(a),B.a7O,n))},
+return A.hH(n,n,r,A.bA(A.b([B.eW,new A.U8(q,o,new A.aEB(l),n)],p),B.n,B.k,B.an),new A.xz(B.ND,B.j,B.W,new A.aEC(a),B.a7N,n))},
 $S:694}
 A.aEz.prototype={
 $2(a,b){var s,r=null,q=b.b
@@ -104794,7 +104794,7 @@ A.Sf.prototype={
 K7(a,b,c){var s=A.eg(new A.ahu(b,c),null,t.z)
 A.bB(a,!1).dg(s)},
 G(a){var s,r,q,p=null,o=A.S(a).ok.e,n=t.p
-o=A.b([A.bi(A.b([new A.fW(1,B.bW,A.W("LocalHive",1,B.aw,p,o==null?p:o.Mx(B.a1,-0.5),p,p),p),B.on,B.ec],n),B.n,B.k,B.m,0),B.cv,B.a7r,B.er,A.fG(p,B.Oa,p,p,p,1,!1,p,new A.ahB(),p,B.a5,B.ca,p),B.er],n)
+o=A.b([A.bi(A.b([new A.fW(1,B.bW,A.W("LocalHive",1,B.aw,p,o==null?p:o.Mx(B.a1,-0.5),p,p),p),B.on,B.ec],n),B.n,B.k,B.m,0),B.cv,B.a7p,B.er,A.fG(p,B.Oa,p,p,p,1,!1,p,new A.ahB(),p,B.a5,B.ca,p),B.er],n)
 s=B.W.dJ(0.06)
 r=A.cA(14)
 q=B.W.dJ(0.3)
@@ -104847,7 +104847,7 @@ q=A.cA(10)
 p=""+m
 q=A.cO(n,A.W(p,n,n,n,B.a1V,n,n),B.q,n,n,new A.bZ(B.Q,n,n,q,n,n,B.V),n,n,n,B.L0,n,n,n)
 o=t.p
-return new A.aA(B.j7,A.hE(!1,B.O,!0,s,A.lw(!1,r,!0,new A.aA(B.aP,A.bi(A.b([q,B.dB,A.c6(A.bA(A.b([A.W(m===1?"You have 1 order waiting!":"You have "+p+" orders waiting!",n,n,n,B.a2k,n,n),B.cv,B.a7x],o),B.a0,B.k,B.m),1),B.Nm],o),B.n,B.k,B.m,0),n),n,!0,n,n,n,n,n,n,n,n,n,new A.ahy(a),n,n,n,n,n,n,n),B.q,B.W,0,n,n,n,n,n,B.cN),n)},
+return new A.aA(B.j7,A.hE(!1,B.O,!0,s,A.lw(!1,r,!0,new A.aA(B.aP,A.bi(A.b([q,B.dB,A.c6(A.bA(A.b([A.W(m===1?"You have 1 order waiting!":"You have "+p+" orders waiting!",n,n,n,B.a2k,n,n),B.cv,B.a7v],o),B.a0,B.k,B.m),1),B.Nm],o),B.n,B.k,B.m,0),n),n,!0,n,n,n,n,n,n,n,n,n,new A.ahy(a),n,n,n,n,n,n,n),B.q,B.W,0,n,n,n,n,n,B.cN),n)},
 $S:700}
 A.ahy.prototype={
 $0(){var s=A.eg(new A.ahw(),null,t.z)
@@ -104932,7 +104932,7 @@ for(;;)switch(s){case 0:s=1
 break
 case 1:return A.t(q,r)}})
 return A.u($async$J2,r)},
-G(a){var s=null,r=A.hH(A.hY(s,s,B.a7C),s,A.fy(new A.aA(B.f0,A.bA(A.b([B.Wp,B.er,B.a6b,B.c_,B.a7c],t.p),B.n,B.cr,B.m),s),s,s),s,s)
+G(a){var s=null,r=A.hH(A.hY(s,s,B.a7A),s,A.fy(new A.aA(B.f0,A.bA(A.b([B.Wp,B.er,B.a7D,B.c_,B.a7U],t.p),B.n,B.cr,B.m),s),s,s),s,s)
 return r}}
 A.aGH.prototype={
 $1(a){return this.a.J2()},
@@ -104977,7 +104977,7 @@ o=m.x
 A:{if("provider"===o){p="Business owner"
 break A}if("delivery"===o){p="Delivery partner"
 break A}p="Customer"
-break A}p=A.b([l,B.bP,r,B.dD,new A.tD(A.b([q,A.lA(!1,n,n,n,!0,n,n,!0,n,B.MR,n,n,n,n,new A.apB(a),!1,n,n,n,n,B.a6E,n,A.W("Account type: "+p,n,n,n,B.cy,n,n),n,B.fc,n)],k),"Earn with LocalHive",n),B.dD,new A.tD(B.QY,"About",n)],k)
+break A}p=A.b([l,B.bP,r,B.dD,new A.tD(A.b([q,A.lA(!1,n,n,n,!0,n,n,!0,n,B.MR,n,n,n,n,new A.apB(a),!1,n,n,n,n,B.a6D,n,A.W("Account type: "+p,n,n,n,B.cy,n,n),n,B.fc,n)],k),"Earn with LocalHive",n),B.dD,new A.tD(B.QY,"About",n)],k)
 l=s.b
 if((l==null?n:l.gbN())!=null||m.b!=null)B.b.J(p,A.b([B.dD,A.eF(A.lA(!1,n,n,n,!0,n,n,!0,n,n,n,n,n,n,new A.apC(m),!1,n,n,n,n,n,n,B.Id,n,n,n),n,n,n,n)],k))
 p.push(B.dD)
@@ -105148,15 +105148,15 @@ else s=A.W(m.glE()?"Create Account":"Sign In",l,l,l,l,l,l)
 i.push(A.dS(s,r,l))
 s=m.y?l:new A.aKP(m)
 i.push(A.hl(A.W(m.glE()?"Already have an account? Sign in":"New here? Create an account",l,l,l,l,l,l),l,l,s,l,l))
-if(!m.glE())i.push(A.hl(B.a6u,l,l,m.y?l:m.gai1(),l,l))
+if(!m.glE())i.push(A.hl(B.a6t,l,l,m.y?l:m.gai1(),l,l))
 s=m.glE()
 if(!s){s=A.b([B.a0_,B.YR,B.bg,B.a81,B.bO],g)
 for(q=0;q<6;++q){p=B.SV[q]
 r=A.bA(A.b([A.W(p.a,l,l,l,B.DR,l,l),B.a00,A.W(p.b,l,l,l,B.DZ,l,l),B.om,A.W(p.c+"  \xb7  "+p.d,l,l,l,B.a1Q,l,l)],g),B.a0,B.k,B.m)
 o=m.y?l:new A.aKQ(m,p,a)
 n=new A.aJ(9,9)
-s.push(new A.kc(l,l,l,B.j7,new A.aA(B.L5,A.bi(A.b([new A.eZ(p.e,p.f,34,l),B.kt,new A.i4(1,B.c3,r,l),B.dC,new A.c1(66,34,A.dS(B.a7e,o,A.kh(B.W,B.j,new A.C(66,34),B.a4,new A.cj(new A.ca(n,n,n,n),B.r),l,B.kD)),l)],g),B.n,B.k,B.m,0),l),l))}s.push(B.bg)
-s.push(B.a6H)
+s.push(new A.kc(l,l,l,B.j7,new A.aA(B.L5,A.bi(A.b([new A.eZ(p.e,p.f,34,l),B.kt,new A.i4(1,B.c3,r,l),B.dC,new A.c1(66,34,A.dS(B.a7c,o,A.kh(B.W,B.j,new A.C(66,34),B.a4,new A.cj(new A.ca(n,n,n,n),B.r),l,B.kD)),l)],g),B.n,B.k,B.m,0),l),l))}s.push(B.bg)
+s.push(B.a6G)
 B.b.J(i,s)}B.b.J(h,i)}else{i=m.e
 if(!m.x){s=A.fG(m.d,B.rG,l,l,l,1,!1,l,l,l,B.a5,B.dF,l)
 i=A.fG(i,B.Oo,l,B.kz,l,1,!1,l,l,l,B.a5,B.ca,l)
@@ -105167,8 +105167,8 @@ B.b.J(h,A.b([s,B.ao,i,B.di,r,B.bP,A.dS(o?B.ol:B.a8_,n,l)],g))}else{i=A.W("Enter 
 s=A.fG(m.f,B.Of,l,B.DM,6,1,!1,l,l,l,B.a5,B.ca,l)
 r=m.y
 o=r?l:m.gauV()
-o=A.dS(r?B.ol:B.a7L,o,l)
-B.b.J(h,A.b([i,B.ao,s,B.bP,o,A.hl(B.a7z,l,l,r?l:new A.aKR(m),l,l)],g))}}return A.hH(j,l,A.kt(h,l,B.hr,l,B.Y,!1),l,l)}}
+o=A.dS(r?B.ol:B.a7K,o,l)
+B.b.J(h,A.b([i,B.ao,s,B.bP,o,A.hl(B.a7x,l,l,r?l:new A.aKR(m),l,l)],g))}}return A.hH(j,l,A.kt(h,l,B.hr,l,B.Y,!1),l,l)}}
 A.aKy.prototype={
 $0(){return this.a.y=!0},
 $S:0}
@@ -105176,8 +105176,8 @@ A.aKz.prototype={
 $0(){return this.a.y=!1},
 $S:0}
 A.aKC.prototype={
-$1(a){var s=null,r=t.p,q=A.bA(A.b([B.a7N,B.ao,A.fG(this.a,B.Ob,s,B.kA,s,1,!1,s,s,s,B.a5,B.ca,s)],r),B.n,B.k,B.an)
-return A.ot(A.b([A.hl(B.fO,s,s,new A.aKA(a),s,s),A.dS(B.a70,new A.aKB(a),A.ra(s))],r),q,B.NG,B.a6N)},
+$1(a){var s=null,r=t.p,q=A.bA(A.b([B.a7M,B.ao,A.fG(this.a,B.Ob,s,B.kA,s,1,!1,s,s,s,B.a5,B.ca,s)],r),B.n,B.k,B.an)
+return A.ot(A.b([A.hl(B.fO,s,s,new A.aKA(a),s,s),A.dS(B.a7_,new A.aKB(a),A.ra(s))],r),q,B.NG,B.a6M)},
 $S:40}
 A.aKA.prototype={
 $0(){A.bB(this.a,!1).dR(!1)
@@ -105243,7 +105243,7 @@ $0(){return this.a.x=!1},
 $S:0}
 A.a4O.prototype={
 G(a){var s=null
-return A.lA(!1,s,s,s,!0,s,s,!0,s,B.MO,s,s,s,s,new A.aLD(a),!1,s,s,s,s,B.a6T,s,B.a7E,s,B.fc,s)}}
+return A.lA(!1,s,s,s,!0,s,s,!0,s,B.MO,s,s,s,s,new A.aLD(a),!1,s,s,s,s,B.a6S,s,B.a7C,s,B.fc,s)}}
 A.aLD.prototype={
 $0(){var s=A.eg(new A.aLC(),null,t.z)
 return A.bB(this.a,!1).dg(s)},
@@ -105280,10 +105280,10 @@ if(a.e!=null)a.a3(t.L).f.du(A.f5(null,null,null,null,null,B.x,null,A.W("Arrival 
 case 1:return A.t(q,r)}})
 return A.u($async$pJ,r)},
 G(a){var s=null
-return A.hH(A.hY(A.b([A.kl(s,s,B.Nv,s,s,new A.apQ(this,a),s,s,"Announce truck arrival",s),B.ec],t.p),s,B.a7o),s,A.qf(new A.apR(),$.eC().a4S(),t.lb),s,s)}}
+return A.hH(A.hY(A.b([A.kl(s,s,B.Nv,s,s,new A.apQ(this,a),s,s,"Announce truck arrival",s),B.ec],t.p),s,B.a7m),s,A.qf(new A.apR(),$.eC().a4S(),t.lb),s,s)}}
 A.apN.prototype={
 $1(a){var s=this,r=null
-return A.ot(A.b([A.hl(B.fO,r,r,new A.apK(a),r,r),A.dS(B.a7W,new A.apL(a),A.ra(r))],t.p),new A.qe(new A.apM(s.a,s.b,s.c,s.d),r),B.Nb,B.a7R)},
+return A.ot(A.b([A.hl(B.fO,r,r,new A.apK(a),r,r),A.dS(B.a7W,new A.apL(a),A.ra(r))],t.p),new A.qe(new A.apM(s.a,s.b,s.c,s.d),r),B.Nb,B.a7Q)},
 $S:40}
 A.apM.prototype={
 $2(a,b){var s,r,q=this,p=null,o=A.b([],t.p),n=q.b,m=J.aq(n)
@@ -105379,12 +105379,12 @@ o.push(r.BI(B.ai,m+(s.length===0?"":" \xb7 "+s)))
 o.push(B.c_)
 p=p.d
 o.push(r.BI(B.mR,"You earn $"+B.d.a9(p/1.12,2)+" (customer pays $"+B.d.a9(p,2)+")"))
-if(l==="Requested")B.b.J(o,A.b([B.bZ,A.bi(A.b([A.c6(A.dS(B.a6U,new A.aFg(r,a),A.kh(B.E,q,B.cu,q,q,q,q)),1),B.fK,A.c6(A.Ut(B.oB,new A.aFh(r,a),A.ys(q,q,q,q,q,q,q,q,q,B.by,q,B.cu,q,q,q,q,q,q,q,q)),1)],k),B.n,B.k,B.m,0)],k))
-else if(l==="Accepted")B.b.J(o,A.b([B.bZ,A.dS(B.a7p,new A.aFi(r,a),A.kh(q,q,B.cu,q,q,q,q))],k))
-else if(l==="Placed")B.b.J(o,A.b([B.bZ,A.dS(B.a6X,new A.aFj(r,a),A.kh(B.E,q,B.cu,q,q,q,q))],k))
+if(l==="Requested")B.b.J(o,A.b([B.bZ,A.bi(A.b([A.c6(A.dS(B.a6T,new A.aFg(r,a),A.kh(B.E,q,B.cu,q,q,q,q)),1),B.fK,A.c6(A.Ut(B.oB,new A.aFh(r,a),A.ys(q,q,q,q,q,q,q,q,q,B.by,q,B.cu,q,q,q,q,q,q,q,q)),1)],k),B.n,B.k,B.m,0)],k))
+else if(l==="Accepted")B.b.J(o,A.b([B.bZ,A.dS(B.a7n,new A.aFi(r,a),A.kh(q,q,B.cu,q,q,q,q))],k))
+else if(l==="Placed")B.b.J(o,A.b([B.bZ,A.dS(B.a6W,new A.aFj(r,a),A.kh(B.E,q,B.cu,q,q,q,q))],k))
 else if(l==="Preparing"){p=A.kh(q,q,B.cu,q,q,q,q)
 B.b.J(o,A.b([B.bZ,A.dS(A.W(n==="delivery"?"Mark Ready & Request Delivery Partner":"Mark Ready for Pickup",q,q,q,q,q,q),new A.aFk(r,a),p)],k))}else{p=l==="Ready"
-if(p&&n!=="delivery")B.b.J(o,A.b([B.bZ,A.dS(B.a6F,new A.aFl(r,a),A.kh(B.E,q,B.cu,q,q,q,q))],k))
+if(p&&n!=="delivery")B.b.J(o,A.b([B.bZ,A.dS(B.a6E,new A.aFl(r,a),A.kh(B.E,q,B.cu,q,q,q,q))],k))
 else if(p&&n==="delivery")B.b.J(o,A.b([B.bZ,A.Ut(B.a6a,new A.aFm(r,a),A.ys(q,q,q,q,q,q,q,q,q,q,q,B.cu,q,q,q,q,q,q,q,q))],k))}return A.eF(new A.aA(B.aP,A.bA(o,B.a0,B.k,B.m),q),q,q,q,q)},
 BI(a,b){var s=null
 return A.bi(A.b([A.iI(a,B.am,s,15),B.dC,A.c6(A.W(b,s,s,s,B.DT,s,s),1)],t.p),B.a0,B.k,B.m,0)}}
@@ -105437,7 +105437,7 @@ o=o!=null&&J.rk(o)?o:this.a.gao1()
 s=this.a
 r=A.W(s.d,p,p,p,p,p,p)
 q=A.b([],t.p)
-if(s.c==="food_truck")q.push(A.aRY(B.NK,B.a6M,new A.apZ(a,o),p))
+if(s.c==="food_truck")q.push(A.aRY(B.NK,B.a6L,new A.apZ(a,o),p))
 q.push(B.ec)
 return A.hH(A.hY(q,p,r),p,s.ans(o),p,p)},
 $S:710}
@@ -105461,7 +105461,7 @@ o=A.b([new A.fW(1,B.bW,A.W(o,s,B.aw,s,B.es,s,s),s)],m)
 if(r.x)B.b.J(o,A.b([B.oj,B.NH],m))
 o=A.b([n,B.dB,A.c6(A.bA(A.b([A.bi(o,B.n,B.k,B.m,0),B.om,A.W(r.d,s,s,s,B.aC,s,s),B.Dh,A.bi(A.b([B.rB,B.i5,A.W(A.j(r.e),s,s,s,B.kD,s,s),A.W(" ("+r.f+")",s,s,s,B.aC,s,s),B.fK,B.rC,B.a_Y,new A.fW(1,B.bW,A.W(r.w,s,B.aw,s,B.aC,s,s),s)],m),B.n,B.k,B.m,0)],m),B.a0,B.k,B.m),1),B.dC],m)
 n=r.r
-if(n>0)o.push(A.bA(A.b([A.W("$"+B.d.a9(n,0),s,s,s,B.a5o,s,s),B.a7m],m),B.dY,B.k,B.m))
+if(n>0)o.push(A.bA(A.b([A.W("$"+B.d.a9(n,0),s,s,s,B.a5o,s,s),B.a7k],m),B.dY,B.k,B.m))
 else o.push(B.fc)
 return A.eF(A.lw(!1,q,!0,new A.aA(B.e3,A.bi(o,B.n,B.k,B.m,0),s),s,!0,s,s,s,s,s,s,s,s,s,new A.apU(p,a,r),s,s,s,s,s,s,s),s,s,s,s)},
 $S:713}
@@ -105505,7 +105505,7 @@ s=p.c
 s.toString
 A.re(new A.aHO(p),s,t.z)
 return}p.O(new A.aHP(p))},
-G(a){var s,r,q,p,o,n,m,l,k,j,i,h=this,g=null,f=A.hY(B.eb,g,B.a6x),e=J.ST(3,t.l7)
+G(a){var s,r,q,p,o,n,m,l,k,j,i,h=this,g=null,f=A.hY(B.eb,g,B.a6w),e=J.ST(3,t.l7)
 for(s=h.d,r=0;r<3;++r){q=r<2?6:0
 p=r<=s?B.z:B.aA
 o=new A.aJ(2,2)
@@ -105513,7 +105513,7 @@ e[r]=new A.i4(1,B.c3,A.cO(g,g,B.q,g,g,new A.bZ(p,g,g,new A.ca(o,o,o,o),g,g,B.V),
 q=t.p
 p=A.b([],q)
 o=h.d
-if(o===0){o=A.b([B.a7v,B.bg,B.a6d,B.bP],q)
+if(o===0){o=A.b([B.a7t,B.bg,B.a6c,B.bP],q)
 B.b.J(o,new A.X(B.QA,new A.aHW(h),t.k6))
 B.b.J(p,o)}else if(o===1){o=A.fG(h.f,B.Ok,g,g,g,1,!1,g,g,g,B.a5,B.dF,g)
 n=A.fG(h.r,B.On,g,g,g,1,!1,g,g,g,B.a5,B.dF,g)
@@ -105525,14 +105525,14 @@ i=t.N
 m=A.aQB(!1,j,new A.aHY(h),m,i)
 j=h.z
 l=A.T(new A.X(B.ta,new A.aHZ(),l),k)
-B.b.J(p,A.b([B.a7V,B.bg,B.a7u,B.bP,o,B.ao,n,B.bP,B.a78,B.bg,B.a6c,B.bO,A.bi(A.b([B.a7g,m,B.Df,B.a7J,A.aQB(!1,l,new A.aI_(h),j,i)],q),B.n,B.k,B.m,0)],q))}else B.b.J(p,A.b([B.a7K,B.bg,B.a7D,B.bP,new A.tD(B.RE,"What happens next",g),B.er,A.aV6(B.n1,new A.aI0(h),B.a7l,h.w),A.aV6(B.n1,new A.aI1(h),B.a79,h.x)],q))
+B.b.J(p,A.b([B.a7V,B.bg,B.a7s,B.bP,o,B.ao,n,B.bP,B.a77,B.bg,B.a6b,B.bO,A.bi(A.b([B.a7e,m,B.Df,B.a7I,A.aQB(!1,l,new A.aI_(h),j,i)],q),B.n,B.k,B.m,0)],q))}else B.b.J(p,A.b([B.a7J,B.bg,B.a7B,B.bP,new A.tD(B.RE,"What happens next",g),B.er,A.aV6(B.n1,new A.aI0(h),B.a7j,h.w),A.aV6(B.n1,new A.aI1(h),B.a78,h.x)],q))
 p=A.c6(A.kt(p,g,B.aP,g,B.Y,!1),1)
 return A.hH(f,g,A.bA(A.b([new A.aA(B.Ld,s,g),p,A.hG(!0,new A.aA(B.aP,A.dS(A.W(h.d===2?"Submit Application":"Continue",g,g,g,g,g,g),h.gaoj(),g),g),!1,B.a4,!1)],q),B.n,B.k,B.m),g,g)}}
 A.aHN.prototype={
 $1(a){return B.fJ},
 $S:59}
 A.aHO.prototype={
-$1(a){return A.ot(A.b([A.dS(B.E4,new A.aHM(this.a,a),A.ra(null))],t.p),B.a7h,B.NE,B.a64)},
+$1(a){return A.ot(A.b([A.dS(B.E4,new A.aHM(this.a,a),A.ra(null))],t.p),B.a7f,B.NE,B.a64)},
 $S:40}
 A.aHM.prototype={
 $0(){A.bB(this.b,!1).dR(null)
@@ -105660,7 +105660,7 @@ return A.t(null,r)}})
 return A.u($async$i7,r)},
 G(a){var s,r,q,p,o,n,m=this,l=null,k=m.d,j=new A.aQ(k,new A.aLA(),A.Z(k).i("aQ<1>")).gF(0),i=k.length-j,h=t.p,g=A.b([],h)
 if(m.f)g.push(A.kl(l,l,B.Ns,l,l,m.garI(),l,l,"Run again",l))
-g=A.hY(g,l,B.a7i)
+g=A.hY(g,l,B.a7g)
 if(m.f)s=i===0?B.E.dJ(0.1):B.by.dJ(0.08)
 else s=l
 r=m.e
@@ -105936,7 +105936,7 @@ s=B.e.cF(r,60)
 if(s<60)return""+s+"m ago"
 return""+B.e.cF(s,60)+"h ago"},
 G(a){var s=this,r=null,q=s.r,p=q?"Following courier":"Follow courier"
-return A.hH(A.hY(A.b([A.kl(r,r,A.iI(q?B.rh:B.Mw,r,r,20),r,r,new A.aMD(s),r,r,p,r)],t.p),r,B.a7d),r,A.qf(new A.aME(s),$.eC().ayQ(s.a.c),t.nA),r,r)}}
+return A.hH(A.hY(A.b([A.kl(r,r,A.iI(q?B.rh:B.Mw,r,r,20),r,r,new A.aMD(s),r,r,p,r)],t.p),r,B.a7b),r,A.qf(new A.aME(s),$.eC().ayQ(s.a.c),t.nA),r,r)}}
 A.aMz.prototype={
 $0(){var s,r=this.b,q=J.aq(r)
 if(q.gbZ(r)){s=t.a.a(q.ga5(r))
@@ -106029,7 +106029,7 @@ A.zJ.prototype={
 G(a){var s,r,q,p,o,n,m,l,k,j=null,i=J.P9(this.c,new A.axD()),h=A.T(i,i.$ti.i("D.E"))
 if(h.length===0)s=B.OY
 else{i=A.Z(h).i("X<1,N>")
-s=new A.dD(new A.X(h,new A.axE(),i).lg(0,new A.axF())/h.length,new A.X(h,new A.axG(),i).lg(0,new A.axH())/h.length)}i=A.hY(B.eb,j,B.a7Q)
+s=new A.dD(new A.X(h,new A.axE(),i).lg(0,new A.axF())/h.length,new A.X(h,new A.axG(),i).lg(0,new A.axH())/h.length)}i=A.hY(B.eb,j,B.a7P)
 r=A.aRd(s,13)
 q=A.aS3(u.d,"com.localhive.localhive")
 p=A.b([],t._I)
@@ -106123,8 +106123,8 @@ s.e="Could not read your location: "+A.j(a)
 s.ae()},
 $S:30}
 A.aPk.prototype={
-$1(a){var s=null,r=this.a,q=t.p,p=A.bA(A.b([B.a6t,B.ao,new A.HG(r.k(0),B.a5a,s)],q),B.a0,B.k,B.an)
-return A.ot(A.b([A.hl(B.a6k,s,s,new A.aPi(a),s,s),A.dS(B.a7X,new A.aPj(a,r),A.ra(s))],q),p,s,B.a66)},
+$1(a){var s=null,r=this.a,q=t.p,p=A.bA(A.b([B.a6s,B.ao,new A.HG(r.k(0),B.a5a,s)],q),B.a0,B.k,B.an)
+return A.ot(A.b([A.hl(B.a6j,s,s,new A.aPi(a),s,s),A.dS(B.a7X,new A.aPj(a,r),A.ra(s))],q),p,s,B.a66)},
 $S:40}
 A.aPi.prototype={
 $0(){A.bB(this.a,!1).dR(null)
@@ -107211,7 +107211,7 @@ s.n6()
 return new A.hf(new A.ajh(),null,s,null)}}
 A.ajh.prototype={
 $2(a,b){var s=null,r=A.cA(14),q=A.rA(B.aA,B.p,1)
-return A.cO(s,A.bi(A.b([B.a6j,B.Dg,new A.fW(1,B.bW,A.W($.aPK().a,s,B.aw,s,B.a5i,s,s),s)],t.p),B.n,B.k,B.an,0),B.q,s,B.FN,new A.bZ(B.j,s,q,r,s,s,B.V),s,s,B.KQ,B.L1,s,s,s)},
+return A.cO(s,A.bi(A.b([B.a6i,B.Dg,new A.fW(1,B.bW,A.W($.aPK().a,s,B.aw,s,B.a5i,s,s),s)],t.p),B.n,B.k,B.an,0),B.q,s,B.FN,new A.bZ(B.j,s,q,r,s,s,B.V),s,s,B.KQ,B.L1,s,s,s)},
 $S:742}
 A.G8.prototype={
 ah(){return new A.a1V(null,null)}}
@@ -107567,7 +107567,7 @@ bE(){this.co()
 this.cf()
 this.hl()}}
 A.aPA.prototype={
-$1(a){var s,r,q,p,o,n,m,l,k,j=null,i=A.b([B.a72,B.bg,B.a76,B.bZ],t.p)
+$1(a){var s,r,q,p,o,n,m,l,k,j=null,i=A.b([B.a71,B.bg,B.a75,B.bZ],t.p)
 for(s=0;s<3;++s){r=B.QQ[s]
 q=new A.aJ(14,14)
 p=r.a
@@ -112860,13 +112860,13 @@ B.Nu=new A.bc(B.Mq,44,B.aA,null,null)
 B.ao=new A.c1(null,12,null,null)
 B.ah=new A.fX(600)
 B.es=new A.o(!0,null,null,null,null,null,16,B.ah,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6D=new A.a9("No applications yet",null,B.es,null,null,null,null,null,null)
+B.a6C=new A.a9("No applications yet",null,B.es,null,null,null,null,null,null)
 B.bg=new A.c1(null,4,null,null)
 B.am=new A.J(1,0.43137254901960786,0.43137254901960786,0.45098039215686275,B.h)
 B.aC=new A.o(!0,B.am,null,null,null,null,13,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.bR=new A.nM(2,"center")
-B.a6L=new A.a9("When someone applies to offer services, sell groceries, run a truck, or deliver, their application lands here for your review.",null,B.aC,B.bR,null,null,null,null,null)
-B.Sl=s([B.Nu,B.ao,B.a6D,B.bg,B.a6L],t.p)
+B.a6K=new A.a9("When someone applies to offer services, sell groceries, run a truck, or deliver, their application lands here for your review.",null,B.aC,B.bR,null,null,null,null,null)
+B.Sl=s([B.Nu,B.ao,B.a6C,B.bg,B.a6K],t.p)
 B.Jt=new A.i0(B.Y,B.cr,B.m,B.n,null,B.bj,null,0,B.Sl,null)
 B.WD=new A.aA(B.f0,B.Jt,null)
 B.I7=new A.fQ(B.I,null,null,B.WD,null)
@@ -112875,22 +112875,22 @@ B.kE=new A.o(!0,null,null,null,null,null,22,B.a1,null,null,null,null,null,null,n
 B.a67=new A.a9("Welcome to LocalHive",null,B.kE,null,null,null,null,null,null)
 B.I9=new A.fQ(B.I,null,null,B.a67,null)
 B.DS=new A.o(!0,B.am,null,null,null,null,15,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7P=new A.a9("Sign in to see and claim delivery jobs.",null,B.DS,B.bR,null,null,null,null,null)
-B.WK=new A.aA(B.f0,B.a7P,null)
+B.a7O=new A.a9("Sign in to see and claim delivery jobs.",null,B.DS,B.bR,null,null,null,null,null)
+B.WK=new A.aA(B.f0,B.a7O,null)
 B.Ia=new A.fQ(B.I,null,null,B.WK,null)
 B.Mg=new A.aM(63601,"CupertinoIcons","cupertino_icons",!1)
 B.Nf=new A.bc(B.Mg,44,B.aA,null,null)
-B.a7T=new A.a9("No job requests yet",null,B.es,null,null,null,null,null,null)
+B.a7S=new A.a9("No job requests yet",null,B.es,null,null,null,null,null,null)
 B.a68=new A.a9("Sign in and get your listing approved \u2014 bookings for your listings appear here, and you are notified by SMS and email.",null,B.aC,B.bR,null,null,null,null,null)
-B.Qj=s([B.Nf,B.ao,B.a7T,B.bg,B.a68],t.p)
+B.Qj=s([B.Nf,B.ao,B.a7S,B.bg,B.a68],t.p)
 B.Jq=new A.i0(B.Y,B.cr,B.m,B.n,null,B.bj,null,0,B.Qj,null)
 B.WH=new A.aA(B.f0,B.Jq,null)
 B.Ib=new A.fQ(B.I,null,null,B.WH,null)
 B.rp=new A.aM(63003,"CupertinoIcons","cupertino_icons",!1)
 B.NI=new A.bc(B.rp,44,B.aA,null,null)
-B.a6g=new A.a9("No delivery jobs right now",null,B.es,null,null,null,null,null,null)
-B.a7b=new A.a9("When a store marks a delivery order Ready, it appears here for any partner to claim.",null,B.aC,B.bR,null,null,null,null,null)
-B.R7=s([B.NI,B.ao,B.a6g,B.bg,B.a7b],t.p)
+B.a6f=new A.a9("No delivery jobs right now",null,B.es,null,null,null,null,null,null)
+B.a7a=new A.a9("When a store marks a delivery order Ready, it appears here for any partner to claim.",null,B.aC,B.bR,null,null,null,null,null)
+B.R7=s([B.NI,B.ao,B.a6f,B.bg,B.a7a],t.p)
 B.Jr=new A.i0(B.Y,B.cr,B.m,B.n,null,B.bj,null,0,B.R7,null)
 B.WI=new A.aA(B.f0,B.Jr,null)
 B.Ic=new A.fQ(B.I,null,null,B.WI,null)
@@ -112899,13 +112899,13 @@ B.Ij=new A.wQ(null,null,null,null,null,null,null,null)
 B.eN=new A.fQ(B.I,null,null,B.Ij,null)
 B.by=new A.J(1,1,0.23137254901960785,0.18823529411764706,B.h)
 B.a1o=new A.o(!0,B.by,null,null,null,null,null,B.ah,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7f=new A.a9("Sign Out",null,B.a1o,null,null,null,null,null,null)
-B.Id=new A.fQ(B.I,null,null,B.a7f,null)
+B.a7d=new A.a9("Sign Out",null,B.a1o,null,null,null,null,null,null)
+B.Id=new A.fQ(B.I,null,null,B.a7d,null)
 B.cc=new A.o(!0,B.am,null,null,null,null,12.5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.a83=new A.a9("Live status updates arrive with real-time sync.",null,B.cc,null,null,null,null,null,null)
 B.Ie=new A.fQ(B.I,null,null,B.a83,null)
-B.a7a=new A.a9("Free cancellation up to 24 hours before the visit.",null,B.cc,null,null,null,null,null,null)
-B.If=new A.fQ(B.I,null,null,B.a7a,null)
+B.a79=new A.a9("Free cancellation up to 24 hours before the visit.",null,B.cc,null,null,null,null,null,null)
+B.If=new A.fQ(B.I,null,null,B.a79,null)
 B.Ig=new A.wM(null,null,null,null,null,null,null,null,null)
 B.eO=new A.wN(0,"none")
 B.dW=new A.wN(1,"isTrue")
@@ -113330,25 +113330,25 @@ B.mF=new A.t4(!1,!1,!1,!0)
 B.qQ=new A.t5(!1,!1,!1,!1)
 B.qR=new A.t5(!1,!1,!1,!0)
 B.c3=new A.RU(0,"tight")
-B.a6p=new A.a9("Watch your delivery partner approach in real time.",null,B.cc,null,null,null,null,null,null)
-B.LA=new A.i4(1,B.c3,B.a6p,null)
+B.a6o=new A.a9("Watch your delivery partner approach in real time.",null,B.cc,null,null,null,null,null,null)
+B.LA=new A.i4(1,B.c3,B.a6o,null)
 B.dG=new A.o(!0,B.am,null,null,null,null,14,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6n=new A.a9("Sign in to book services and track orders.",null,B.dG,null,null,null,null,null,null)
-B.LB=new A.i4(1,B.c3,B.a6n,null)
-B.a7w=new A.a9("The customer can see you on their map while this delivery is active.",null,B.cc,null,null,null,null,null,null)
-B.LC=new A.i4(1,B.c3,B.a7w,null)
+B.a6m=new A.a9("Sign in to book services and track orders.",null,B.dG,null,null,null,null,null,null)
+B.LB=new A.i4(1,B.c3,B.a6m,null)
+B.a7u=new A.a9("The customer can see you on their map while this delivery is active.",null,B.cc,null,null,null,null,null,null)
+B.LC=new A.i4(1,B.c3,B.a7u,null)
 B.k=new A.pz(0,"start")
 B.E_=new A.o(!0,null,null,null,null,null,15.5,B.a1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7H=new A.a9("See how LocalHive works",null,B.E_,null,null,null,null,null,null)
+B.a7G=new A.a9("See how LocalHive works",null,B.E_,null,null,null,null,null,null)
 B.cv=new A.c1(null,2,null,null)
 B.DW=new A.o(!0,B.am,null,null,null,null,12.5,null,null,null,null,null,1.3,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6I=new A.a9("2-minute guided tour with narration \u2014 customer, business owner, delivery partner & admin",null,B.DW,null,null,null,null,null,null)
-B.Q3=s([B.a7H,B.cv,B.a6I],t.p)
+B.a6H=new A.a9("2-minute guided tour with narration \u2014 customer, business owner, delivery partner & admin",null,B.DW,null,null,null,null,null,null)
+B.Q3=s([B.a7G,B.cv,B.a6H],t.p)
 B.Jp=new A.i0(B.Y,B.k,B.m,B.a0,null,B.bj,null,0,B.Q3,null)
 B.LD=new A.i4(1,B.c3,B.Jp,null)
-B.a6Z=new A.a9("Just talk to Olivia",null,B.E_,null,null,null,null,null,null)
-B.a7k=new A.a9("Say what you need and she finds it, takes your order, or books a service \u2014 no tapping around",null,B.DW,null,null,null,null,null,null)
-B.Rv=s([B.a6Z,B.cv,B.a7k],t.p)
+B.a6Y=new A.a9("Just talk to Olivia",null,B.E_,null,null,null,null,null,null)
+B.a7i=new A.a9("Say what you need and she finds it, takes your order, or books a service \u2014 no tapping around",null,B.DW,null,null,null,null,null,null)
+B.Rv=s([B.a6Y,B.cv,B.a7i],t.p)
 B.Js=new A.i0(B.Y,B.k,B.m,B.a0,null,B.bj,null,0,B.Rv,null)
 B.LE=new A.i4(1,B.c3,B.Js,null)
 B.LF=new A.DX(null,null,null,null,null,null,null,null,null,null,null,null,null)
@@ -113786,8 +113786,8 @@ B.XQ=new A.c4("hs4","Tom W.","home_service","Handyman \xb7 painting & drywall",4
 B.QD=s([B.XJ,B.XN,B.XL,B.XQ],t.Bs)
 B.MF=new A.aM(62498,"CupertinoIcons","cupertino_icons",!1)
 B.NM=new A.bc(B.MF,null,null,null,null)
-B.a6G=new A.a9("Email",null,null,null,null,null,null,null,null)
-B.Gq=new A.kb(!0,B.NM,B.a6G,t.Mt)
+B.a6F=new A.a9("Email",null,null,null,null,null,null,null,null)
+B.Gq=new A.kb(!0,B.NM,B.a6F,t.Mt)
 B.Me=new A.aM(62648,"CupertinoIcons","cupertino_icons",!1)
 B.N_=new A.bc(B.Me,null,null,null,null)
 B.a65=new A.a9("Phone",null,null,null,null,null,null,null,null)
@@ -113896,14 +113896,14 @@ B.RD=s([B.abC,B.abF,B.abD,B.abE],A.ah("E<o3>"))
 B.rn=new A.aM(62592,"CupertinoIcons","cupertino_icons",!1)
 B.MQ=new A.eZ(B.rn,B.z,32,null)
 B.cy=new A.o(!0,null,null,null,null,null,15,B.ah,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7q=new A.a9("Identity check (KYC)",null,B.cy,null,null,null,null,null,null)
-B.a77=new A.a9("Government ID + selfie via Stripe Identity. Also sets up your secure payout account.",null,B.aC,null,null,null,null,null,null)
-B.Pa=new A.px(B.MQ,B.a7q,B.a77,null,null,null,null,null,null,null,!0,null,null,!1,null,!1,null,null,null,null,null,null,null,null,!0,null,null)
+B.a7o=new A.a9("Identity check (KYC)",null,B.cy,null,null,null,null,null,null)
+B.a76=new A.a9("Government ID + selfie via Stripe Identity. Also sets up your secure payout account.",null,B.aC,null,null,null,null,null,null)
+B.Pa=new A.px(B.MQ,B.a7o,B.a76,null,null,null,null,null,null,null,!0,null,null,!1,null,!1,null,null,null,null,null,null,null,null,!0,null,null)
 B.rm=new A.aM(63699,"CupertinoIcons","cupertino_icons",!1)
 B.MS=new A.eZ(B.rm,B.E,32,null)
-B.a6s=new A.a9("Background check",null,B.cy,null,null,null,null,null,null)
+B.a6r=new A.a9("Background check",null,B.cy,null,null,null,null,null,null)
 B.a80=new A.a9("Home-service providers only. FCRA-compliant screening with your written consent.",null,B.aC,null,null,null,null,null,null)
-B.Pb=new A.px(B.MS,B.a6s,B.a80,null,null,null,null,null,null,null,!0,null,null,!1,null,!1,null,null,null,null,null,null,null,null,!0,null,null)
+B.Pb=new A.px(B.MS,B.a6r,B.a80,null,null,null,null,null,null,null,!0,null,null,!1,null,!1,null,null,null,null,null,null,null,null,!0,null,null)
 B.RE=s([B.Pa,B.Pb],t.p)
 B.C7=new A.yG(null)
 B.RI=s([B.jr,B.C7,B.iu,B.k1],t.bH)
@@ -114009,11 +114009,11 @@ B.aeb=new A.Bj(B.js,B.W,"Transparent pricing","A flat 12% platform fee, always s
 B.SN=s([B.aed,B.aec,B.aeb],t.p)
 B.Mk=new A.aM(62846,"CupertinoIcons","cupertino_icons",!1)
 B.Nq=new A.bc(B.Mk,null,null,null,null)
-B.a6R=new A.a9("Pickup",null,null,null,null,null,null,null,null)
-B.Gr=new A.kb(!1,B.Nq,B.a6R,t.Mt)
+B.a6Q=new A.a9("Pickup",null,null,null,null,null,null,null,null)
+B.Gr=new A.kb(!1,B.Nq,B.a6Q,t.Mt)
 B.rA=new A.bc(B.rp,null,null,null,null)
-B.a71=new A.a9("Delivery +$4.99",null,null,null,null,null,null,null,null)
-B.Gs=new A.kb(!0,B.rA,B.a71,t.Mt)
+B.a70=new A.a9("Delivery +$4.99",null,null,null,null,null,null,null,null)
+B.Gs=new A.kb(!0,B.rA,B.a70,t.Mt)
 B.SP=s([B.Gr,B.Gs],t.st)
 B.SQ=s([B.hv,B.mN,B.mO,B.v,B.a9,B.ah,B.a1,B.fa,B.jm],A.ah("E<fX>"))
 B.SS=s([0.015176349177441876,0.045529047532325624,0.07588174588720938,0.10623444424209313,0.13658714259697685,0.16693984095186062,0.19729253930674434,0.2276452376616281,0.2579979360165119,0.28835063437139563,0.3188300904430532,0.350925934958123,0.3848314933096426,0.42057480301049466,0.458183274052838,0.4976837250274023,0.5391024159806381,0.5824650784040898,0.6277969426914107,0.6751227633498623,0.7244668422128921,0.775853049866786,0.829304845476233,0.8848452951698498,0.942497089126609,1.0022825574869039,1.0642236851973577,1.1283421258858297,1.1946592148522128,1.2631959812511864,1.3339731595349034,1.407011200216447,1.4823302800086415,1.5599503113873272,1.6398909516233677,1.7221716113234105,1.8068114625156377,1.8938294463134073,1.9832442801866852,2.075074464868551,2.1693382909216234,2.2660538449872063,2.36523901573795,2.4669114995532007,2.5710888059345764,2.6777882626779785,2.7870270208169257,2.898822059350997,3.0131901897720907,3.1301480604002863,3.2497121605402226,3.3718988244681087,3.4967242352587946,3.624204428461639,3.754355295633311,3.887192587735158,4.022731918402185,4.160988767090289,4.301978482107941,4.445716283538092,4.592217266055746,4.741496401646282,4.893568542229298,5.048448422192488,5.20615066083972,5.3666897647573375,5.5300801301023865,5.696336044816294,5.865471690767354,6.037501145825082,6.212438385869475,6.390297286737924,6.571091626112461,6.7548350853498045,6.941541251256611,7.131223617812143,7.323895587840543,7.5195704746346665,7.7182615035334345,7.919981813454504,8.124744458384042,8.332562408825165,8.543448553206703,8.757415699253682,8.974476575321063,9.194643831691977,9.417930041841839,9.644347703669503,9.873909240696694,10.106627003236781,10.342513269534024,10.58158024687427,10.8238400726681,11.069304815507364,11.317986476196008,11.569896988756009,11.825048221409341,12.083451977536606,12.345119996613247,12.610063955123938,12.878295467455942,13.149826086772048,13.42466730586372,13.702830557985108,13.984327217668513,14.269168601521828,14.55736596900856,14.848930523210871,15.143873411576273,15.44220572664832,15.743938506781891,16.04908273684337,16.35764934889634,16.66964922287304,16.985093187232053,17.30399201960269,17.62635644741625,17.95219714852476,18.281524751807332,18.614349837764564,18.95068293910138,19.290534541298456,19.633915083172692,19.98083495742689,20.331304511189067,20.685334046541502,21.042933821039977,21.404114048223256,21.76888489811322,22.137256497705877,22.50923893145328,22.884842241736916,23.264076429332462,23.6469514538663,24.033477234264016,24.42366364919083,24.817520537484558,25.21505769858089,25.61628489293138,26.021211842414342,26.429848230738664,26.842203703840827,27.258287870275353,27.678110301598522,28.10168053274597,28.529008062403893,28.96010235337422,29.39497283293396,29.83362889318845,30.276079891419332,30.722335150426627,31.172403958865512,31.62629557157785,32.08401920991837,32.54558406207592,33.010999283389665,33.4802739966603,33.953417292456834,34.430438229418264,34.911345834551085,35.39614910352207,35.88485700094671,36.37747846067349,36.87402238606382,37.37449765026789,37.87891309649659,38.38727753828926,38.89959975977785,39.41588851594697,39.93615253289054,40.460400508064545,40.98864111053629,41.520882981230194,42.05713473317016,42.597404951718396,43.141702194811224,43.6900349931913,44.24241185063697,44.798841244188324,45.35933162437017,45.92389141541209,46.49252901546552,47.065252796817916,47.64207110610409,48.22299226451468,48.808024568002054,49.3971762874833,49.9904556690408,50.587870934119984,51.189430279724725,51.79514187861014,52.40501387947288,53.0190544071392,53.637271562750364,54.259673423945976,54.88626804504493,55.517063457223934,56.15206766869424,56.79128866487574,57.43473440856916,58.08241284012621,58.734331877617365,59.39049941699807,60.05092333227251,60.715611475655585,61.38457167773311,62.057811747619894,62.7353394731159,63.417162620860914,64.10328893648692,64.79372614476921,65.48848194977529,66.18756403501224,66.89098006357258,67.59873767827808,68.31084450182222,69.02730813691093,69.74813616640164,70.47333615344107,71.20291564160104,71.93688215501312,72.67524319850172,73.41800625771542,74.16517879925733,74.9167682708136,75.67278210128072,76.43322770089146,77.1981124613393,77.96744375590167,78.74122893956174,79.51947534912904,80.30219030335869,81.08938110306934,81.88105503125999,82.67721935322541,83.4778813166706,84.28304815182372,85.09272707154808,85.90692527145302,86.72564993000343,87.54890820862819,88.3767072518277,89.2090541872801,90.04595612594655,90.88742016217518,91.73345337380438,92.58406282226491,93.43925555268066,94.29903859396902,95.16341895893969,96.03240364439274,96.9059996312159,97.78421388448044,98.6670533535366,99.55452497210776],t.n)
@@ -115134,9 +115134,9 @@ B.Lq=new A.ak(60,0,0,0)
 B.WF=new A.aA(B.Lq,B.eW,null)
 B.KX=new A.ak(0,60,0,0)
 B.N7=new A.bc(B.mS,44,B.aA,null,null)
-B.a6C=new A.a9("No bookings yet",null,B.es,null,null,null,null,null,null)
-B.a7B=new A.a9("Book a service or place an order to see it here.",null,B.aC,null,null,null,null,null,null)
-B.QH=s([B.N7,B.ao,B.a6C,B.bg,B.a7B],t.p)
+B.a6B=new A.a9("No bookings yet",null,B.es,null,null,null,null,null,null)
+B.a7z=new A.a9("Book a service or place an order to see it here.",null,B.aC,null,null,null,null,null,null)
+B.QH=s([B.N7,B.ao,B.a6B,B.bg,B.a7z],t.p)
 B.Jo=new A.i0(B.Y,B.k,B.m,B.n,null,B.bj,null,0,B.QH,null)
 B.I8=new A.fQ(B.I,null,null,B.Jo,null)
 B.WG=new A.aA(B.KX,B.I8,null)
@@ -115145,8 +115145,8 @@ B.WL=new A.aA(B.Ls,B.eW,null)
 B.Ln=new A.ak(24,24,24,24)
 B.WM=new A.aA(B.Ln,B.eN,null)
 B.KY=new A.ak(0,8,0,0)
-B.a7S=new A.a9("Sign in and run this again to also test writes, your bookings, the provider dashboard, the delivery board and the notification pipeline.",null,B.cc,null,null,null,null,null,null)
-B.WN=new A.aA(B.KY,B.a7S,null)
+B.a7R=new A.a9("Sign in and run this again to also test writes, your bookings, the provider dashboard, the delivery board and the notification pipeline.",null,B.cc,null,null,null,null,null,null)
+B.WN=new A.aA(B.KY,B.a7R,null)
 B.KS=new A.ak(0,10,0,10)
 B.yE=new A.aA(B.KS,B.eW,null)
 B.Hh=new A.UV()
@@ -115265,23 +115265,23 @@ B.fE=new A.yW(1,"doNotPop")
 B.Ch=new A.yW(2,"bubble")
 B.fF=new A.iX(null,null)
 B.fM=new A.o(!0,null,null,null,null,null,14.5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6m=new A.a9("Delivery fee",null,B.fM,null,null,null,null,null,null)
-B.a75=new A.a9("$4.99",null,B.fM,null,null,null,null,null,null)
-B.Qb=s([B.a6m,B.a75],t.p)
+B.a6l=new A.a9("Delivery fee",null,B.fM,null,null,null,null,null,null)
+B.a74=new A.a9("$4.99",null,B.fM,null,null,null,null,null,null)
+B.Qb=s([B.a6l,B.a74],t.p)
 B.YQ=new A.uO(B.ay,B.da,B.m,B.n,null,B.bj,null,0,B.Qb,null)
 B.qS=new A.i4(1,B.c3,B.eW,null)
 B.L_=new A.ak(10,0,10,0)
 B.a4A=new A.o(!0,B.am,null,null,null,null,11,B.a1,null,0.4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6o=new A.a9("TRY A DEMO ACCOUNT",null,B.a4A,null,null,null,null,null,null)
-B.WJ=new A.aA(B.L_,B.a6o,null)
+B.a6n=new A.a9("TRY A DEMO ACCOUNT",null,B.a4A,null,null,null,null,null,null)
+B.WJ=new A.aA(B.L_,B.a6n,null)
 B.Ri=s([B.qS,B.WJ,B.qS],t.p)
 B.YR=new A.uO(B.ay,B.k,B.m,B.n,null,B.bj,null,0,B.Ri,null)
 B.MB=new A.aM(63150,"CupertinoIcons","cupertino_icons",!1)
 B.N3=new A.bc(B.MB,13,B.j,null,null)
 B.Dg=new A.c1(4,null,null,null)
 B.a4S=new A.o(!0,B.j,null,null,null,null,11,B.a1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7M=new A.a9("Tap here",null,B.a4S,null,null,null,null,null,null)
-B.PW=s([B.N3,B.Dg,B.a7M],t.p)
+B.a7L=new A.a9("Tap here",null,B.a4S,null,null,null,null,null,null)
+B.PW=s([B.N3,B.Dg,B.a7L],t.p)
 B.YS=new A.uO(B.ay,B.k,B.an,B.n,null,B.bj,null,0,B.PW,null)
 B.YT=new A.Hm(1333)
 B.nS=new A.Hm(2222)
@@ -115559,26 +115559,26 @@ B.a09=new A.lU(3,"hide")
 B.aeJ=new A.lU(4,"remove")
 B.a0a=new A.lU(5,"timeout")
 B.a0b=new A.zf(null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7G=new A.a9("Arrival alerts turned off.",null,null,null,null,null,null,null,null)
-B.a0c=new A.hj(B.a7G,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a7F=new A.a9("Arrival alerts turned off.",null,null,null,null,null,null,null,null)
+B.a0c=new A.hj(B.a7F,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
 B.a69=new A.a9("Wrong OTP \u2014 ask the customer for the code in their order message.",null,null,null,null,null,null,null,null)
 B.a0d=new A.hj(B.a69,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a6z=new A.a9("Enter the full delivery address.",null,null,null,null,null,null,null,null)
-B.a0e=new A.hj(B.a6z,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a6O=new A.a9("Declined \u2014 applicant notified.",null,null,null,null,null,null,null,null)
-B.a0f=new A.hj(B.a6O,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a73=new A.a9("Enter the full service address (street, city, state).",null,null,null,null,null,null,null,null)
-B.a0g=new A.hj(B.a73,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a6P=new A.a9("Please sign in to book \u2014 it keeps your booking secure.",null,null,null,null,null,null,null,null)
-B.a0h=new A.hj(B.a6P,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a6B=new A.a9("Please sign in to place an order.",null,null,null,null,null,null,null,null)
-B.a0i=new A.hj(B.a6B,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a7y=new A.a9('No food-truck listing on your account yet \u2014 apply via "Become a provider".',null,null,null,null,null,null,null,null)
-B.a0j=new A.hj(B.a7y,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a7j=new A.a9("Sign in to get arrival alerts for this truck.",null,null,null,null,null,null,null,null)
-B.a0k=new A.hj(B.a7j,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
-B.a6w=new A.a9("Enter your name and phone so the provider can reach you.",null,null,null,null,null,null,null,null)
-B.a0l=new A.hj(B.a6w,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a6y=new A.a9("Enter the full delivery address.",null,null,null,null,null,null,null,null)
+B.a0e=new A.hj(B.a6y,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a6N=new A.a9("Declined \u2014 applicant notified.",null,null,null,null,null,null,null,null)
+B.a0f=new A.hj(B.a6N,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a72=new A.a9("Enter the full service address (street, city, state).",null,null,null,null,null,null,null,null)
+B.a0g=new A.hj(B.a72,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a6O=new A.a9("Please sign in to book \u2014 it keeps your booking secure.",null,null,null,null,null,null,null,null)
+B.a0h=new A.hj(B.a6O,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a6A=new A.a9("Please sign in to place an order.",null,null,null,null,null,null,null,null)
+B.a0i=new A.hj(B.a6A,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a7w=new A.a9('No food-truck listing on your account yet \u2014 apply via "Become a provider".',null,null,null,null,null,null,null,null)
+B.a0j=new A.hj(B.a7w,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a7h=new A.a9("Sign in to get arrival alerts for this truck.",null,null,null,null,null,null,null,null)
+B.a0k=new A.hj(B.a7h,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
+B.a6v=new A.a9("Enter your name and phone so the provider can reach you.",null,null,null,null,null,null,null,null)
+B.a0l=new A.hj(B.a6v,null,null,null,null,null,null,null,null,null,null,null,null,B.al,!1,null,null,null,B.x,null)
 B.Do=new A.I5(0,"permissive")
 B.a0m=new A.I5(1,"normal")
 B.a0n=new A.I5(2,"forced")
@@ -116005,91 +116005,91 @@ B.a63=new A.eM(B.a3w,B.a2l,B.a3x,B.a43,B.a2_,B.a27,B.a2G,B.a3Y,B.a2U,B.a4x,B.a1q
 B.a64=new A.a9("Application submitted",null,null,null,null,null,null,null,null)
 B.a66=new A.a9("Open directions",null,null,null,null,null,null,null,null)
 B.a6a=new A.a9("I Delivered It Myself \u2014 Mark Delivered",null,null,null,null,null,null,null,null)
-B.a6b=new A.a9("Olivia is not switched on yet",null,B.ov,null,null,null,null,null,null)
-B.a6c=new A.a9("Customers see this window; jobs and deliveries are only expected within it.",null,B.aC,null,null,null,null,null,null)
-B.a6d=new A.a9("Pick the category that fits your business.",null,B.dG,null,null,null,null,null,null)
-B.a6e=new A.a9("Request sent",null,null,null,null,null,null,null,null)
-B.a6f=new A.a9("Total",null,B.ov,null,null,null,null,null,null)
-B.a6h=new A.a9("Approve & Publish",null,null,null,null,null,null,null,null)
-B.a6i=new A.a9("Start Navigation in Google Maps",null,null,null,null,null,null,null,null)
-B.a6j=new A.a9("\ud83c\uddfa\ud83c\uddf8",null,B.E1,null,null,null,null,null,null)
-B.a6k=new A.a9("Close",null,null,null,null,null,null,null,null)
-B.a6l=new A.a9("Reviewed",null,B.cx,null,null,null,null,null,null)
-B.a6q=new A.a9("Confirm Delivery",null,null,null,null,null,null,null,null)
+B.a6b=new A.a9("Customers see this window; jobs and deliveries are only expected within it.",null,B.aC,null,null,null,null,null,null)
+B.a6c=new A.a9("Pick the category that fits your business.",null,B.dG,null,null,null,null,null,null)
+B.a6d=new A.a9("Request sent",null,null,null,null,null,null,null,null)
+B.a6e=new A.a9("Total",null,B.ov,null,null,null,null,null,null)
+B.a6g=new A.a9("Approve & Publish",null,null,null,null,null,null,null,null)
+B.a6h=new A.a9("Start Navigation in Google Maps",null,null,null,null,null,null,null,null)
+B.a6i=new A.a9("\ud83c\uddfa\ud83c\uddf8",null,B.E1,null,null,null,null,null,null)
+B.a6j=new A.a9("Close",null,null,null,null,null,null,null,null)
+B.a6k=new A.a9("Reviewed",null,B.cx,null,null,null,null,null,null)
+B.a6p=new A.a9("Confirm Delivery",null,null,null,null,null,null,null,null)
 B.DO=new A.o(!0,null,null,null,null,null,13,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6r=new A.a9("See map",null,B.DO,null,null,null,null,null,null)
-B.a6t=new A.a9("Your browser blocked the map tab. Tap the link below to open directions in Google Maps.",null,B.oz,null,null,null,null,null,null)
-B.a6u=new A.a9("Forgot password?",null,null,null,null,null,null,null,null)
-B.a6v=new A.a9("This publishes their listing to the public catalog immediately and texts them the good news.\n\nConfirm you have verified their identity and, for home services, their background check.",null,B.oz,null,null,null,null,null,null)
-B.a6x=new A.a9("Become a Provider",null,null,null,null,null,null,null,null)
+B.a6q=new A.a9("See map",null,B.DO,null,null,null,null,null,null)
+B.a6s=new A.a9("Your browser blocked the map tab. Tap the link below to open directions in Google Maps.",null,B.oz,null,null,null,null,null,null)
+B.a6t=new A.a9("Forgot password?",null,null,null,null,null,null,null,null)
+B.a6u=new A.a9("This publishes their listing to the public catalog immediately and texts them the good news.\n\nConfirm you have verified their identity and, for home services, their background check.",null,B.oz,null,null,null,null,null,null)
+B.a6w=new A.a9("Become a Provider",null,null,null,null,null,null,null,null)
 B.a4b=new A.o(!0,B.E,null,null,null,null,11.5,B.ah,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6y=new A.a9("On your way!",null,B.a4b,null,null,null,null,null,null)
+B.a6x=new A.a9("On your way!",null,B.a4b,null,null,null,null,null,null)
 B.a2T=new A.o(!0,null,null,null,null,null,13.5,B.ah,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6A=new A.a9("When will you arrive?",null,B.a2T,null,null,null,null,null,null)
-B.a6E=new A.a9("Switch between customer, business, and delivery modes.",null,B.aC,null,null,null,null,null,null)
-B.a6F=new A.a9("Handed Over \u2014 Mark Delivered",null,null,null,null,null,null,null,null)
-B.a6H=new A.a9("Demo logins are shared test accounts \u2014 remove them before launching publicly.",null,B.oy,null,null,null,null,null,null)
-B.a6J=new A.a9("How LocalHive works",null,null,null,null,null,null,null,null)
-B.a6K=new A.a9("Directions",null,null,null,null,null,null,null,null)
-B.a6M=new A.a9("Map",null,null,null,null,null,null,null,null)
-B.a6N=new A.a9("Reset your password",null,null,null,null,null,null,null,null)
-B.a6Q=new A.a9("Back",null,null,null,null,null,null,null,null)
+B.a6z=new A.a9("When will you arrive?",null,B.a2T,null,null,null,null,null,null)
+B.a6D=new A.a9("Switch between customer, business, and delivery modes.",null,B.aC,null,null,null,null,null,null)
+B.a6E=new A.a9("Handed Over \u2014 Mark Delivered",null,null,null,null,null,null,null,null)
+B.a6G=new A.a9("Demo logins are shared test accounts \u2014 remove them before launching publicly.",null,B.oy,null,null,null,null,null,null)
+B.a6I=new A.a9("How LocalHive works",null,null,null,null,null,null,null,null)
+B.a6J=new A.a9("Directions",null,null,null,null,null,null,null,null)
+B.a6L=new A.a9("Map",null,null,null,null,null,null,null,null)
+B.a6M=new A.a9("Reset your password",null,null,null,null,null,null,null,null)
+B.a6P=new A.a9("Back",null,null,null,null,null,null,null,null)
 B.E2=new A.a9("Delivery Jobs",null,null,null,null,null,null,null,null)
 B.E3=new A.a9("Directions",null,B.DO,null,null,null,null,null,null)
-B.a6S=new A.a9("Provider Applications",null,null,null,null,null,null,null,null)
-B.a6T=new A.a9("Verify the app is connected and every flow works",null,B.cc,null,null,null,null,null,null)
-B.a6U=new A.a9("Accept",null,null,null,null,null,null,null,null)
+B.a6R=new A.a9("Provider Applications",null,null,null,null,null,null,null,null)
+B.a6S=new A.a9("Verify the app is connected and every flow works",null,B.cc,null,null,null,null,null,null)
+B.a6T=new A.a9("Accept",null,null,null,null,null,null,null,null)
 B.a4P=new A.o(!0,B.j,null,null,null,null,13,B.fa,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a6V=new A.a9("2",null,B.a4P,null,null,null,null,null,null)
+B.a6U=new A.a9("2",null,B.a4P,null,null,null,null,null,null)
 B.E4=new A.a9("Done",null,null,null,null,null,null,null,null)
-B.a6W=new A.a9("Add",null,null,null,null,null,null,null,null)
+B.a6V=new A.a9("Add",null,null,null,null,null,null,null,null)
 B.fO=new A.a9("Cancel",null,null,null,null,null,null,null,null)
-B.a6X=new A.a9("Accept Order & Start Preparing",null,null,null,null,null,null,null,null)
-B.a6Y=new A.a9("Skip",null,null,null,null,null,null,null,null)
-B.a7_=new A.a9("Approve",null,null,null,null,null,null,null,null)
-B.a70=new A.a9("Send Reset Link",null,null,null,null,null,null,null,null)
-B.a72=new A.a9("How will you use LocalHive?",null,B.DQ,null,null,null,null,null,null)
-B.a74=new A.a9("Notify Me",null,null,null,null,null,null,null,null)
-B.a76=new A.a9("You can switch anytime from your Profile.",null,B.aC,null,null,null,null,null,null)
-B.a78=new A.a9("I am available",null,B.cy,null,null,null,null,null,null)
+B.a6W=new A.a9("Accept Order & Start Preparing",null,null,null,null,null,null,null,null)
+B.a6X=new A.a9("Skip",null,null,null,null,null,null,null,null)
+B.a6Z=new A.a9("Approve",null,null,null,null,null,null,null,null)
+B.a7_=new A.a9("Send Reset Link",null,null,null,null,null,null,null,null)
+B.a71=new A.a9("How will you use LocalHive?",null,B.DQ,null,null,null,null,null,null)
+B.a73=new A.a9("Notify Me",null,null,null,null,null,null,null,null)
+B.a75=new A.a9("You can switch anytime from your Profile.",null,B.aC,null,null,null,null,null,null)
+B.a77=new A.a9("I am available",null,B.cy,null,null,null,null,null,null)
 B.DV=new A.o(!0,null,null,null,null,null,13,null,null,null,null,null,1.35,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a79=new A.a9("I consent to identity verification and (for home services) a background check.",null,B.DV,null,null,null,null,null,null)
-B.a7c=new A.a9("Her assistant service needs to be configured for this build. Copy lib/olivia_config.example.dart to lib/olivia_config.dart and fill it in.",null,B.ia,B.bR,null,null,null,null,null)
-B.a7d=new A.a9("Track delivery",null,null,null,null,null,null,null,null)
-B.a7e=new A.a9("Use",null,null,null,null,null,null,null,null)
+B.a78=new A.a9("I consent to identity verification and (for home services) a background check.",null,B.DV,null,null,null,null,null,null)
+B.a7b=new A.a9("Track delivery",null,null,null,null,null,null,null,null)
+B.a7c=new A.a9("Use",null,null,null,null,null,null,null,null)
 B.DX=new A.o(!0,null,null,null,null,null,14,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7g=new A.a9("From ",null,B.DX,null,null,null,null,null,null)
-B.a7h=new A.a9("Your application is now with the LocalHive team for review. You will get a text the moment it is approved \u2014 then your listing goes live.",null,null,null,null,null,null,null,null)
-B.a7i=new A.a9("System check",null,null,null,null,null,null,null,null)
-B.a7l=new A.a9("I understand I operate as an independent business, responsible for my own licenses, permits, and taxes.",null,B.DV,null,null,null,null,null,null)
-B.a7m=new A.a9("per hour",null,B.oy,null,null,null,null,null,null)
-B.a7n=new A.a9("Track",null,null,null,null,null,null,null,null)
-B.a7o=new A.a9("Provider Dashboard",null,null,null,null,null,null,null,null)
-B.a7p=new A.a9("Mark Job Complete",null,null,null,null,null,null,null,null)
-B.a7r=new A.a9("Trusted local services, stores & food.",null,B.DS,null,null,null,null,null,null)
-B.a7s=new A.a9("Give a clear reason \u2014 it is sent to the applicant so they can fix it and reapply.",null,B.ia,null,null,null,null,null,null)
+B.a7e=new A.a9("From ",null,B.DX,null,null,null,null,null,null)
+B.a7f=new A.a9("Your application is now with the LocalHive team for review. You will get a text the moment it is approved \u2014 then your listing goes live.",null,null,null,null,null,null,null,null)
+B.a7g=new A.a9("System check",null,null,null,null,null,null,null,null)
+B.a7j=new A.a9("I understand I operate as an independent business, responsible for my own licenses, permits, and taxes.",null,B.DV,null,null,null,null,null,null)
+B.a7k=new A.a9("per hour",null,B.oy,null,null,null,null,null,null)
+B.a7l=new A.a9("Track",null,null,null,null,null,null,null,null)
+B.a7m=new A.a9("Provider Dashboard",null,null,null,null,null,null,null,null)
+B.a7n=new A.a9("Mark Job Complete",null,null,null,null,null,null,null,null)
+B.a7p=new A.a9("Trusted local services, stores & food.",null,B.DS,null,null,null,null,null,null)
+B.a7q=new A.a9("Give a clear reason \u2014 it is sent to the applicant so they can fix it and reapply.",null,B.ia,null,null,null,null,null,null)
 B.oB=new A.a9("Decline",null,null,null,null,null,null,null,null)
-B.a7t=new A.a9("We'll text you the moment the truck announces it has arrived nearby.",null,B.dG,null,null,null,null,null,null)
-B.a7u=new A.a9("Shown to customers on your listing.",null,B.dG,null,null,null,null,null,null)
-B.a7v=new A.a9("What do you offer?",null,B.kE,null,null,null,null,null,null)
+B.a7r=new A.a9("We'll text you the moment the truck announces it has arrived nearby.",null,B.dG,null,null,null,null,null,null)
+B.a7s=new A.a9("Shown to customers on your listing.",null,B.dG,null,null,null,null,null,null)
+B.a7t=new A.a9("What do you offer?",null,B.kE,null,null,null,null,null,null)
 B.a3u=new A.o(!0,B.a8,null,null,null,null,13,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7x=new A.a9("Tap to open your Provider Dashboard",null,B.a3u,null,null,null,null,null,null)
-B.a7z=new A.a9("Change number",null,null,null,null,null,null,null,null)
-B.a7A=new A.a9("Platform fee (12%)",null,B.fM,null,null,null,null,null,null)
-B.a7C=new A.a9("Olivia",null,null,null,null,null,null,null,null)
-B.a7D=new A.a9("US law and LocalHive policy require identity verification before you can accept jobs.",null,B.dG,null,null,null,null,null,null)
-B.a7E=new A.a9("System check",null,B.ox,null,null,null,null,null,null)
-B.a7F=new A.a9("Enter customer OTP",null,null,null,null,null,null,null,null)
-B.a7I=new A.a9("My deliveries",null,B.cx,null,null,null,null,null,null)
-B.a7J=new A.a9("To ",null,B.DX,null,null,null,null,null,null)
-B.a7K=new A.a9("Verification",null,B.kE,null,null,null,null,null,null)
-B.a7L=new A.a9("Verify & Sign In",null,null,null,null,null,null,null,null)
-B.a7N=new A.a9("We'll email you a secure link to choose a new password.",null,B.ia,null,null,null,null,null,null)
+B.a7v=new A.a9("Tap to open your Provider Dashboard",null,B.a3u,null,null,null,null,null,null)
+B.a7x=new A.a9("Change number",null,null,null,null,null,null,null,null)
+B.a7y=new A.a9("Platform fee (12%)",null,B.fM,null,null,null,null,null,null)
+B.a7A=new A.a9("Olivia",null,null,null,null,null,null,null,null)
+B.a7B=new A.a9("US law and LocalHive policy require identity verification before you can accept jobs.",null,B.dG,null,null,null,null,null,null)
+B.a7C=new A.a9("System check",null,B.ox,null,null,null,null,null,null)
+B.a7D=new A.a9("Olivia is coming soon",null,B.ov,null,null,null,null,null,null)
+B.a7E=new A.a9("Enter customer OTP",null,null,null,null,null,null,null,null)
+B.a7H=new A.a9("My deliveries",null,B.cx,null,null,null,null,null,null)
+B.a7I=new A.a9("To ",null,B.DX,null,null,null,null,null,null)
+B.a7J=new A.a9("Verification",null,B.kE,null,null,null,null,null,null)
+B.a7K=new A.a9("Verify & Sign In",null,null,null,null,null,null,null,null)
+B.a7M=new A.a9("We'll email you a secure link to choose a new password.",null,B.ia,null,null,null,null,null,null)
 B.a2g=new A.o(!0,null,null,null,null,null,null,B.ah,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a7O=new A.a9("Ask Olivia",null,B.a2g,null,null,null,null,null,null)
-B.a7Q=new A.a9("Food Trucks Near You",null,null,null,null,null,null,null,null)
-B.a7R=new A.a9("Announce arrival",null,null,null,null,null,null,null,null)
-B.a7U=new A.a9("Ask the customer for the 4-digit code from their order confirmation. This proves the delivery reached them.",null,B.ia,null,null,null,null,null,null)
+B.a7N=new A.a9("Ask Olivia",null,B.a2g,null,null,null,null,null,null)
+B.a7P=new A.a9("Food Trucks Near You",null,null,null,null,null,null,null,null)
+B.a7Q=new A.a9("Announce arrival",null,null,null,null,null,null,null,null)
+B.a7T=new A.a9("Ask the customer for the 4-digit code from their order confirmation. This proves the delivery reached them.",null,B.ia,null,null,null,null,null,null)
+B.a7U=new A.a9("She will take your order by voice \u2014 a food truck nearby, groceries from an Indian store, or a cleaner for a few hours. Everything else in LocalHive works now.",null,B.ia,B.bR,null,null,null,null,null)
 B.a7V=new A.a9("Your business",null,B.kE,null,null,null,null,null,null)
 B.a7W=new A.a9("Announce",null,null,null,null,null,null,null,null)
 B.a7X=new A.a9("Open Here",null,null,null,null,null,null,null,null)
