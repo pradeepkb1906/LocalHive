@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../theme.dart';
+import 'olivia_stage.dart';
 
 /// Olivia as a looping video clip.
 ///
@@ -20,12 +20,18 @@ class OliviaVideo extends StatefulWidget {
   /// Drop a clip here and Olivia uses it in preference to the photo.
   static const asset = 'assets/brand/olivia.mp4';
 
+  /// Fills whatever box it is given, cropping the clip rather than letterboxing
+  /// it. Her portrait clip is much taller than it is wide, so keeping its own
+  /// shape leaves wide empty margins either side of her.
+  final bool expand;
+
   /// Shown while the clip loads, and if it cannot be played at all.
   final Widget fallback;
 
   const OliviaVideo({
     super.key,
     required this.fallback,
+    this.expand = false,
     this.speaking = false,
     this.listening = false,
     this.thinking = false,
@@ -105,45 +111,13 @@ class _OliviaVideoState extends State<OliviaVideo> {
       return widget.fallback;
     }
 
-    final Color ring;
-    if (widget.listening) {
-      ring = LhColors.green;
-    } else if (widget.thinking) {
-      ring = LhColors.blue;
-    } else if (widget.speaking) {
-      ring = LhColors.navy;
-    } else {
-      ring = LhColors.hairline;
-    }
-    final active = widget.listening || widget.thinking || widget.speaking;
-    final radius = BorderRadius.circular(16);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      // The border width is deliberately constant: it is part of layout, so
-      // animating it resized the image on every change and made her visibly
-      // shake. Only the colour and the shadow react, and neither affects
-      // layout.
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        border: Border.all(
-            color: ring.withValues(alpha: active ? 0.85 : 0.45), width: 2),
-        boxShadow: [
-          if (active)
-            BoxShadow(
-              color: ring.withValues(alpha: 0.22),
-              blurRadius: 18,
-              spreadRadius: 2,
-            ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: AspectRatio(
-          aspectRatio: c.value.aspectRatio,
-          child: VideoPlayer(c),
-        ),
-      ),
+    return OliviaStage(
+      expand: widget.expand,
+      speaking: widget.speaking,
+      listening: widget.listening,
+      thinking: widget.thinking,
+      naturalSize: c.value.size,
+      child: VideoPlayer(c),
     );
   }
 }

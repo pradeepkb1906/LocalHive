@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme.dart';
+import 'olivia_stage.dart';
 
 /// Olivia's face with her mouth driven by what she is actually saying.
 ///
@@ -31,12 +31,16 @@ class OliviaLipSync extends StatefulWidget {
     'assets/brand/olivia_mouth3.jpg',
   ];
 
+  /// Fills the box it is given, cropping to do so. See [OliviaStage.expand].
+  final bool expand;
+
   /// Shown if the frames are not bundled.
   final Widget fallback;
 
   const OliviaLipSync({
     super.key,
     required this.fallback,
+    this.expand = false,
     this.mouthOpen = 0,
     this.speaking = false,
     this.listening = false,
@@ -92,64 +96,31 @@ class _OliviaLipSyncState extends State<OliviaLipSync> {
     final open = widget.mouthOpen.clamp(0.0, 1.0);
     final index = _frameFor(open);
 
-    final Color ring;
-    if (widget.listening) {
-      ring = LhColors.green;
-    } else if (widget.thinking) {
-      ring = LhColors.blue;
-    } else if (widget.speaking) {
-      ring = LhColors.navy;
-    } else {
-      ring = LhColors.hairline;
-    }
-    // Driven by the steady per-utterance flags, not by mouthOpen — reacting to
-    // mouthOpen made the ring flicker several times a second.
-    final active = widget.listening || widget.thinking || widget.speaking;
-    final radius = BorderRadius.circular(16);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      // The border width is deliberately constant: it is part of layout, so
-      // animating it resized the image on every change and made her visibly
-      // shake. Only the colour and the shadow react, and neither affects
-      // layout.
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        border: Border.all(
-            color: ring.withValues(alpha: active ? 0.85 : 0.45), width: 2),
-        boxShadow: [
-          if (active)
-            BoxShadow(
-              color: ring.withValues(alpha: 0.22),
-              blurRadius: 18,
-              spreadRadius: 2,
+    return OliviaStage(
+      expand: widget.expand,
+      speaking: widget.speaking,
+      listening: widget.listening,
+      thinking: widget.thinking,
+      // The frames are stills from her clip, so they share its shape.
+      naturalSize: OliviaStage.portrait,
+      // Stacked rather than swapped so there is never a blank frame between
+      // shapes; only the opacity of the top layers changes.
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          for (var i = 0; i < OliviaLipSync.frames.length; i++)
+            AnimatedOpacity(
+              // Fast enough to keep up with speech, slow enough not to flicker
+              // between neighbouring shapes.
+              duration: const Duration(milliseconds: 45),
+              opacity: i == index ? 1 : 0,
+              child: Image.asset(
+                OliviaLipSync.frames[i],
+                fit: BoxFit.cover,
+                gaplessPlayback: true,
+              ),
             ),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        // Stacked rather than swapped so there is never a blank frame between
-        // shapes; only the opacity of the top layers changes.
-        child: AspectRatio(
-          aspectRatio: 464 / 688,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              for (var i = 0; i < OliviaLipSync.frames.length; i++)
-                AnimatedOpacity(
-                  // Fast enough to keep up with speech, slow enough not to
-                  // flicker between neighbouring shapes.
-                  duration: const Duration(milliseconds: 45),
-                  opacity: i == index ? 1 : 0,
-                  child: Image.asset(
-                    OliviaLipSync.frames[i],
-                    fit: BoxFit.cover,
-                    gaplessPlayback: true,
-                  ),
-                ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -9,6 +9,7 @@ import '../services/olivia/olivia_voice.dart';
 import '../theme.dart';
 import '../widgets/olivia/olivia_avatar.dart';
 import '../widgets/olivia/olivia_lipsync.dart';
+import '../widgets/olivia/olivia_stage.dart';
 import '../widgets/olivia/olivia_video.dart';
 import '../widgets/olivia/order_confirm_card.dart';
 import 'profile_screen.dart';
@@ -220,34 +221,41 @@ class _OliviaScreenState extends State<OliviaScreen> {
   }
 
   Widget _header(OliviaState state, bool listening) {
+    // Full width, and as much height as the window can spare — she should be
+    // visible from the LocalHive sign behind her down to her sweater, not
+    // cropped to a band across her eyes.
+    final height = OliviaStage.heightIn(MediaQuery.sizeOf(context));
+
     return Container(
       width: double.infinity,
       color: LhColors.surface,
-      padding: const EdgeInsets.only(top: 8, bottom: 12),
       child: Column(
         children: [
           // Olivia is her video clip. If it cannot play, the next best thing
           // is the set of mouth frames cut from that same clip driven by her
-          // speech, then the still photo, then the drawn face.
-          // Bounded in height so a portrait clip does not push the transcript
-          // off the screen.
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 260),
+          // speech, then the still photo, then the drawn face. Each one crops
+          // to fill this box, so they all sit in exactly the same place.
+          SizedBox(
+            height: height,
+            width: double.infinity,
             child: ValueListenableBuilder<double>(
               valueListenable: _voice.mouthOpen,
               builder: (context, mouth, _) => OliviaVideo(
+                expand: true,
                 speaking: _voice.isSpeaking,
                 listening: listening,
                 thinking: state == OliviaState.thinking,
                 fallback: OliviaLipSync(
+                  expand: true,
                   mouthOpen: mouth,
                   speaking: _voice.isSpeaking,
                   listening: listening,
                   thinking: state == OliviaState.thinking,
-                  fallback: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  // The drawn face is a circle, so it centres in the space
+                  // rather than filling it.
+                  fallback: Center(
                     child: OliviaAvatar(
-                      size: 150,
+                      size: height - 24,
                       mouthOpen: mouth,
                       listening: listening,
                       thinking: state == OliviaState.thinking,
@@ -257,7 +265,7 @@ class _OliviaScreenState extends State<OliviaScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             switch (state) {
               OliviaState.listening => 'Listening…',
@@ -270,6 +278,7 @@ class _OliviaScreenState extends State<OliviaScreen> {
             },
             style: const TextStyle(fontSize: 13, color: LhColors.inkSecondary),
           ),
+          const SizedBox(height: 10),
         ],
       ),
     );
