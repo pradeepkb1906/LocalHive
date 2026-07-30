@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -11,8 +12,8 @@ import '../../theme.dart';
 /// switch, and a missing file never breaks the screen.
 ///
 /// [mouthOpen] is 0 (closed) to 1 (wide), driven by the text-to-speech word
-/// stream. The drawn face moves its lips with it; a photograph cannot, so there
-/// the same signal drives a speaking glow that tracks her voice instead.
+/// stream. The drawn face moves its lips with it; the photograph has its jaw
+/// strip warped by the same signal.
 /// [listening] shows the headset mic lit while the customer is talking.
 class OliviaAvatar extends StatefulWidget {
   final double size;
@@ -43,17 +44,38 @@ class _OliviaAvatarState extends State<OliviaAvatar>
       vsync: this, duration: const Duration(milliseconds: 4200))
     ..repeat();
 
+  /// The decoded photo, needed because warping her jaw means redrawing part of
+  /// the image itself rather than painting over it.
+  ui.Image? _photo;
+  ImageStream? _stream;
+  late final ImageStreamListener _listener = ImageStreamListener((info, _) {
+    if (mounted) setState(() => _photo = info.image);
+  }, onError: (_, __) {
+    // No photo bundled: the drawn face takes over via errorBuilder.
+  });
+
+  @override
+  void initState() {
+    super.initState();
+    _stream = const AssetImage(OliviaAvatar.photoAsset)
+        .resolve(ImageConfiguration.empty)
+      ..addListener(_listener);
+  }
+
   @override
   void dispose() {
+    _stream?.removeListener(_listener);
     _idle.dispose();
     super.dispose();
   }
 
-  /// Presents a photographic Olivia.
+  /// Presents the photograph of Olivia in full — the whole frame, nothing
+  /// cropped away.
   ///
-  /// A photograph's lips cannot move, so rather than fake it, her voice drives
-  /// a ring that brightens and widens with each word, plus a very slight scale.
-  /// The effect reads as "she is talking" without pretending to be lip-sync.
+  /// Three things make a still photograph feel alive: her eyes blink, her jaw
+  /// moves with her speech, and a border brightens with each word. The blink
+  /// paints eyelids over her eyes; the mouth cannot be painted over, so the
+  /// photo's own pixels are warped instead.
   Widget _photoFrame(Widget image, double t) {
     final speaking = widget.mouthOpen.clamp(0.0, 1.0);
     final pulse =
@@ -72,36 +94,39 @@ class _OliviaAvatarState extends State<OliviaAvatar>
       ringStrength = 0.30 + 0.55 * speaking;
     } else {
       ring = LhColors.hairline;
-      ringStrength = 0.5;
+      ringStrength = 0.6;
     }
 
-    final breath = (math.sin(t * 2 * math.pi) * 0.5 + 0.5) * 0.004;
-    final scale = 1 + breath + speaking * 0.012;
+    final radius = BorderRadius.circular(16);
 
-    return Center(
-      child: Transform.scale(
-        scale: scale,
-        child: Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-                color: ring.withValues(alpha: ringStrength),
-                width: 2 + 2.5 * speaking),
-            boxShadow: [
-              BoxShadow(
-                color: ring.withValues(alpha: 0.18 * ringStrength),
-                blurRadius: 10 + 22 * speaking,
-                spreadRadius: 1 + 4 * speaking,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        border: Border.all(
+            color: ring.withValues(alpha: ringStrength),
+            width: 1.5 + 2 * speaking),
+        boxShadow: [
+          BoxShadow(
+            color: ring.withValues(alpha: 0.16 * ringStrength),
+            blurRadius: 8 + 20 * speaking,
+            spreadRadius: 4 * speaking,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            image,
+            // Both painted in the photo's own coordinate space, so they stay
+            // on her face whatever size it is displayed at.
+            if (_photo != null)
+              Positioned.fill(
+                child: _LipWarp(photo: _photo!, mouthOpen: speaking),
               ),
-            ],
-          ),
-          child: ClipOval(
-            child: SizedBox.expand(
-              child: FittedBox(fit: BoxFit.cover, child: image),
-            ),
-          ),
+            Positioned.fill(child: _BlinkOverlay(eyeOpen: _blink(t))),
+          ],
         ),
       ),
     );
@@ -123,15 +148,15 @@ class _OliviaAvatarState extends State<OliviaAvatar>
       animation: _idle,
       builder: (context, _) {
         final t = _idle.value;
-        return SizedBox(
-          width: widget.size,
-          height: widget.size,
-          // errorBuilder is the whole switching mechanism: if the portrait is
-          // not in the bundle, Image.asset fails and the drawn face renders
-          // instead. No config flag to forget to set.
-          child: Image.asset(
-            OliviaAvatar.photoAsset,
-            errorBuilder: (context, _, __) => CustomPaint(
+        // errorBuilder is the whole switching mechanism: if the portrait is not
+        // in the bundle, Image.asset fails and the drawn face renders instead.
+        // No config flag to forget to set.
+        return Image.asset(
+          OliviaAvatar.photoAsset,
+          errorBuilder: (context, _, __) => SizedBox(
+            width: widget.size,
+            height: widget.size,
+            child: CustomPaint(
               painter: _OliviaPainter(
                 mouthOpen: widget.mouthOpen.clamp(0, 1),
                 eyeOpen: _blink(t),
@@ -142,12 +167,193 @@ class _OliviaAvatarState extends State<OliviaAvatar>
                 thinkPhase: t,
               ),
             ),
-            frameBuilder: (context, child, frame, _) => _photoFrame(child, t),
           ),
+          frameBuilder: (context, child, frame, _) => _photoFrame(child, t),
         );
       },
     );
   }
+}
+
+/// Where Olivia's eyes are in the photograph, as fractions of its width and
+/// height, so the blink lands correctly at any display size.
+///
+/// Measured from assets/brand/olivia_source.jpeg (1024x559). If that photo is
+/// replaced, re-measure these — `tool/crop_olivia.py` documents how.
+class _EyeGeometry {
+  static const leftCentre = Offset(0.4746, 0.2594);
+  static const rightCentre = Offset(0.5342, 0.2612);
+  static const halfWidth = 0.0175;
+  static const halfHeight = 0.0170;
+
+  /// Each eye gets the skin tone sampled from just below it in the photo. Her
+  /// left side is lit and her right is in shadow, so one shared colour left an
+  /// obvious dark patch on one eye.
+  static const leftLid = Color(0xFFAD8275);
+  static const rightLid = Color(0xFF9D7160);
+  static const lashColour = Color(0xFF7A5446);
+}
+
+/// Closes Olivia's eyes over the photograph for a moment.
+///
+/// A photo cannot blink, so this paints her own eyelid colour across the eyes
+/// with a lash line at the leading edge. Kept small, fast and infrequent —
+/// a slow or oversized version reads as uncanny rather than alive.
+class _BlinkOverlay extends StatelessWidget {
+  /// 1 = fully open, 0 = fully closed.
+  final double eyeOpen;
+  const _BlinkOverlay({required this.eyeOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    if (eyeOpen > 0.97) return const SizedBox.shrink();
+    return CustomPaint(painter: _BlinkPainter(eyeOpen: eyeOpen));
+  }
+}
+
+/// Where Olivia's jaw is in the photograph, as fractions of its size.
+///
+/// Closing a mouth raises the jaw, so the speech animation squashes this strip
+/// — from just under her nose down past her chin to her collar — towards its
+/// top. Warping the actual photo pixels is the only way a photograph's mouth
+/// can move; painting over it the way the eyelids do would look like a wound.
+class _JawGeometry {
+  static const top = 198 / 559;
+  static const bottom = 300 / 559;
+  static const left = 470 / 1024;
+  static const right = 600 / 1024;
+
+  /// Vertical scale of the strip at fully closed and fully open. Kept subtle:
+  /// past about 12% the chin visibly detaches from the neck.
+  static const closedScale = 0.92;
+  static const openScale = 1.02;
+}
+
+/// Squashes the jaw strip of the photograph so her mouth appears to move.
+class _LipWarp extends StatelessWidget {
+  final ui.Image photo;
+  final double mouthOpen;
+  const _LipWarp({required this.photo, required this.mouthOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    if (mouthOpen <= 0.02) return const SizedBox.shrink();
+    return CustomPaint(
+        painter: _LipWarpPainter(photo: photo, mouthOpen: mouthOpen));
+  }
+}
+
+class _LipWarpPainter extends CustomPainter {
+  final ui.Image photo;
+  final double mouthOpen;
+  const _LipWarpPainter({required this.photo, required this.mouthOpen});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final iw = photo.width.toDouble();
+    final ih = photo.height.toDouble();
+
+    // The strip in the photo's own pixels…
+    final src = Rect.fromLTRB(
+      _JawGeometry.left * iw,
+      _JawGeometry.top * ih,
+      _JawGeometry.right * iw,
+      _JawGeometry.bottom * ih,
+    );
+    // …and where it lands on screen.
+    final dstLeft = _JawGeometry.left * size.width;
+    final dstTop = _JawGeometry.top * size.height;
+    final dstWidth = (_JawGeometry.right - _JawGeometry.left) * size.width;
+    final dstHeight = (_JawGeometry.bottom - _JawGeometry.top) * size.height;
+
+    final scale = _JawGeometry.closedScale +
+        (_JawGeometry.openScale - _JawGeometry.closedScale) * mouthOpen;
+    final warped = dstHeight * scale;
+
+    canvas.save();
+    // Clip to the strip so a stretched jaw cannot spill over her collar.
+    canvas.clipRect(Rect.fromLTWH(dstLeft, dstTop, dstWidth, dstHeight));
+    canvas.drawImageRect(
+      photo,
+      src,
+      Rect.fromLTWH(dstLeft, dstTop, dstWidth, warped),
+      Paint()..filterQuality = FilterQuality.medium,
+    );
+    // Compressing leaves a sliver at the bottom; fill it by stretching the
+    // strip's last couple of rows, so there is no seam or double chin.
+    if (warped < dstHeight) {
+      final tailSrc = Rect.fromLTRB(
+          src.left, src.bottom - ih * 0.004, src.right, src.bottom);
+      canvas.drawImageRect(
+        photo,
+        tailSrc,
+        Rect.fromLTWH(
+            dstLeft, dstTop + warped - 1, dstWidth, dstHeight - warped + 1),
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_LipWarpPainter old) =>
+      old.mouthOpen != mouthOpen || old.photo != photo;
+}
+
+class _BlinkPainter extends CustomPainter {
+  final double eyeOpen;
+  const _BlinkPainter({required this.eyeOpen});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final closed = (1 - eyeOpen).clamp(0.0, 1.0);
+    if (closed <= 0) return;
+
+    final eyes = [
+      (_EyeGeometry.leftCentre, _EyeGeometry.leftLid),
+      (_EyeGeometry.rightCentre, _EyeGeometry.rightLid),
+    ];
+    // Feathering the lid into her skin is what stops it reading as a censor
+    // bar. Scaled off the photo's displayed size so it holds at any size.
+    final feather = math.max(0.6, size.width * 0.0035);
+
+    for (final (centre, lidColour) in eyes) {
+      final cx = centre.dx * size.width;
+      final halfW = _EyeGeometry.halfWidth * size.width;
+      final halfH = _EyeGeometry.halfHeight * size.height;
+      // The lid sweeps down from the top of the eye.
+      final top = centre.dy * size.height - halfH;
+      final lidHeight = 2 * halfH * closed;
+
+      final lid = RRect.fromRectAndRadius(
+        Rect.fromLTWH(cx - halfW, top, 2 * halfW, lidHeight),
+        Radius.circular(halfW * 0.55),
+      );
+      canvas.drawRRect(
+        lid,
+        Paint()
+          ..color = lidColour
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, feather),
+      );
+
+      // A lash line at the closing edge sells it as an eyelid, not a block.
+      if (closed > 0.5) {
+        canvas.drawLine(
+          Offset(cx - halfW * 0.85, top + lidHeight),
+          Offset(cx + halfW * 0.85, top + lidHeight),
+          Paint()
+            ..color = _EyeGeometry.lashColour
+                .withValues(alpha: (closed - 0.5) / 0.5 * 0.85)
+            ..strokeWidth = math.max(0.8, halfH * 0.26)
+            ..strokeCap = StrokeCap.round
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, feather * 0.6),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BlinkPainter old) => old.eyeOpen != eyeOpen;
 }
 
 class _OliviaPainter extends CustomPainter {

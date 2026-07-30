@@ -50,6 +50,8 @@ void main() {
     });
   });
 
+  _blinkTests();
+
   group('order confirmation card', () {
     OrderDraft foodDraft({String fulfillment = 'pickup'}) => OrderDraft(
           kind: 'order',
@@ -152,3 +154,24 @@ void main() {
 }
 
 bool tester_ok() => true;
+
+/// The blink is the one thing that makes the photograph feel alive, and it is
+/// easy to break silently — the eyelids are positioned by fractions of the
+/// photo's size, so a layout change can move them off her eyes. This at least
+/// proves the overlay paints through a whole blink without throwing.
+void _blinkTests() {
+  testWidgets('the avatar paints through a full blink cycle', (t) async {
+    await t.pumpWidget(MaterialApp(
+      theme: buildTheme(),
+      home: const Scaffold(
+        body: Center(child: OliviaAvatar(size: 200)),
+      ),
+    ));
+    // The idle loop is 4.2s and the blink fires at 86% of it; step finely
+    // enough to land inside the ~210ms window.
+    for (var ms = 0; ms < 4400; ms += 60) {
+      await t.pump(const Duration(milliseconds: 60));
+    }
+    expect(find.byType(OliviaAvatar), findsOneWidget);
+  });
+}

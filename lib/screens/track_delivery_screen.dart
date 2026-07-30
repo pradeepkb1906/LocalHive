@@ -123,7 +123,14 @@ class _TrackDeliveryScreenState extends State<TrackDeliveryScreen> {
           if (_followCourier && courier != null && courier != _lastCentred) {
             _lastCentred = courier;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _map.move(courier, _map.camera.zoom);
+              if (!mounted) return;
+              // A courier position can arrive before the map has laid out —
+              // reading the camera then throws, so keep the first frames quiet.
+              try {
+                _map.move(courier, _map.camera.zoom);
+              } catch (_) {
+                // The map centres on the courier via initialCenter anyway.
+              }
             });
           }
 

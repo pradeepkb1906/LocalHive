@@ -8,6 +8,7 @@ import '../services/olivia/olivia_session.dart';
 import '../services/olivia/olivia_voice.dart';
 import '../theme.dart';
 import '../widgets/olivia/olivia_avatar.dart';
+import '../widgets/olivia/olivia_video.dart';
 import '../widgets/olivia/order_confirm_card.dart';
 import 'profile_screen.dart';
 
@@ -224,13 +225,28 @@ class _OliviaScreenState extends State<OliviaScreen> {
       padding: const EdgeInsets.only(top: 8, bottom: 12),
       child: Column(
         children: [
-          ValueListenableBuilder<double>(
-            valueListenable: _voice.mouthOpen,
-            builder: (context, mouth, _) => OliviaAvatar(
-              size: 150,
-              mouthOpen: mouth,
-              listening: listening,
-              thinking: state == OliviaState.thinking,
+          // Olivia is a video clip of a real person where one is bundled,
+          // falling back to the still photo and then to the drawn face.
+          // Bounded in height so a portrait clip does not push the transcript
+          // off the screen.
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 260),
+            child: ValueListenableBuilder<double>(
+              valueListenable: _voice.mouthOpen,
+              builder: (context, mouth, _) => OliviaVideo(
+                speaking: _voice.isSpeaking,
+                listening: listening,
+                thinking: state == OliviaState.thinking,
+                fallback: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: OliviaAvatar(
+                    size: 150,
+                    mouthOpen: mouth,
+                    listening: listening,
+                    thinking: state == OliviaState.thinking,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 4),
