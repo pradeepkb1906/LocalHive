@@ -41,34 +41,45 @@ class AdminReviewScreen extends StatelessWidget {
           final decided =
               apps.where((a) => a['status'] != 'in_review').toList();
           if (apps.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(CupertinoIcons.doc_text_search,
-                        size: 44, color: LhColors.hairline),
-                    SizedBox(height: 12),
-                    Text('No applications yet',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600)),
-                    SizedBox(height: 4),
-                    Text(
-                        'When someone applies to offer services, sell groceries, '
-                        'run a truck, or deliver, their application lands here '
-                        'for your review.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 13, color: LhColors.inkSecondary)),
-                  ],
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                const _FeatureAccessCard(),
+                const SizedBox(height: 40),
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.doc_text_search,
+                            size: 44, color: LhColors.hairline),
+                        SizedBox(height: 12),
+                        Text('No applications yet',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600)),
+                        SizedBox(height: 4),
+                        Text(
+                            'When someone applies to offer services, sell groceries, '
+                            'run a truck, or deliver, their application lands here '
+                            'for your review.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 13, color: LhColors.inkSecondary)),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             );
           }
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // Feature Access, impossible to miss — the app-bar icon alone
+              // proved too subtle to find.
+              const _FeatureAccessCard(),
+              const SizedBox(height: 12),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -344,4 +355,58 @@ class _ApplicationCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 13.5, color: LhColors.ink))),
         ],
       );
+}
+
+/// Large, labelled entry into the Feature Access console.
+class _FeatureAccessCard extends StatelessWidget {
+  const _FeatureAccessCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: LhColors.navy.withValues(alpha: 0.06),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: LhColors.navy.withValues(alpha: 0.30)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => const AdminFeatureTogglesScreen())),
+        child: const Padding(
+          padding: EdgeInsets.all(14),
+          child: Row(
+            children: [
+              IconTile(
+                  icon: CupertinoIcons.slider_horizontal_3,
+                  color: LhColors.navy),
+              SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Feature Access',
+                        style: TextStyle(
+                            fontSize: 15.5, fontWeight: FontWeight.w700)),
+                    SizedBox(height: 2),
+                    Text(
+                        'Toggle which features each role can use — changes '
+                        'apply live to everyone in that role',
+                        style: TextStyle(
+                            fontSize: 12.5,
+                            color: LhColors.inkSecondary,
+                            height: 1.3)),
+                  ],
+                ),
+              ),
+              Icon(CupertinoIcons.chevron_right,
+                  size: 18, color: LhColors.navy),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -4,6 +4,7 @@ import '../app_state.dart';
 import '../demo_accounts.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
+import 'admin_feature_toggles_screen.dart';
 import 'legal_screen.dart';
 import 'help_support_screen.dart';
 import '../widgets/location_chip.dart';
@@ -174,6 +175,23 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
+              if (s.role == 'admin') ...[
+                InsetGroup(
+                  header: 'Platform',
+                  children: [
+                    _LinkTile(
+                      icon: CupertinoIcons.slider_horizontal_3,
+                      title: 'Feature Access',
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  const AdminFeatureTogglesScreen())),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
               InsetGroup(
                 header: 'About',
                 children: [
@@ -234,8 +252,8 @@ class ProfileScreen extends StatelessWidget {
               Center(
                 child: Text(
                     s.firebaseReady
-                        ? 'LocalHive 0.2.0 · Connected'
-                        : 'LocalHive 0.2.0 · Offline demo mode',
+                        ? 'LocalHive 0.3.0 · Connected'
+                        : 'LocalHive 0.3.0 · Offline demo mode',
                     style: const TextStyle(
                         fontSize: 12, color: LhColors.inkSecondary)),
               ),
