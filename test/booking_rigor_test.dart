@@ -23,9 +23,21 @@ void main() {
   });
 
   test('settled statuses fall into Past', () {
-    for (final s in ['Completed', 'Delivered', 'Declined']) {
+    for (final s in ['Completed', 'Delivered', 'Declined', 'Cancelled']) {
       expect(withStatus(s).isActive, isFalse, reason: '$s should be past');
     }
+  });
+
+  test('a booking can be cancelled only while it is still Requested', () {
+    Booking saved(String status) =>
+        Booking('Maria G.', 'Cleaning · 3 hrs', status, 84, id: 'bk1');
+    expect(saved('Requested').canCancel, isTrue);
+    for (final s in ['Accepted', 'Completed', 'Declined', 'Cancelled']) {
+      expect(saved(s).canCancel, isFalse,
+          reason: '$s is past the cancellation window');
+    }
+    // A row with no Firestore id (mock data) has nothing to cancel.
+    expect(withStatus('Requested').canCancel, isFalse);
   });
 
   test('placedLabel is empty when no timestamp was recorded', () {

@@ -252,6 +252,12 @@ class FirebaseService {
           'LocalHive: marked complete. Payout of '
               '\$${(b.amount / (1 + platformFeePct)).toStringAsFixed(2)} is on the way.'
         ),
+      'Cancelled' => (
+          'LocalHive: your booking with ${b.providerName} (${b.detail}) has '
+              'been cancelled. Nothing is owed.',
+          'LocalHive: the customer cancelled ${b.detail} before you accepted. '
+              'No action needed.'
+        ),
       _ => (null, null),
     };
     await _queueNotifications(

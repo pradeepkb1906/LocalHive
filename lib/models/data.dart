@@ -142,8 +142,16 @@ class Booking {
   });
 
   /// Still moving through its lifecycle, as opposed to settled history.
-  bool get isActive =>
-      !const {'Completed', 'Delivered', 'Declined'}.contains(status);
+  bool get isActive => !const {
+        'Completed',
+        'Delivered',
+        'Declined',
+        'Cancelled'
+      }.contains(status);
+
+  /// A home-service visit can be called off any time before the provider
+  /// commits to it — the standard cancellation window of every booking app.
+  bool get canCancel => status == 'Requested' && id.isNotEmpty;
 
   /// "Placed today 7:42 PM" / "Placed Jul 30, 7:42 PM" — every ordering app
   /// answers "when did I order this?" without being asked.

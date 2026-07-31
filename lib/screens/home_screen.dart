@@ -37,24 +37,25 @@ class _HomeShellState extends State<HomeShell> {
           _lastRole = role;
           _tab = role == 'customer' ? 0 : 1;
         }
+        // Only the customer gets a Bookings tab. Business owners and
+        // delivery partners see incoming work on their Dashboard/Deliveries
+        // tab already — a second, customer-side Bookings tab there was
+        // almost always empty and read as "where are my orders?" confusion.
         final pages = switch (role) {
           'admin' => const [
               HomeTab(),
               AdminReviewScreen(),
-              BookingsScreen(),
-              ProfileScreen()
+              ProfileScreen(),
             ],
           'provider' => const [
               HomeTab(),
               ProviderDashboardScreen(),
-              BookingsScreen(),
-              ProfileScreen()
+              ProfileScreen(),
             ],
           'delivery' => const [
               HomeTab(),
               DeliveryJobsScreen(),
-              BookingsScreen(),
-              ProfileScreen()
+              ProfileScreen(),
             ],
           _ => const [HomeTab(), BookingsScreen(), ProfileScreen()],
         };
@@ -123,11 +124,13 @@ class _HomeShellState extends State<HomeShell> {
                       icon: Icon(CupertinoIcons.house),
                       selectedIcon: Icon(CupertinoIcons.house_fill),
                       label: 'Home'),
-                  if (roleTab != null) roleTab,
-                  const NavigationDestination(
-                      icon: Icon(CupertinoIcons.doc_text),
-                      selectedIcon: Icon(CupertinoIcons.doc_text_fill),
-                      label: 'Bookings'),
+                  if (roleTab != null)
+                    roleTab
+                  else
+                    const NavigationDestination(
+                        icon: Icon(CupertinoIcons.doc_text),
+                        selectedIcon: Icon(CupertinoIcons.doc_text_fill),
+                        label: 'Bookings'),
                   const NavigationDestination(
                       icon: Icon(CupertinoIcons.person),
                       selectedIcon: Icon(CupertinoIcons.person_fill),
@@ -144,6 +147,28 @@ class _HomeShellState extends State<HomeShell> {
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
+
+  Future<void> _signOut(BuildContext context) async {
+    final who = AppState.instance.userName;
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: Text(who == null
+            ? 'You will return to the welcome screen.'
+            : 'Signed in as $who. You will return to the welcome screen.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Stay')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Sign out')),
+        ],
+      ),
+    );
+    if (sure == true) await AppState.instance.signOut();
+  }
 
   void _open(BuildContext context, String category, String title) {
     Navigator.push(
@@ -170,6 +195,26 @@ class HomeTab extends StatelessWidget {
                         fontWeight: FontWeight.w700, letterSpacing: -0.5)),
               ),
               const Spacer(),
+              // Who is signed in, and the way out — at the top, where every
+              // app keeps it. Signing out lands on the welcome screen, which
+              // is also where Sign in lives.
+              TextButton.icon(
+                onPressed: () => AppState.instance.signedIn
+                    ? _signOut(context)
+                    : AppState.instance.signOut(),
+                style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    foregroundColor: LhColors.navy),
+                icon: Icon(
+                    AppState.instance.signedIn
+                        ? CupertinoIcons.square_arrow_right
+                        : CupertinoIcons.person_crop_circle,
+                    size: 16),
+                label: Text(AppState.instance.signedIn ? 'Sign out' : 'Sign in',
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w600)),
+              ),
               const LocationChip(),
             ],
           ),

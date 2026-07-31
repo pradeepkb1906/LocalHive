@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
+import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
 import '../widgets/order_items_view.dart';
@@ -87,6 +88,35 @@ class BookingsScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _cancel(BuildContext context, Booking b) async {
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel this booking?'),
+        content: Text('${b.providerName} · ${b.detail}\n\n'
+            'They have not accepted yet, so nothing is owed. They will be '
+            'notified that you cancelled.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Keep booking')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFFF3B30)),
+              child: const Text('Cancel it')),
+        ],
+      ),
+    );
+    if (sure != true) return;
+    await FirebaseService.instance.updateBookingStatus(b, 'Cancelled');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Booking cancelled — the provider has been notified.')));
+    }
+  }
+
   Widget _sectionLabel(String label) => Padding(
         padding: const EdgeInsets.only(bottom: 10, top: 4),
         child: Text(label.toUpperCase(),
@@ -120,11 +150,12 @@ class BookingsScreen extends StatelessWidget {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           leading: IconTile(
-              icon: b.status == 'Confirmed'
+              icon: b.category == 'home_service' || b.status == 'Confirmed'
                   ? CupertinoIcons.calendar_badge_plus
                   : CupertinoIcons.bag_fill,
-              color:
-                  b.status == 'Confirmed' ? LhColors.indigo : LhColors.orange,
+              color: b.category == 'home_service' || b.status == 'Confirmed'
+                  ? LhColors.indigo
+                  : LhColors.orange,
               size: 36),
           title: Text(b.providerName,
               style:
@@ -170,7 +201,7 @@ class BookingsScreen extends StatelessWidget {
                         'Ready' ||
                         'Out for delivery' =>
                           LhColors.blue,
-                        'Declined' => const Color(0xFFFF3B30),
+                        'Declined' || 'Cancelled' => const Color(0xFFFF3B30),
                         _ => LhColors.orange,
                       })),
             ],
@@ -183,6 +214,27 @@ class BookingsScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
             child: OrderItemsView(booking: b, audience: OrderAudience.customer),
+          ),
+        // Until the provider accepts, the customer can call the visit off —
+        // the cancellation window every booking app gives.
+        if (b.canCancel)
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                height: 32,
+                child: OutlinedButton(
+                  onPressed: () => _cancel(context, b),
+                  style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFF3B30),
+                      visualDensity: VisualDensity.compact,
+                      textStyle: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w600)),
+                  child: const Text('Cancel request'),
+                ),
+              ),
+            ),
           ),
         // A delivery order becomes trackable the moment a partner is on it.
         if (b.fulfillment == 'delivery' &&

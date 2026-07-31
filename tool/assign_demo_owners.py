@@ -73,9 +73,20 @@ admin_tok, _ = sign_in("admin")
 uids = {name: sign_in(name)[1] for name in set(OWNER_FOR.values())}
 print("demo owner uids:", {k: v[:8] + "…" for k, v in uids.items()})
 
-st, d = http("GET", f"{FS}/providers?pageSize=300", token=admin_tok)
-if st != 200:
-    sys.exit(f"cannot list providers: {d}")
+# Page through the whole collection — the nationwide seed pushed it well
+# past one page, and an unpaginated read silently skips the rest.
+docs = []
+page = ""
+while True:
+    st, d = http("GET", f"{FS}/providers?pageSize=300&pageToken={page}",
+                 token=admin_tok)
+    if st != 200:
+        sys.exit(f"cannot list providers: {d}")
+    docs.extend(d.get("documents", []))
+    page = d.get("nextPageToken", "")
+    if not page:
+        break
+d = {"documents": docs}
 
 changed = skipped = failed = 0
 for p in d.get("documents", []):
