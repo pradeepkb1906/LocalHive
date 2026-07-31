@@ -50,9 +50,13 @@ const featureRoleLabels = {
 /// every toggle.
 const defaultFeatureMatrix = <String, Map<String, bool>>{
   'customer': {
-    'home_services': true,
+    // LocalHive is focused on one market and one vertical: San Francisco
+    // grocery stores. Home services and food trucks stay off until there
+    // is real supply behind them — the admin console can flip either on
+    // per role or per person the day that changes.
+    'home_services': false,
     'stores': true,
-    'food_trucks': true,
+    'food_trucks': false,
     'nearby_map': true,
     'olivia': true,
     'bookings': true,

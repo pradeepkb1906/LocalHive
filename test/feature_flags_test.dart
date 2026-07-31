@@ -5,8 +5,11 @@ import 'package:localhive/models/feature_flags.dart';
 // role can already do, overrides must win, and the admin must be immune.
 void main() {
   test('defaults mirror current role access', () {
-    // Customer: full storefront, no operator surfaces.
-    expect(featureEnabledIn(const {}, 'customer', 'home_services'), isTrue);
+    // Customer: focused on the one live vertical (SF groceries); the other
+    // two storefronts ship off until there is real supply behind them.
+    expect(featureEnabledIn(const {}, 'customer', 'stores'), isTrue);
+    expect(featureEnabledIn(const {}, 'customer', 'home_services'), isFalse);
+    expect(featureEnabledIn(const {}, 'customer', 'food_trucks'), isFalse);
     expect(featureEnabledIn(const {}, 'customer', 'bookings'), isTrue);
     expect(featureEnabledIn(const {}, 'customer', 'olivia'), isTrue);
     expect(

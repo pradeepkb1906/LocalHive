@@ -198,9 +198,16 @@ service cloud.firestore {
 
     // Notification outbox: clients may only enqueue. Reading/dispatching is
     // the server-side dispatcher's job (Admin SDK).
+    // In-app update feed. Each doc is addressed to one uid, who may read it
+    // and mark it read. Delivered in the app — no SMS, no per-message cost.
     match /notifications/{noteId} {
       allow create: if signedIn();
-      allow read, update, delete: if false;
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['read']);
+      allow delete: if false;
     }
 
     match /{document=**} {

@@ -38,7 +38,7 @@ void main() {
         scrollable: find.byType(Scrollable).first);
     expect(find.text('Customer'), findsOneWidget);
   });
-  testWidgets('LocalHive home screen renders the three verticals',
+  testWidgets('home feed shows the live vertical, not the parked ones',
       (tester) async {
     // A phone-sized viewport; the home feed scrolls, so each card has to be
     // scrolled into view rather than assumed to be built.
@@ -50,12 +50,9 @@ void main() {
 
     expect(find.text('LocalHive'), findsOneWidget);
 
-    for (final label in const [
-      'Just talk to Olivia',
-      'Home Services',
-      'Stores',
-      'Food Trucks',
-    ]) {
+    // LocalHive is focused on one vertical — SF groceries. Olivia and the
+    // storefront that has real supply behind it are on the feed.
+    for (final label in const ['Just talk to Olivia', 'Stores']) {
       await tester.scrollUntilVisible(
         find.text(label),
         150,
@@ -66,6 +63,10 @@ void main() {
       expect(find.text(label), findsOneWidget,
           reason: '$label should be on the home feed');
     }
+    // The parked verticals are switched off by default and must not appear —
+    // an entry that leads to an empty marketplace is worse than no entry.
+    expect(find.text('Home Services'), findsNothing);
+    expect(find.text('Food Trucks'), findsNothing);
   });
 
   testWidgets('Olivia is reachable from every tab', (tester) async {

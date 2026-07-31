@@ -6,6 +6,7 @@ import '../services/firebase_service.dart';
 import '../theme.dart';
 import 'admin_feature_toggles_screen.dart';
 import 'chats_list_screen.dart';
+import 'updates_screen.dart';
 import 'legal_screen.dart';
 import 'help_support_screen.dart';
 import '../widgets/location_chip.dart';
@@ -193,18 +194,27 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
               ],
-              if (s.signedIn && s.featureEnabled('messages')) ...[
+              if (s.signedIn) ...[
                 InsetGroup(
-                  header: 'Messages',
+                  header: 'Inbox',
                   children: [
                     _LinkTile(
-                      icon: CupertinoIcons.chat_bubble_2_fill,
-                      title: 'Messages',
+                      icon: CupertinoIcons.bell_fill,
+                      title: 'Updates',
                       onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const ChatsListScreen())),
+                              builder: (_) => const UpdatesScreen())),
                     ),
+                    if (s.featureEnabled('messages'))
+                      _LinkTile(
+                        icon: CupertinoIcons.chat_bubble_2_fill,
+                        title: 'Messages',
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ChatsListScreen())),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 24),

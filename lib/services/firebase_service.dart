@@ -284,38 +284,27 @@ class FirebaseService {
     if (customerMsg != null) {
       batch.set(_db!.collection('notifications').doc(), {
         'recipient': 'customer',
-        'phone': booking.customerPhone,
-        'email': booking.customerEmail,
-        'channels': ['sms', 'email'],
+        // Addressed by uid: the app reads its own notifications and shows
+        // them in the Updates list. No SMS, no per-message cost.
+        'userId': booking.userId.isEmpty ? _uid : booking.userId,
+        'channels': ['in_app'],
         'event': event,
         'bookingId': bookingId,
         'message': customerMsg,
-        'status': 'pending',
+        'read': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
     if (providerMsg != null) {
-      // Deliver to the contact details on the provider's listing.
-      String provPhone = '', provEmail = '';
-      if (booking.providerId.isNotEmpty) {
-        try {
-          final doc =
-              await _db!.collection('providers').doc(booking.providerId).get();
-          final m = doc.data() ?? {};
-          provPhone = (m['phone'] ?? '') as String;
-          provEmail = (m['email'] ?? '') as String;
-        } catch (_) {}
-      }
       batch.set(_db!.collection('notifications').doc(), {
         'recipient': 'provider',
         'providerId': booking.providerId,
-        'phone': provPhone,
-        'email': provEmail,
-        'channels': ['sms', 'email'],
+        'userId': booking.providerOwnerId,
+        'channels': ['in_app'],
         'event': event,
         'bookingId': bookingId,
         'message': providerMsg,
-        'status': 'pending',
+        'read': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
@@ -484,6 +473,40 @@ class FirebaseService {
   Future<void> clearUserFeatureFlags(String uid) async {
     if (!ready) return;
     await _db!.collection('user_feature_flags').doc(uid).delete();
+  }
+
+  /// The signed-in user's notification feed — order and booking updates,
+  /// newest first. These used to go out as SMS/WhatsApp at roughly a cent
+  /// each; delivered in the app they cost nothing.
+  Stream<List<Map<String, dynamic>>> myNotificationsStream() {
+    if (!ready || currentUser == null) return Stream.value(const []);
+    return _shared(
+        'myNotifications',
+        () => _db!
+                .collection('notifications')
+                .where('userId', isEqualTo: _uid)
+                .snapshots()
+                .map((snap) {
+              final rows =
+                  snap.docs.map((d) => {...d.data(), 'id': d.id}).toList()
+                    ..sort((a, b) {
+                      final ta = a['createdAt'];
+                      final tb = b['createdAt'];
+                      if (ta is! Timestamp) return 1;
+                      if (tb is! Timestamp) return -1;
+                      return tb.compareTo(ta);
+                    });
+              return rows.take(50).toList();
+            }));
+  }
+
+  /// Marks one update as read.
+  Future<void> markNotificationRead(String id) async {
+    if (!ready) return;
+    await _db!
+        .collection('notifications')
+        .doc(id)
+        .set({'read': true}, SetOptions(merge: true));
   }
 
   // ---- 1:1 chat ----
@@ -662,7 +685,7 @@ class FirebaseService {
         'recipient': 'follower',
         'phone': (m['phone'] ?? '') as String,
         'email': (m['email'] ?? '') as String,
-        'channels': ['sms', 'email'],
+        'channels': ['in_app'],
         'event': 'truck_arrived',
         'message': 'LocalHive: ${truck.name} has ARRIVED at $locationText — '
             'come grab your favorites or pre-order in the app to skip the line!',
@@ -1002,7 +1025,7 @@ class FirebaseService {
       'recipient': 'applicant',
       'phone': (app['applicantPhone'] ?? '') as String,
       'email': (app['applicantEmail'] ?? '') as String,
-      'channels': ['sms', 'email'],
+      'channels': ['in_app'],
       'event': 'application_reviewed',
       'message': message,
       'status': 'pending',

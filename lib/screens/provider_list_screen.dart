@@ -1,7 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/data.dart';
+import '../services/directions.dart';
 import '../services/firebase_service.dart';
+import '../services/geo.dart';
+import '../services/location_service.dart';
+import '../services/olivia/places_search.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
 import 'booking_screen.dart';
@@ -9,7 +13,7 @@ import 'catalog_screen.dart';
 import 'nearby_map_screen.dart';
 import 'truck_map_screen.dart';
 
-class ProviderListScreen extends StatelessWidget {
+class ProviderListScreen extends StatefulWidget {
   final String category;
   final String title;
   const ProviderListScreen(
@@ -26,6 +30,57 @@ class ProviderListScreen extends StatelessWidget {
         'indian_store' => LhColors.green,
         _ => LhColors.orange,
       };
+
+  @override
+  State<ProviderListScreen> createState() => _ProviderListScreenState();
+}
+
+class _ProviderListScreenState extends State<ProviderListScreen> {
+  final _places = PlacesSearch();
+  List<NearbyPlace> _nearby = const [];
+  bool _loadingNearby = true;
+
+  String get category => widget.category;
+  String get title => widget.title;
+  List<Provider> get _mock => widget._mock;
+  Color get _tint => widget._tint;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNearby();
+  }
+
+  @override
+  void dispose() {
+    _places.dispose();
+    super.dispose();
+  }
+
+  /// Real shops around the customer that have NOT partnered with LocalHive.
+  /// Shown honestly as "not a partner" — you can call them or get directions,
+  /// but you cannot order in the app. An empty marketplace is worse than a
+  /// short one, and a fake listing is worse than both.
+  Future<void> _loadNearby() async {
+    final loc = LocationService.instance;
+    if (!loc.hasPosition) await loc.detect();
+    if (!loc.hasPosition) {
+      if (mounted) setState(() => _loadingNearby = false);
+      return;
+    }
+    final results = await _places.search(
+      lat: loc.lat!,
+      lng: loc.lng!,
+      kind: _nearbyKind,
+      radiusM: 8000,
+      limit: 20,
+    );
+    if (!mounted) return;
+    setState(() {
+      _nearby = results;
+      _loadingNearby = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,154 +122,257 @@ class ProviderListScreen extends StatelessWidget {
         _ => 'food',
       };
 
+  Widget _sectionLabel(String text) => Padding(
+        padding: const EdgeInsets.only(left: 4, top: 6, bottom: 8),
+        child: Text(text.toUpperCase(),
+            style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.4,
+                color: LhColors.inkSecondary)),
+      );
+
   Widget _list(List<Provider> providers) {
     return Builder(
-      builder: (context) => ListView.separated(
+      builder: (context) => ListView(
         padding: const EdgeInsets.all(16),
-        // One extra row: the door to the live map of non-partnered places.
-        itemCount: providers.length + 1,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
-        itemBuilder: (context, i) {
-          if (i == providers.length) {
-            return Card(
-              child: ListTile(
-                leading: const Icon(CupertinoIcons.map_pin_ellipse,
-                    color: LhColors.blue),
-                title: const Text('Looking for something else?',
-                    style:
-                        TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600)),
-                subtitle: const Text(
-                    'See everything nearby on the live map — including places '
-                    'not partnered with LocalHive yet.',
-                    style: TextStyle(fontSize: 12.5)),
-                trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          NearbyMapScreen(initialKind: _nearbyKind)),
-                ),
-              ),
-            );
-          }
-          final p = providers[i];
-          return Card(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () {
-                if (category == 'home_service') {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => BookingScreen(provider: p)));
-                } else {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => CatalogScreen(
-                              provider: p,
-                              items: category == 'indian_store'
-                                  ? storeCatalog
-                                  : truckMenuFor(p.cuisine))));
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: _tint.withValues(alpha: 0.14),
-                      child: Text(
-                        p.name.substring(0, 1),
-                        style: TextStyle(
-                            color: _tint,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(p.name,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16),
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                              if (p.verified) ...[
-                                const SizedBox(width: 5),
-                                const Icon(CupertinoIcons.checkmark_seal_fill,
-                                    size: 15, color: LhColors.blue),
-                              ],
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-                          Text(p.subtitle,
-                              style: const TextStyle(
-                                  color: LhColors.inkSecondary, fontSize: 13)),
-                          const SizedBox(height: 5),
-                          Row(
-                            children: [
-                              const Icon(CupertinoIcons.star_fill,
-                                  size: 13, color: LhColors.amber),
-                              const SizedBox(width: 3),
-                              Text('${p.rating}',
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600)),
-                              Text(' (${p.reviews})',
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      color: LhColors.inkSecondary)),
-                              const SizedBox(width: 10),
-                              const Icon(CupertinoIcons.location_solid,
-                                  size: 12, color: LhColors.inkSecondary),
-                              const SizedBox(width: 2),
-                              Flexible(
-                                child: Text(p.city,
-                                    style: const TextStyle(
-                                        fontSize: 13,
-                                        color: LhColors.inkSecondary),
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (p.hourlyRate > 0)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text('\$${p.hourlyRate.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 17,
-                                  color: LhColors.ink)),
-                          const Text('per hour',
-                              style: TextStyle(
-                                  fontSize: 11, color: LhColors.inkSecondary)),
-                        ],
-                      )
-                    else
-                      const Icon(CupertinoIcons.chevron_right,
-                          size: 18, color: LhColors.hairline),
-                  ],
-                ),
+        children: [
+          if (providers.isNotEmpty) ...[
+            _sectionLabel('Order in the app'),
+            for (final p in providers) ...[
+              _partnerCard(context, p),
+              const SizedBox(height: 10),
+            ],
+          ],
+          const SizedBox(height: 8),
+          _sectionLabel('Also near you — not LocalHive partners'),
+          if (_loadingNearby)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_nearby.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                  'Nothing else found nearby on the public map right now.',
+                  style: TextStyle(fontSize: 13, color: LhColors.inkSecondary)),
+            )
+          else ...[
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: Text(
+                  'These shops have not joined LocalHive, so you cannot order '
+                  'here in the app — call them or get directions.',
+                  style:
+                      TextStyle(fontSize: 12.5, color: LhColors.inkSecondary)),
+            ),
+            for (final n in _nearby) ...[
+              _nearbyCard(context, n),
+              const SizedBox(height: 8),
+            ],
+          ],
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(CupertinoIcons.map_pin_ellipse,
+                  color: LhColors.blue),
+              title: const Text('See them all on the map',
+                  style:
+                      TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600)),
+              trailing: const Icon(CupertinoIcons.chevron_right, size: 16),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => NearbyMapScreen(initialKind: _nearbyKind)),
               ),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
-}
 
-// (list body extracted so the StreamBuilder above can reuse it)
+  /// A shop on the public map that never signed up. Honest about what it is
+  /// and what you can do with it.
+  Widget _nearbyCard(BuildContext context, NearbyPlace n) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(n.name,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w600)),
+                ),
+                Text(distanceLabel(n.km),
+                    style: const TextStyle(
+                        fontSize: 12.5, color: LhColors.inkSecondary)),
+              ],
+            ),
+            if (n.address.isNotEmpty || n.area.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(n.address.isNotEmpty ? n.address : n.area,
+                    style: const TextStyle(
+                        fontSize: 12.5, color: LhColors.inkSecondary)),
+              ),
+            if (n.openingHours.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(n.openingHours,
+                    style: const TextStyle(
+                        fontSize: 12, color: LhColors.inkSecondary)),
+              ),
+            Row(
+              children: [
+                if (n.phone.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => openCallWithFallback(context,
+                        name: n.name, phone: n.phone),
+                    style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact),
+                    icon: const Icon(CupertinoIcons.phone_fill, size: 14),
+                    label: const Text('Call', style: TextStyle(fontSize: 13)),
+                  ),
+                TextButton.icon(
+                  onPressed: () => openDirectionsWithFallback(context,
+                      lat: n.lat, lng: n.lng, address: n.name),
+                  style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact),
+                  icon:
+                      const Icon(CupertinoIcons.arrow_turn_up_right, size: 14),
+                  label:
+                      const Text('Directions', style: TextStyle(fontSize: 13)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _partnerCard(BuildContext context, Provider p) {
+    return Builder(
+      builder: (context) {
+        return Card(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () {
+              if (category == 'home_service') {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => BookingScreen(provider: p)));
+              } else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => CatalogScreen(
+                            provider: p,
+                            items: category == 'indian_store'
+                                ? storeCatalog
+                                : truckMenuFor(p.cuisine))));
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: _tint.withValues(alpha: 0.14),
+                    child: Text(
+                      p.name.substring(0, 1),
+                      style: TextStyle(
+                          color: _tint,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(p.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16),
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                            if (p.verified) ...[
+                              const SizedBox(width: 5),
+                              const Icon(CupertinoIcons.checkmark_seal_fill,
+                                  size: 15, color: LhColors.blue),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(p.subtitle,
+                            style: const TextStyle(
+                                color: LhColors.inkSecondary, fontSize: 13)),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            const Icon(CupertinoIcons.star_fill,
+                                size: 13, color: LhColors.amber),
+                            const SizedBox(width: 3),
+                            Text('${p.rating}',
+                                style: const TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.w600)),
+                            Text(' (${p.reviews})',
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    color: LhColors.inkSecondary)),
+                            const SizedBox(width: 10),
+                            const Icon(CupertinoIcons.location_solid,
+                                size: 12, color: LhColors.inkSecondary),
+                            const SizedBox(width: 2),
+                            Flexible(
+                              child: Text(p.city,
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      color: LhColors.inkSecondary),
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (p.hourlyRate > 0)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('\$${p.hourlyRate.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 17,
+                                color: LhColors.ink)),
+                        const Text('per hour',
+                            style: TextStyle(
+                                fontSize: 11, color: LhColors.inkSecondary)),
+                      ],
+                    )
+                  else
+                    const Icon(CupertinoIcons.chevron_right,
+                        size: 18, color: LhColors.hairline),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
