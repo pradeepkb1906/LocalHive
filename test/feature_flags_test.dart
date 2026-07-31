@@ -18,6 +18,11 @@ void main() {
     expect(featureEnabledIn(const {}, 'provider', 'bookings'), isFalse);
     // Delivery: job board on.
     expect(featureEnabledIn(const {}, 'delivery', 'delivery_jobs'), isTrue);
+    // Chat ships on for every role.
+    for (final role in featureRoles) {
+      expect(featureEnabledIn(const {}, role, 'messages'), isTrue,
+          reason: 'messages should default on for $role');
+    }
   });
 
   test('an admin override beats the default', () {

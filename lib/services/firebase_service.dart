@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import '../firebase_config.dart';
+import '../models/chat.dart';
 import '../models/data.dart';
 import 'courier_beacon.dart';
 
@@ -369,6 +370,8 @@ class FirebaseService {
       fulfillment: (m['fulfillment'] ?? '') as String,
       pickupEta: (m['pickupEta'] ?? '') as String,
       otp: (m['otp'] ?? '') as String,
+      userId: (m['userId'] ?? '') as String,
+      providerOwnerId: (m['providerOwnerId'] ?? '') as String,
       // Orders placed before items were recorded have no list. Those fall back
       // to the summary line, so an older order still reads sensibly.
       items: ((m['items'] as List?) ?? const [])
@@ -481,6 +484,122 @@ class FirebaseService {
   Future<void> clearUserFeatureFlags(String uid) async {
     if (!ready) return;
     await _db!.collection('user_feature_flags').doc(uid).delete();
+  }
+
+  // ---- 1:1 chat ----
+
+  /// Opens (or finds) the conversation between the signed-in user and
+  /// [otherUid], recording both parties' display info so either side's list
+  /// can render the other. Returns the chat id.
+  Future<String> openChat({
+    required String otherUid,
+    required String otherName,
+    required String otherRole,
+    String otherPhone = '',
+  }) async {
+    final id = chatIdFor(_uid, otherUid);
+    if (!ready) return id;
+    final me = currentUser;
+    await _db!.collection('chats').doc(id).set({
+      'participants': [_uid, otherUid]..sort(),
+      'names': {
+        _uid: me?.displayName ?? me?.email ?? 'Member',
+        otherUid: otherName,
+      },
+      'roles': {otherUid: otherRole},
+      if (otherPhone.isNotEmpty) 'phones': {otherUid: otherPhone},
+    }, SetOptions(merge: true));
+    return id;
+  }
+
+  /// Every conversation the signed-in user is part of, most recent first.
+  Stream<List<Map<String, dynamic>>> myChatsStream() {
+    if (!ready || currentUser == null) return Stream.value(const []);
+    return _shared(
+        'myChats',
+        () => _db!
+                .collection('chats')
+                .where('participants', arrayContains: _uid)
+                .snapshots()
+                .map((snap) {
+              final rows =
+                  snap.docs.map((d) => {...d.data(), 'id': d.id}).toList()
+                    ..sort((a, b) {
+                      final ta = a['updatedAt'];
+                      final tb = b['updatedAt'];
+                      if (ta is! Timestamp) return 1;
+                      if (tb is! Timestamp) return -1;
+                      return tb.compareTo(ta);
+                    });
+              return rows;
+            }));
+  }
+
+  /// One conversation's header doc: names, phones, running word count.
+  Stream<Map<String, dynamic>> chatDocStream(String chatId) {
+    if (!ready) return Stream.value(const {});
+    return _shared(
+        'chat-$chatId',
+        () => _db!
+            .collection('chats')
+            .doc(chatId)
+            .snapshots()
+            .map((doc) => doc.data() ?? const {}));
+  }
+
+  /// The messages of one conversation, oldest first.
+  Stream<List<Map<String, dynamic>>> chatMessagesStream(String chatId) {
+    if (!ready) return Stream.value(const []);
+    return _shared(
+        'chatMsgs-$chatId',
+        () => _db!
+                .collection('chats')
+                .doc(chatId)
+                .collection('messages')
+                .snapshots()
+                .map((snap) {
+              final rows =
+                  snap.docs.map((d) => {...d.data(), 'id': d.id}).toList()
+                    ..sort((a, b) {
+                      final ta = a['createdAt'];
+                      final tb = b['createdAt'];
+                      if (ta is! Timestamp) return 1;
+                      if (tb is! Timestamp) return -1;
+                      return ta.compareTo(tb);
+                    });
+              return rows;
+            }));
+  }
+
+  /// Sends [text] if the conversation still has room under the word cap.
+  /// Returns false (writing nothing) when the cap would be exceeded — the
+  /// UI then tells the user to place a call instead.
+  Future<bool> sendChatMessage(String chatId, String text) async {
+    if (!ready || currentUser == null) return false;
+    final t = text.trim();
+    final words = countWords(t);
+    if (words == 0) return false;
+    final doc = await _db!.collection('chats').doc(chatId).get();
+    final used = ((doc.data()?['wordCount'] ?? 0) as num).toInt();
+    if (!chatCanSend(used, words)) return false;
+    final batch = _db!.batch();
+    batch.set(
+        _db!.collection('chats').doc(chatId).collection('messages').doc(), {
+      'senderId': _uid,
+      'text': t,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    batch.set(
+        _db!.collection('chats').doc(chatId),
+        {
+          'lastMessage': t,
+          'lastSenderId': _uid,
+          'wordCount': FieldValue.increment(words),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true));
+    await batch.commit();
+    return true;
   }
 
   // ---- Truck arrival alerts ----
@@ -613,6 +732,9 @@ class FirebaseService {
       'fee': fee,
       'status': 'Open',
       'deliveryPersonId': '',
+      // The customer's uid — opaque, so safe on the world-readable board —
+      // lets the assigned partner open an in-app chat with them.
+      'userId': b.userId,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }

@@ -32,6 +32,38 @@ Future<bool> _open(Uri uri) async {
   }
 }
 
+/// Opens the phone dialer for [phone]. On phones this rings up the dialer
+/// with the number ready; on desktop browsers tel: usually goes nowhere, so
+/// on failure a dialog shows the number to dial by hand. LocalHive never
+/// places the call itself — the person does, from their own phone.
+Future<void> openCallWithFallback(BuildContext context,
+    {required String name, required String phone}) async {
+  final ok = await _open(Uri(scheme: 'tel', path: phone));
+  if (ok || !context.mounted) return;
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      icon: const Icon(Icons.phone, color: LhColors.green, size: 40),
+      title: Text('Call $name'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('This device cannot dial directly — the number is:',
+              style: TextStyle(fontSize: 13.5, color: LhColors.inkSecondary)),
+          const SizedBox(height: 10),
+          SelectableText(phone,
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx), child: const Text('Done')),
+      ],
+    ),
+  );
+}
+
 /// Directions to a listing (uses its coordinates when known).
 Future<bool> openDirections(Provider p) => _open(p.hasLocation
     ? directionsUri(lat: p.lat, lng: p.lng)

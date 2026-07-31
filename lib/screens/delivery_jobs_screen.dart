@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
+import 'chat_screen.dart';
 import 'directions_screen.dart';
 import 'track_delivery_screen.dart';
 import '../services/courier_beacon.dart';
@@ -384,6 +385,33 @@ class _DeliveryCard extends StatelessWidget {
                 child: Text(_carrying.placedLabel,
                     style: const TextStyle(
                         fontSize: 12, color: LhColors.inkSecondary)),
+              ),
+            // Once this job is theirs, the partner can message the customer
+            // ("I'm outside", "gate code?") without trading numbers.
+            if (mine &&
+                '${job['userId'] ?? ''}'.isNotEmpty &&
+                AppState.instance.featureEnabled('messages'))
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                    height: 32,
+                    child: OutlinedButton.icon(
+                      onPressed: () => ChatScreen.open(context,
+                          otherUid: '${job['userId']}',
+                          otherName: 'Customer',
+                          otherRole: 'customer'),
+                      style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          textStyle: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600)),
+                      icon:
+                          const Icon(CupertinoIcons.chat_bubble_text, size: 14),
+                      label: const Text('Message customer'),
+                    ),
+                  ),
+                ),
               ),
             // What is in the bag, so the partner can check the handover against
             // the order before leaving the store. No prices — what the customer

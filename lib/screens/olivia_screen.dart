@@ -5,9 +5,11 @@ import 'package:flutter/services.dart';
 
 import '../app_state.dart';
 import '../services/olivia/groq_client.dart';
+import '../services/directions.dart';
 import '../services/olivia/olivia_session.dart';
 import '../services/olivia/olivia_voice.dart';
 import '../theme.dart';
+import '../widgets/olivia/call_card.dart';
 import '../widgets/olivia/olivia_avatar.dart';
 import '../widgets/olivia/olivia_stage.dart';
 import '../widgets/olivia/olivia_video.dart';
@@ -285,6 +287,7 @@ class _OliviaScreenState extends State<OliviaScreen> {
   Widget _transcript() {
     final turns = _session.transcript;
     final draft = _session.pendingDraft;
+    final call = _session.pendingCall;
     return ListView(
       controller: _scroll,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -298,6 +301,18 @@ class _OliviaScreenState extends State<OliviaScreen> {
             busy: _placing,
             onConfirm: _confirmDraft,
             onCancel: _cancelDraft,
+          ),
+        ],
+        if (call != null) ...[
+          const SizedBox(height: 6),
+          CallCard(
+            call: call,
+            onCall: () {
+              openCallWithFallback(context,
+                  name: call.placeName, phone: call.phone);
+              _session.clearCall();
+            },
+            onDismiss: _session.clearCall,
           ),
         ],
         if (_placedMessage != null) ...[

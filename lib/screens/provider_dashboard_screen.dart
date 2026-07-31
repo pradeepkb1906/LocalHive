@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/data.dart';
+import 'chat_screen.dart';
 import 'directions_screen.dart';
+import '../app_state.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
@@ -257,6 +259,31 @@ class _JobCard extends StatelessWidget {
             if (job.placedLabel.isNotEmpty) ...[
               const SizedBox(height: 6),
               _row(CupertinoIcons.clock, job.placedLabel),
+            ],
+            if (job.userId.isNotEmpty &&
+                AppState.instance.featureEnabled('messages')) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  height: 32,
+                  child: OutlinedButton.icon(
+                    onPressed: () => ChatScreen.open(context,
+                        otherUid: job.userId,
+                        otherName: job.customerName.isEmpty
+                            ? 'Customer'
+                            : job.customerName,
+                        otherRole: 'customer',
+                        otherPhone: job.customerPhone),
+                    style: OutlinedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600)),
+                    icon: const Icon(CupertinoIcons.chat_bubble_text, size: 14),
+                    label: const Text('Message customer'),
+                  ),
+                ),
+              ),
             ],
             const SizedBox(height: 6),
             _row(

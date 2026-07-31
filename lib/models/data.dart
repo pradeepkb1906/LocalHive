@@ -114,6 +114,10 @@ class Booking {
   final String pickupEta; // customer's stated arrival, pickup orders
   final String otp; // 4-digit delivery confirmation code
 
+  /// The two uids on either side of this booking, for opening a chat.
+  final String userId;
+  final String providerOwnerId;
+
   /// What was ordered. Empty for home-service bookings, which are hours of
   /// someone's time rather than a list of goods.
   final List<OrderLine> items;
@@ -137,6 +141,8 @@ class Booking {
     this.fulfillment = '',
     this.pickupEta = '',
     this.otp = '',
+    this.userId = '',
+    this.providerOwnerId = '',
     this.items = const [],
     this.createdAt,
   });

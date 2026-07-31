@@ -21,12 +21,16 @@ class NearbyPlace {
   final String openingHours;
   final String phone;
 
+  /// Street + city + postcode, as complete as OSM has it.
+  final String address;
+
   const NearbyPlace({
     required this.name,
     required this.kind,
     required this.km,
     this.cuisine = '',
     this.area = '',
+    this.address = '',
     this.lat = 0,
     this.lng = 0,
     this.openingHours = '',
@@ -37,7 +41,10 @@ class NearbyPlace {
         'name': name,
         'kind': kind,
         if (cuisine.isNotEmpty) 'serves': cuisine,
-        if (area.isNotEmpty) 'street': area,
+        if (address.isNotEmpty)
+          'address': address
+        else if (area.isNotEmpty)
+          'street': area,
         'distance': distanceLabel(km),
         if (openingHours.isNotEmpty) 'hours': openingHours,
         if (phone.isNotEmpty) 'phone': phone,
@@ -141,6 +148,13 @@ class PlacesSearch {
         (tags['addr:housenumber'] ?? '') as String,
         (tags['addr:street'] ?? '') as String,
       ].where((s) => s.isNotEmpty).join(' ');
+      // Full address when OSM has it — the customer needs somewhere to go,
+      // and Olivia reads this back verbatim.
+      final cityLine = [
+        (tags['addr:city'] ?? '') as String,
+        (tags['addr:postcode'] ?? '') as String,
+      ].where((s) => s.isNotEmpty).join(' ');
+      final address = [street, cityLine].where((s) => s.isNotEmpty).join(', ');
 
       if (terms.isNotEmpty) {
         final hay = '$name $cuisine ${tags['amenity'] ?? ''} '
@@ -159,6 +173,7 @@ class PlacesSearch {
             .replaceAll('_', ' '),
         cuisine: cuisine,
         area: street,
+        address: address,
         lat: plat,
         lng: plng,
         km: distanceKm(lat, lng, plat, plng),

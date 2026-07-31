@@ -5,6 +5,7 @@ import '../demo_accounts.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import 'admin_feature_toggles_screen.dart';
+import 'chats_list_screen.dart';
 import 'legal_screen.dart';
 import 'help_support_screen.dart';
 import '../widgets/location_chip.dart';
@@ -187,6 +188,22 @@ class ProfileScreen extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (_) =>
                                   const AdminFeatureTogglesScreen())),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
+              if (s.signedIn && s.featureEnabled('messages')) ...[
+                InsetGroup(
+                  header: 'Messages',
+                  children: [
+                    _LinkTile(
+                      icon: CupertinoIcons.chat_bubble_2_fill,
+                      title: 'Messages',
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ChatsListScreen())),
                     ),
                   ],
                 ),

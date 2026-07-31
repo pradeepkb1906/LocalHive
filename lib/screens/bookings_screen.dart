@@ -6,6 +6,7 @@ import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
 import '../widgets/order_items_view.dart';
+import 'chat_screen.dart';
 import 'track_delivery_screen.dart';
 
 /// The customer's orders and bookings: everything still moving first, then
@@ -214,6 +215,32 @@ class BookingsScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
             child: OrderItemsView(booking: b, audience: OrderAudience.customer),
+          ),
+        // A line to the business — quick questions ride in chat; anything
+        // longer becomes a call.
+        if (b.providerOwnerId.isNotEmpty &&
+            b.isActive &&
+            AppState.instance.featureEnabled('messages'))
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                height: 32,
+                child: OutlinedButton.icon(
+                  onPressed: () => ChatScreen.open(context,
+                      otherUid: b.providerOwnerId,
+                      otherName: b.providerName,
+                      otherRole: 'provider'),
+                  style: OutlinedButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      textStyle: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w600)),
+                  icon: const Icon(CupertinoIcons.chat_bubble_text, size: 14),
+                  label: const Text('Message'),
+                ),
+              ),
+            ),
           ),
         // Until the provider accepts, the customer can call the visit off —
         // the cancellation window every booking app gives.

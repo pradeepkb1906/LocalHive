@@ -33,6 +33,8 @@ const appFeatures = [
       'Incoming orders and jobs for business owners.'),
   AppFeature(
       'delivery_jobs', 'Delivery job board', 'Claim and run deliveries.'),
+  AppFeature('messages', 'Messages',
+      'In-app text chat between customers, businesses and couriers.'),
 ];
 
 /// The roles the admin can configure. Admin itself is deliberately absent.
@@ -57,6 +59,7 @@ const defaultFeatureMatrix = <String, Map<String, bool>>{
     'become_provider': true,
     'provider_dashboard': false,
     'delivery_jobs': false,
+    'messages': true,
   },
   'provider': {
     'home_services': true,
@@ -68,6 +71,7 @@ const defaultFeatureMatrix = <String, Map<String, bool>>{
     'become_provider': false,
     'provider_dashboard': true,
     'delivery_jobs': false,
+    'messages': true,
   },
   'delivery': {
     'home_services': true,
@@ -79,6 +83,7 @@ const defaultFeatureMatrix = <String, Map<String, bool>>{
     'become_provider': true,
     'provider_dashboard': false,
     'delivery_jobs': true,
+    'messages': true,
   },
 };
 

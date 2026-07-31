@@ -27,6 +27,11 @@ class OliviaTools {
   /// Set when a draft tool runs, so the screen can show the confirmation card.
   OrderDraft? pendingDraft;
 
+  /// Set by offer_call after the customer agrees to a call — the screen shows
+  /// a card whose Call button opens the phone dialer. LocalHive never dials
+  /// by itself.
+  PendingCall? pendingCall;
+
   /// Whether a support ticket was actually raised while handling the current
   /// question. Used to catch Olivia promising a follow-up she never filed.
   bool raisedTicketThisTurn = false;
@@ -189,11 +194,15 @@ class OliviaTools {
                     'find_businesses has nothing suitable, or when the customer '
                     'is outside the area LocalHive covers, or when they ask '
                     'what is around them generally. '
+                    'Searches within radius_km (default 10 km). '
                     'IMPORTANT: these are NOT LocalHive businesses. You can '
-                    'name them, say what they serve and how far away they are, '
-                    'and offer directions — but you CANNOT take an order or '
-                    'make a booking at them, because they have no LocalHive '
-                    'account to receive it. Say so honestly if asked.',
+                    'name them, give their address, say what they serve, how '
+                    'far away they are, and their publicly listed phone '
+                    'number — but you CANNOT take an order or make a booking '
+                    'at them in the app. What you CAN do: after the customer '
+                    'says yes, use offer_call to set up a phone call to the '
+                    'place (book a table at a restaurant, ring a grocery '
+                    'store or a home-service trade).',
             'parameters': {
               'type': 'object',
               'properties': {
@@ -216,8 +225,46 @@ class OliviaTools {
                   'description':
                       'Optional keyword, e.g. a dish, cuisine or shop name.',
                 },
+                'radius_km': {
+                  'type': 'number',
+                  'minimum': 1,
+                  'maximum': 30,
+                  'description':
+                      'Search radius in km. Default 10. Widen only after '
+                          'asking the customer.',
+                },
               },
               'required': ['kind'],
+            },
+          },
+        },
+        {
+          'type': 'function',
+          'function': {
+            'name': 'offer_call',
+            'description':
+                'Show the customer a call card for a place found with '
+                    'find_nearby_places, using its publicly listed phone '
+                    'number. ONLY call this AFTER the customer has said yes '
+                    'to your offer (e.g. "should I set up a call so you can '
+                    'book a table?"). The card lets them tap to dial — '
+                    'LocalHive does not place the call itself.',
+            'parameters': {
+              'type': 'object',
+              'properties': {
+                'place_name': {'type': 'string'},
+                'phone': {
+                  'type': 'string',
+                  'description': 'The phone number exactly as listed.',
+                },
+                'purpose': {
+                  'type': 'string',
+                  'description':
+                      'Why they are calling, e.g. "Book a table for 2 '
+                          'tonight" or "Ask about paneer stock".',
+                },
+              },
+              'required': ['place_name', 'phone'],
             },
           },
         },
@@ -265,6 +312,8 @@ class OliviaTools {
           return _getMenu(args);
         case 'find_nearby_places':
           return await _findNearbyPlaces(args);
+        case 'offer_call':
+          return _offerCall(args);
         case 'draft_order':
           return await _draftOrder(args);
         case 'draft_home_service':
@@ -452,29 +501,64 @@ class OliviaTools {
       };
     }
     final kind = (args['kind'] ?? 'food') as String;
+    // 10 km by default, per the product spec; the model may widen it, but
+    // only after asking the customer first.
+    final radiusKm =
+        ((args['radius_km'] as num?)?.toDouble() ?? 10).clamp(1, 30).toDouble();
     final places = await _places.search(
       lat: loc.lat!,
       lng: loc.lng!,
       kind: PlacesSearch.kinds.contains(kind) ? kind : 'food',
       query: args['query'] as String?,
+      radiusM: (radiusKm * 1000).round(),
     );
     if (places.isEmpty) {
       return {
         'area': loc.label,
+        'radius_km': radiusKm,
         'count': 0,
-        'note': 'The public map has nothing of that kind listed close by.',
+        'note': 'The public map has nothing of that kind listed within '
+            '$radiusKm km.',
+        'next_step': 'Ask the customer if they want you to widen the search '
+            'radius, then call find_nearby_places again with a larger '
+            'radius_km.',
       };
     }
     return {
       'area': loc.label,
+      'radius_km': radiusKm,
       'count': places.length,
       'places': places.take(6).map((p) => p.toJson()).toList(),
       'source': 'OpenStreetMap — the public map, not LocalHive listings.',
-      'ordering':
-          'These are not LocalHive businesses, so you cannot place an order or '
-              'take a booking at them. Describe them and offer directions only. '
-              'If the customer wants to order through LocalHive, use '
-              'find_businesses instead.',
+      'next_step':
+          'Read out name, address and distance. If results look thin, offer '
+              'to widen the radius. Where a phone number is listed, offer a '
+              'call: for a restaurant ask "should I set up a call so you can '
+              'book a table?"; for a grocery store or home-service trade ask '
+              '"the number is publicly listed — should I set up a call?". '
+              'Only after the customer says yes, call offer_call. No in-app '
+              'orders at these places — use find_businesses for that.',
+    };
+  }
+
+  /// The customer said yes to a call — surface the tap-to-dial card.
+  Map<String, dynamic> _offerCall(Map<String, dynamic> args) {
+    final phone = ('${args['phone'] ?? ''}').trim();
+    final name = ('${args['place_name'] ?? ''}').trim();
+    if (phone.isEmpty || name.isEmpty) {
+      return {
+        'error': 'A call needs the place name and its listed phone number.'
+      };
+    }
+    pendingCall = PendingCall(
+      placeName: name,
+      phone: phone,
+      purpose: ('${args['purpose'] ?? ''}').trim(),
+    );
+    return {
+      'status': 'call_card_shown',
+      'tell_customer': 'Tell them the call card is on screen — one tap on '
+          'Call dials $name. Keep it short.',
     };
   }
 
@@ -675,4 +759,17 @@ class OliviaTools {
       'note': 'A person will follow up by email.',
     };
   }
+}
+
+/// A call the customer agreed to: shown as a card with a tap-to-dial button.
+class PendingCall {
+  final String placeName;
+  final String phone;
+  final String purpose;
+
+  const PendingCall({
+    required this.placeName,
+    required this.phone,
+    this.purpose = '',
+  });
 }

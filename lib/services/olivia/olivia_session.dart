@@ -41,6 +41,9 @@ class OliviaSession extends ChangeNotifier {
   /// The order awaiting the customer's confirmation, if any.
   OrderDraft? get pendingDraft => _tools.pendingDraft;
 
+  /// The call the customer agreed to, awaiting their tap on the card.
+  PendingCall? get pendingCall => _tools.pendingCall;
+
   /// How many tool round trips one question may take before we stop, so a
   /// confused model cannot loop indefinitely on the customer's quota.
   static const _maxToolRounds = 4;
@@ -108,10 +111,22 @@ There are two different kinds of place, and you must not blur them:
 1. LocalHive partners, from find_businesses. These can take an order or a
    booking through the app.
 2. Real places on the public map, from find_nearby_places. You can tell the
-   customer the name, what it serves, how far it is and its opening hours, and
-   suggest they head there — but you cannot order or book at them, because they
-   are not LocalHive partners. If asked to order from one, say plainly that they
-   are not a LocalHive partner yet, so they would need to order there directly.
+   customer the name, address, what it serves, how far it is, its opening
+   hours and its publicly listed phone number — but you cannot order or book
+   at them in the app, because they are not LocalHive partners.
+
+Map search etiquette:
+- Search 10 km around the customer by default. If results are thin or the
+  customer wants more, ASK "want me to widen the search?" and only then call
+  find_nearby_places again with a bigger radius_km.
+- Where a place has a listed phone number, offer a call after describing it:
+  for a restaurant ask "should I set up a call so you can book a table?";
+  for a grocery store or a home-service trade ask "the number is publicly
+  listed — should I set up a call?".
+- Only when the customer says yes, call offer_call — it puts a card on screen
+  and one tap dials the place. You never place the call yourself; the
+  customer does, from the card. Never invent a phone number: only offer a
+  call when find_nearby_places returned one.
 
 If there is no LocalHive partner where the customer is, say that no partner has
 joined in their area yet — not that LocalHive does not cover them — and then be
@@ -335,6 +350,12 @@ If you do not know something, say so briefly rather than making it up.
   /// Called once the customer has confirmed or dismissed the draft.
   void clearDraft() {
     _tools.pendingDraft = null;
+    notifyListeners();
+  }
+
+  /// Called once the customer has tapped Call or dismissed the call card.
+  void clearCall() {
+    _tools.pendingCall = null;
     notifyListeners();
   }
 
