@@ -4,6 +4,8 @@ import '../app_state.dart';
 import '../demo_accounts.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
+import 'legal_screen.dart';
+import 'help_support_screen.dart';
 import '../widgets/location_chip.dart';
 import '../widgets/role_picker.dart';
 import 'provider_onboarding_screen.dart';
@@ -171,17 +173,45 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
               InsetGroup(
                 header: 'About',
-                children: const [
+                children: [
                   _LinkTile(
-                      icon: CupertinoIcons.doc_plaintext,
-                      title: 'Terms of Service'),
+                    icon: CupertinoIcons.doc_plaintext,
+                    title: 'Terms of Service',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LegalScreen(
+                          title: 'Terms of Service',
+                          lastUpdated: legalLastUpdated,
+                          sections: termsOfServiceSections,
+                        ),
+                      ),
+                    ),
+                  ),
                   _LinkTile(
-                      icon: CupertinoIcons.shield_fill,
-                      title: 'Privacy Policy'),
+                    icon: CupertinoIcons.shield_fill,
+                    title: 'Privacy Policy',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LegalScreen(
+                          title: 'Privacy Policy',
+                          lastUpdated: legalLastUpdated,
+                          sections: privacyPolicySections,
+                        ),
+                      ),
+                    ),
+                  ),
                   _LinkTile(
-                      icon: CupertinoIcons.question_circle_fill,
-                      title: 'Help & Support'),
-                  _SystemCheckTile(),
+                    icon: CupertinoIcons.question_circle_fill,
+                    title: 'Help & Support',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const HelpSupportScreen()),
+                    ),
+                  ),
+                  const _SystemCheckTile(),
                 ],
               ),
               if (s.signedIn) ...[
@@ -217,7 +247,8 @@ class ProfileScreen extends StatelessWidget {
 class _LinkTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  const _LinkTile({required this.icon, required this.title});
+  final VoidCallback? onTap;
+  const _LinkTile({required this.icon, required this.title, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +258,7 @@ class _LinkTile extends StatelessWidget {
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
       trailing: const Icon(CupertinoIcons.chevron_right,
           size: 18, color: LhColors.hairline),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 }
