@@ -194,90 +194,148 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Flexible(
-                child: Text('LocalHive',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700, letterSpacing: -0.5)),
-              ),
-              const Spacer(),
-              // Who is signed in, and the way out — at the top, where every
-              // app keeps it. Signing out lands on the welcome screen, which
-              // is also where Sign in lives.
-              TextButton.icon(
-                onPressed: () => AppState.instance.signedIn
-                    ? _signOut(context)
-                    : AppState.instance.signOut(),
-                style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    foregroundColor: LhColors.navy),
-                icon: Icon(
-                    AppState.instance.signedIn
-                        ? CupertinoIcons.square_arrow_right
-                        : CupertinoIcons.person_crop_circle,
-                    size: 16),
-                label: Text(AppState.instance.signedIn ? 'Sign out' : 'Sign in',
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600)),
-              ),
-              const LocationChip(),
-            ],
-          ),
-          const SizedBox(height: 2),
-          const Text('Trusted local services, stores & food.',
-              style: TextStyle(color: LhColors.inkSecondary, fontSize: 15)),
-          const SizedBox(height: 16),
-          TextField(
-            decoration: const InputDecoration(
-              hintText: 'Search cleaners, groceries, tacos',
-              prefixIcon: Icon(CupertinoIcons.search,
-                  color: LhColors.inkSecondary, size: 20),
+    // Listen directly: HomeTab is a const widget, so the shell's rebuilds
+    // skip it — without this, an admin feature toggle only showed up after
+    // the next sign-in instead of live.
+    return ListenableBuilder(
+      listenable: AppState.instance,
+      builder: (context, _) => SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text('LocalHive',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5)),
+                ),
+                const Spacer(),
+                // Who is signed in, and the way out — at the top, where every
+                // app keeps it. Signing out lands on the welcome screen, which
+                // is also where Sign in lives.
+                TextButton.icon(
+                  onPressed: () => AppState.instance.signedIn
+                      ? _signOut(context)
+                      : AppState.instance.signOut(),
+                  style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      foregroundColor: LhColors.navy),
+                  icon: Icon(
+                      AppState.instance.signedIn
+                          ? CupertinoIcons.square_arrow_right
+                          : CupertinoIcons.person_crop_circle,
+                      size: 16),
+                  label: Text(
+                      AppState.instance.signedIn ? 'Sign out' : 'Sign in',
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w600)),
+                ),
+                const LocationChip(),
+              ],
             ),
-            onTap: () {},
-          ),
-          const SizedBox(height: 16),
-          // Olivia — ordering by conversation instead of by tapping.
-          if (OliviaConfig.enabled &&
-              AppState.instance.featureEnabled('olivia')) ...[
+            const SizedBox(height: 2),
+            const Text('Trusted local services, stores & food.',
+                style: TextStyle(color: LhColors.inkSecondary, fontSize: 15)),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search cleaners, groceries, tacos',
+                prefixIcon: Icon(CupertinoIcons.search,
+                    color: LhColors.inkSecondary, size: 20),
+              ),
+              onTap: () {},
+            ),
+            const SizedBox(height: 16),
+            // Olivia — ordering by conversation instead of by tapping.
+            if (OliviaConfig.enabled &&
+                AppState.instance.featureEnabled('olivia')) ...[
+              Card(
+                color: LhColors.navy.withValues(alpha: 0.06),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side:
+                      BorderSide(color: LhColors.navy.withValues(alpha: 0.30)),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const OliviaScreen())),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        const IconTile(
+                            icon: CupertinoIcons.mic_circle_fill,
+                            color: LhColors.navy),
+                        const SizedBox(width: 14),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Just talk to Olivia',
+                                  style: TextStyle(
+                                      fontSize: 15.5,
+                                      fontWeight: FontWeight.w700)),
+                              SizedBox(height: 2),
+                              Text(
+                                  'Say what you need and she finds it, takes your '
+                                  'order, or books a service — no tapping around',
+                                  style: TextStyle(
+                                      fontSize: 12.5,
+                                      color: LhColors.inkSecondary,
+                                      height: 1.3)),
+                            ],
+                          ),
+                        ),
+                        const Icon(CupertinoIcons.chevron_right,
+                            size: 18, color: LhColors.navy),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            // Guided tour — the fastest way for a brand-new user to "get it".
             Card(
-              color: LhColors.navy.withValues(alpha: 0.06),
+              color: LhColors.blue.withValues(alpha: 0.08),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                side: BorderSide(color: LhColors.navy.withValues(alpha: 0.30)),
+                side: BorderSide(color: LhColors.blue.withValues(alpha: 0.35)),
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(14),
                 onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const OliviaScreen())),
+                    MaterialPageRoute(builder: (_) => const DemoTourScreen())),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
                   child: Row(
                     children: [
                       const IconTile(
-                          icon: CupertinoIcons.mic_circle_fill,
-                          color: LhColors.navy),
+                          icon: CupertinoIcons.play_circle_fill,
+                          color: LhColors.blue),
                       const SizedBox(width: 14),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Just talk to Olivia',
+                            Text('See how LocalHive works',
                                 style: TextStyle(
                                     fontSize: 15.5,
                                     fontWeight: FontWeight.w700)),
                             SizedBox(height: 2),
                             Text(
-                                'Say what you need and she finds it, takes your '
-                                'order, or books a service — no tapping around',
+                                '2-minute guided tour with narration — customer, '
+                                'business owner, delivery partner & admin',
                                 style: TextStyle(
                                     fontSize: 12.5,
                                     color: LhColors.inkSecondary,
@@ -286,228 +344,183 @@ class HomeTab extends StatelessWidget {
                         ),
                       ),
                       const Icon(CupertinoIcons.chevron_right,
-                          size: 18, color: LhColors.navy),
+                          size: 18, color: LhColors.blue),
                     ],
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 12),
-          ],
-          // Guided tour — the fastest way for a brand-new user to "get it".
-          Card(
-            color: LhColors.blue.withValues(alpha: 0.08),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: BorderSide(color: LhColors.blue.withValues(alpha: 0.35)),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const DemoTourScreen())),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    const IconTile(
-                        icon: CupertinoIcons.play_circle_fill,
-                        color: LhColors.blue),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('See how LocalHive works',
-                              style: TextStyle(
-                                  fontSize: 15.5, fontWeight: FontWeight.w700)),
-                          SizedBox(height: 2),
-                          Text(
-                              '2-minute guided tour with narration — customer, '
-                              'business owner, delivery partner & admin',
-                              style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: LhColors.inkSecondary,
-                                  height: 1.3)),
-                        ],
-                      ),
-                    ),
-                    const Icon(CupertinoIcons.chevron_right,
-                        size: 18, color: LhColors.blue),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Owner call-to-action: signed-in providers see their live order
-          // count and a one-tap path to the dashboard.
-          StreamBuilder<int>(
-            stream: FirebaseService.instance.pendingOwnerJobsCount(),
-            builder: (context, snap) {
-              final n = snap.data ?? 0;
-              if (n == 0) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  color: LhColors.navy,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
+            // Owner call-to-action: signed-in providers see their live order
+            // count and a one-tap path to the dashboard.
+            StreamBuilder<int>(
+              stream: FirebaseService.instance.pendingOwnerJobsCount(),
+              builder: (context, snap) {
+                final n = snap.data ?? 0;
+                if (n == 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Material(
+                    color: LhColors.navy,
                     borderRadius: BorderRadius.circular(14),
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const ProviderDashboardScreen())),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: LhColors.orange,
-                              borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ProviderDashboardScreen())),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: LhColors.orange,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text('$n',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800)),
                             ),
-                            child: Text('$n',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800)),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                    n == 1
-                                        ? 'You have 1 order waiting!'
-                                        : 'You have $n orders waiting!',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700)),
-                                const SizedBox(height: 2),
-                                const Text(
-                                    'Tap to open your Provider Dashboard',
-                                    style: TextStyle(
-                                        color: Colors.white70, fontSize: 13)),
-                              ],
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      n == 1
+                                          ? 'You have 1 order waiting!'
+                                          : 'You have $n orders waiting!',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                      'Tap to open your Provider Dashboard',
+                                      style: TextStyle(
+                                          color: Colors.white70, fontSize: 13)),
+                                ],
+                              ),
                             ),
-                          ),
-                          const Icon(CupertinoIcons.arrow_right_circle_fill,
-                              color: Colors.white, size: 28),
-                        ],
+                            const Icon(CupertinoIcons.arrow_right_circle_fill,
+                                color: Colors.white, size: 28),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-          if (AppState.instance.featureEnabled('home_services'))
-            _CategoryCard(
-              icon: CupertinoIcons.sparkles,
-              tint: LhColors.indigo,
-              title: 'Home Services',
-              subtitle:
-                  'Cleaners & handymen, background-checked. Book 3–4 hour visits.',
-              onTap: () => _open(context, 'home_service', 'Home Services'),
+                );
+              },
             ),
-          const SizedBox(height: 12),
-          if (AppState.instance.featureEnabled('stores'))
-            _CategoryCard(
-              icon: CupertinoIcons.cart_fill,
-              tint: LhColors.green,
-              title: 'Stores',
-              subtitle:
-                  'Groceries & essentials. Order ahead for pickup or delivery.',
-              onTap: () => _open(context, 'indian_store', 'Stores'),
-            ),
-          const SizedBox(height: 12),
-          if (AppState.instance.featureEnabled('food_trucks'))
-            _CategoryCard(
-              icon: CupertinoIcons.car_detailed,
-              tint: LhColors.orange,
-              title: 'Food Trucks',
-              subtitle: 'Live locations. Skip the line with pre-orders.',
-              onTap: () => _open(context, 'food_truck', 'Food Trucks'),
-            ),
-          const SizedBox(height: 12),
-          // Everything genuinely around the customer, partnered or not — live
-          // from the public map. This is what keeps the app useful in a city
-          // where no partners have signed up yet.
-          if (AppState.instance.featureEnabled('nearby_map'))
-            _CategoryCard(
-              icon: CupertinoIcons.map_pin_ellipse,
-              tint: LhColors.blue,
-              title: 'Nearby Now',
-              subtitle: 'Restaurants, groceries, handymen, gas & EV charging '
-                  'around you — live map, even beyond our partners.',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NearbyMapScreen()),
+            const SizedBox(height: 8),
+            if (AppState.instance.featureEnabled('home_services'))
+              _CategoryCard(
+                icon: CupertinoIcons.sparkles,
+                tint: LhColors.indigo,
+                title: 'Home Services',
+                subtitle:
+                    'Cleaners & handymen, background-checked. Book 3–4 hour visits.',
+                onTap: () => _open(context, 'home_service', 'Home Services'),
               ),
-            ),
-          const SizedBox(height: 28),
-          InsetGroup(
-            header: 'Why LocalHive',
-            children: const [
-              _TrustTile(
-                  icon: CupertinoIcons.checkmark_seal_fill,
-                  color: LhColors.blue,
-                  title: 'Verified providers',
-                  subtitle:
-                      'Every provider is ID-verified; home-service pros are background-checked.'),
-              _TrustTile(
-                  icon: CupertinoIcons.lock_fill,
-                  color: LhColors.green,
-                  // LocalHive takes no payment in-app, so this must not
-                  // promise escrow or that funds are "held".
-                  title: 'Pay in person',
-                  subtitle:
-                      'You pay the business directly, on the day. No card '
-                      'details are stored in the app.'),
-              _TrustTile(
-                  icon: CupertinoIcons.percent,
-                  color: LhColors.navy,
-                  title: 'Transparent pricing',
-                  subtitle:
-                      'A flat 12% platform fee, always shown before you pay.'),
-            ],
-          ),
-          const SizedBox(height: 24),
-          ListenableBuilder(
-            listenable: AppState.instance,
-            builder: (context, _) {
-              final s = AppState.instance;
-              if (s.signedIn) return const SizedBox.shrink();
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                            'Sign in to book services and track orders.',
-                            style: TextStyle(
-                                fontSize: 14, color: LhColors.inkSecondary)),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const SignInScreen())),
-                        child: const Text('Sign In'),
-                      ),
-                    ],
-                  ),
+            const SizedBox(height: 12),
+            if (AppState.instance.featureEnabled('stores'))
+              _CategoryCard(
+                icon: CupertinoIcons.cart_fill,
+                tint: LhColors.green,
+                title: 'Stores',
+                subtitle:
+                    'Groceries & essentials. Order ahead for pickup or delivery.',
+                onTap: () => _open(context, 'indian_store', 'Stores'),
+              ),
+            const SizedBox(height: 12),
+            if (AppState.instance.featureEnabled('food_trucks'))
+              _CategoryCard(
+                icon: CupertinoIcons.car_detailed,
+                tint: LhColors.orange,
+                title: 'Food Trucks',
+                subtitle: 'Live locations. Skip the line with pre-orders.',
+                onTap: () => _open(context, 'food_truck', 'Food Trucks'),
+              ),
+            const SizedBox(height: 12),
+            // Everything genuinely around the customer, partnered or not — live
+            // from the public map. This is what keeps the app useful in a city
+            // where no partners have signed up yet.
+            if (AppState.instance.featureEnabled('nearby_map'))
+              _CategoryCard(
+                icon: CupertinoIcons.map_pin_ellipse,
+                tint: LhColors.blue,
+                title: 'Nearby Now',
+                subtitle: 'Restaurants, groceries, handymen, gas & EV charging '
+                    'around you — live map, even beyond our partners.',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NearbyMapScreen()),
                 ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-        ],
+              ),
+            const SizedBox(height: 28),
+            InsetGroup(
+              header: 'Why LocalHive',
+              children: const [
+                _TrustTile(
+                    icon: CupertinoIcons.checkmark_seal_fill,
+                    color: LhColors.blue,
+                    title: 'Verified providers',
+                    subtitle:
+                        'Every provider is ID-verified; home-service pros are background-checked.'),
+                _TrustTile(
+                    icon: CupertinoIcons.lock_fill,
+                    color: LhColors.green,
+                    // LocalHive takes no payment in-app, so this must not
+                    // promise escrow or that funds are "held".
+                    title: 'Pay in person',
+                    subtitle:
+                        'You pay the business directly, on the day. No card '
+                        'details are stored in the app.'),
+                _TrustTile(
+                    icon: CupertinoIcons.percent,
+                    color: LhColors.navy,
+                    title: 'Transparent pricing',
+                    subtitle:
+                        'A flat 12% platform fee, always shown before you pay.'),
+              ],
+            ),
+            const SizedBox(height: 24),
+            ListenableBuilder(
+              listenable: AppState.instance,
+              builder: (context, _) {
+                final s = AppState.instance;
+                if (s.signedIn) return const SizedBox.shrink();
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                              'Sign in to book services and track orders.',
+                              style: TextStyle(
+                                  fontSize: 14, color: LhColors.inkSecondary)),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SignInScreen())),
+                          child: const Text('Sign In'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }
