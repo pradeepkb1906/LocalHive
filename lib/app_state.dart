@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import 'models/data.dart';
+import 'models/feature_flags.dart';
 import 'services/firebase_service.dart';
 
 /// App-wide state. Backed by Firebase Auth + Firestore when available;
@@ -45,11 +46,24 @@ class AppState extends ChangeNotifier {
       : _localName;
   String? get userPhone => _fb.currentUser?.phoneNumber;
 
+  /// Admin-set overrides of the role/feature matrix; {} until loaded.
+  Map<String, dynamic> featureFlags = const {};
+
+  /// Whether the signed-in user's role may use [feature] right now. Admins
+  /// are always allowed; everyone else follows the admin's toggles, with the
+  /// defaults in feature_flags.dart when nothing has been overridden.
+  bool featureEnabled(String feature) =>
+      featureEnabledIn(featureFlags, role, feature);
+
   /// Called once after Firebase init: react to auth changes + live bookings.
   void start() {
     if (!_fb.ready) return;
+    _resubscribeFlags();
     FirebaseAuth.instance.authStateChanges().listen((u) {
       _resubscribeBookings();
+      // Re-open under the new auth identity: rules only allow signed-in
+      // reads of config, so the pre-sign-in stream never yields.
+      _resubscribeFlags();
       if (u != null) {
         _loadRole();
       } else {
@@ -58,6 +72,16 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     });
     _resubscribeBookings();
+  }
+
+  StreamSubscription<Map<String, dynamic>>? _flagsSub;
+
+  void _resubscribeFlags() {
+    _flagsSub?.cancel();
+    _flagsSub = _fb.featureFlagsStream().listen((flags) {
+      featureFlags = flags;
+      notifyListeners();
+    }, onError: (_) {}); // guests just get the defaults
   }
 
   void _resubscribeBookings() {

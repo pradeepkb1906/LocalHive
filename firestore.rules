@@ -25,6 +25,14 @@ service cloud.firestore {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
+    // Platform configuration, e.g. the admin's role/feature toggle matrix
+    // (config/feature_flags). Every signed-in client reads it to know which
+    // features its role may use; only admins may change it.
+    match /config/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
     // Public marketplace catalog. Only listing owners can create/update
     // their listings; going live (live: true) is admin-only (console).
     match /providers/{providerId} {

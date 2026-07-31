@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'admin_feature_toggles_screen.dart';
 import '../services/firebase_service.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
@@ -15,7 +16,18 @@ class AdminReviewScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Provider Applications'),
-        actions: const [LocationChip()],
+        actions: [
+          // The feature-access console: which features each role may use.
+          IconButton(
+            tooltip: 'Feature access',
+            icon: const Icon(CupertinoIcons.slider_horizontal_3),
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const AdminFeatureTogglesScreen())),
+          ),
+          const LocationChip(),
+        ],
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: FirebaseService.instance.applicationsStream(),

@@ -93,60 +93,63 @@ class ProfileScreen extends StatelessWidget {
                 header: 'Earn with LocalHive',
                 children: [
                   // Live application status straight from the review queue.
-                  StreamBuilder<Map<String, dynamic>?>(
-                    stream: FirebaseService.instance.myApplicationStream(),
-                    builder: (context, snap) {
-                      final app = snap.data;
-                      final status = app?['status'] as String?;
-                      final (icon, color, title, sub) = switch (status) {
-                        'approved' => (
-                            CupertinoIcons.checkmark_seal_fill,
-                            LhColors.green,
-                            'Application approved',
-                            '${app!['businessName']} is live — customers can book you.'
-                          ),
-                        'rejected' => (
-                            CupertinoIcons.xmark_seal_fill,
-                            const Color(0xFFFF3B30),
-                            'Application declined',
-                            '${app!['reviewNote'] ?? 'See message'} — tap to reapply.'
-                          ),
-                        'in_review' => (
-                            CupertinoIcons.clock_fill,
-                            LhColors.orange,
-                            'Application under review',
-                            '${app!['businessName']} — our team is verifying your details.'
-                          ),
-                        _ => (
-                            CupertinoIcons.briefcase_fill,
-                            LhColors.indigo,
-                            'Become a provider',
-                            'List your services, store, or truck. Get paid securely.'
-                          ),
-                      };
-                      final canApply = status == null || status == 'rejected';
-                      return ListTile(
-                        leading: IconTile(icon: icon, color: color, size: 32),
-                        title: Text(title,
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600)),
-                        subtitle: Text(sub,
-                            style: const TextStyle(
-                                fontSize: 13, color: LhColors.inkSecondary)),
-                        trailing: canApply
-                            ? const Icon(CupertinoIcons.chevron_right,
-                                size: 18, color: LhColors.hairline)
-                            : null,
-                        onTap: canApply
-                            ? () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const ProviderOnboardingScreen()))
-                            : null,
-                      );
-                    },
-                  ),
+                  // Hidden entirely when the admin has switched off provider
+                  // applications for this role.
+                  if (s.featureEnabled('become_provider'))
+                    StreamBuilder<Map<String, dynamic>?>(
+                      stream: FirebaseService.instance.myApplicationStream(),
+                      builder: (context, snap) {
+                        final app = snap.data;
+                        final status = app?['status'] as String?;
+                        final (icon, color, title, sub) = switch (status) {
+                          'approved' => (
+                              CupertinoIcons.checkmark_seal_fill,
+                              LhColors.green,
+                              'Application approved',
+                              '${app!['businessName']} is live — customers can book you.'
+                            ),
+                          'rejected' => (
+                              CupertinoIcons.xmark_seal_fill,
+                              const Color(0xFFFF3B30),
+                              'Application declined',
+                              '${app!['reviewNote'] ?? 'See message'} — tap to reapply.'
+                            ),
+                          'in_review' => (
+                              CupertinoIcons.clock_fill,
+                              LhColors.orange,
+                              'Application under review',
+                              '${app!['businessName']} — our team is verifying your details.'
+                            ),
+                          _ => (
+                              CupertinoIcons.briefcase_fill,
+                              LhColors.indigo,
+                              'Become a provider',
+                              'List your services, store, or truck. Get paid securely.'
+                            ),
+                        };
+                        final canApply = status == null || status == 'rejected';
+                        return ListTile(
+                          leading: IconTile(icon: icon, color: color, size: 32),
+                          title: Text(title,
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w600)),
+                          subtitle: Text(sub,
+                              style: const TextStyle(
+                                  fontSize: 13, color: LhColors.inkSecondary)),
+                          trailing: canApply
+                              ? const Icon(CupertinoIcons.chevron_right,
+                                  size: 18, color: LhColors.hairline)
+                              : null,
+                          onTap: canApply
+                              ? () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ProviderOnboardingScreen()))
+                              : null,
+                        );
+                      },
+                    ),
                   ListTile(
                     leading: const IconTile(
                         icon: CupertinoIcons.arrow_2_squarepath,

@@ -37,27 +37,35 @@ class _HomeShellState extends State<HomeShell> {
           _lastRole = role;
           _tab = role == 'customer' ? 0 : 1;
         }
+        final s = AppState.instance;
         // Only the customer gets a Bookings tab. Business owners and
         // delivery partners see incoming work on their Dashboard/Deliveries
         // tab already — a second, customer-side Bookings tab there was
         // almost always empty and read as "where are my orders?" confusion.
+        // Each role tab also answers to the admin's feature toggles: a
+        // switched-off feature disappears from the nav entirely.
         final pages = switch (role) {
           'admin' => const [
               HomeTab(),
               AdminReviewScreen(),
               ProfileScreen(),
             ],
-          'provider' => const [
-              HomeTab(),
-              ProviderDashboardScreen(),
-              ProfileScreen(),
+          'provider' => [
+              const HomeTab(),
+              if (s.featureEnabled('provider_dashboard'))
+                const ProviderDashboardScreen(),
+              const ProfileScreen(),
             ],
-          'delivery' => const [
-              HomeTab(),
-              DeliveryJobsScreen(),
-              ProfileScreen(),
+          'delivery' => [
+              const HomeTab(),
+              if (s.featureEnabled('delivery_jobs')) const DeliveryJobsScreen(),
+              const ProfileScreen(),
             ],
-          _ => const [HomeTab(), BookingsScreen(), ProfileScreen()],
+          _ => [
+              const HomeTab(),
+              if (s.featureEnabled('bookings')) const BookingsScreen(),
+              const ProfileScreen(),
+            ],
         };
         if (_tab >= pages.length) _tab = 0;
         final roleTab = switch (role) {
@@ -78,7 +86,8 @@ class _HomeShellState extends State<HomeShell> {
               selectedIcon: const Icon(CupertinoIcons.checkmark_shield_fill),
               label: 'Review',
             ),
-          'provider' => NavigationDestination(
+          'provider' when s.featureEnabled('provider_dashboard') =>
+            NavigationDestination(
               icon: StreamBuilder<int>(
                 stream: FirebaseService.instance.pendingOwnerJobsCount(),
                 builder: (context, snap) => Badge(
@@ -90,18 +99,23 @@ class _HomeShellState extends State<HomeShell> {
               selectedIcon: const Icon(CupertinoIcons.tray_full_fill),
               label: 'Dashboard',
             ),
-          'delivery' => const NavigationDestination(
+          'delivery' when s.featureEnabled('delivery_jobs') =>
+            const NavigationDestination(
               icon: Icon(CupertinoIcons.cube_box),
               selectedIcon: Icon(CupertinoIcons.cube_box_fill),
               label: 'Deliveries',
             ),
           _ => null,
         };
+        final showBookingsTab = role == 'customer' &&
+            roleTab == null &&
+            s.featureEnabled('bookings');
         return Scaffold(
           body: pages[_tab],
           // Olivia stays reachable from every tab and every role — asking her
           // is meant to be the fastest route into the app.
-          floatingActionButton: OliviaConfig.enabled
+          floatingActionButton: OliviaConfig.enabled &&
+                  s.featureEnabled('olivia')
               ? FloatingActionButton.extended(
                   onPressed: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const OliviaScreen())),
@@ -126,7 +140,7 @@ class _HomeShellState extends State<HomeShell> {
                       label: 'Home'),
                   if (roleTab != null)
                     roleTab
-                  else
+                  else if (showBookingsTab)
                     const NavigationDestination(
                         icon: Icon(CupertinoIcons.doc_text),
                         selectedIcon: Icon(CupertinoIcons.doc_text_fill),
@@ -232,7 +246,8 @@ class HomeTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           // Olivia — ordering by conversation instead of by tapping.
-          if (OliviaConfig.enabled) ...[
+          if (OliviaConfig.enabled &&
+              AppState.instance.featureEnabled('olivia')) ...[
             Card(
               color: LhColors.navy.withValues(alpha: 0.06),
               shape: RoundedRectangleBorder(
@@ -390,46 +405,50 @@ class HomeTab extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
-          _CategoryCard(
-            icon: CupertinoIcons.sparkles,
-            tint: LhColors.indigo,
-            title: 'Home Services',
-            subtitle:
-                'Cleaners & handymen, background-checked. Book 3–4 hour visits.',
-            onTap: () => _open(context, 'home_service', 'Home Services'),
-          ),
+          if (AppState.instance.featureEnabled('home_services'))
+            _CategoryCard(
+              icon: CupertinoIcons.sparkles,
+              tint: LhColors.indigo,
+              title: 'Home Services',
+              subtitle:
+                  'Cleaners & handymen, background-checked. Book 3–4 hour visits.',
+              onTap: () => _open(context, 'home_service', 'Home Services'),
+            ),
           const SizedBox(height: 12),
-          _CategoryCard(
-            icon: CupertinoIcons.cart_fill,
-            tint: LhColors.green,
-            title: 'Stores',
-            subtitle:
-                'Groceries & essentials. Order ahead for pickup or delivery.',
-            onTap: () => _open(context, 'indian_store', 'Stores'),
-          ),
+          if (AppState.instance.featureEnabled('stores'))
+            _CategoryCard(
+              icon: CupertinoIcons.cart_fill,
+              tint: LhColors.green,
+              title: 'Stores',
+              subtitle:
+                  'Groceries & essentials. Order ahead for pickup or delivery.',
+              onTap: () => _open(context, 'indian_store', 'Stores'),
+            ),
           const SizedBox(height: 12),
-          _CategoryCard(
-            icon: CupertinoIcons.car_detailed,
-            tint: LhColors.orange,
-            title: 'Food Trucks',
-            subtitle: 'Live locations. Skip the line with pre-orders.',
-            onTap: () => _open(context, 'food_truck', 'Food Trucks'),
-          ),
+          if (AppState.instance.featureEnabled('food_trucks'))
+            _CategoryCard(
+              icon: CupertinoIcons.car_detailed,
+              tint: LhColors.orange,
+              title: 'Food Trucks',
+              subtitle: 'Live locations. Skip the line with pre-orders.',
+              onTap: () => _open(context, 'food_truck', 'Food Trucks'),
+            ),
           const SizedBox(height: 12),
           // Everything genuinely around the customer, partnered or not — live
           // from the public map. This is what keeps the app useful in a city
           // where no partners have signed up yet.
-          _CategoryCard(
-            icon: CupertinoIcons.map_pin_ellipse,
-            tint: LhColors.blue,
-            title: 'Nearby Now',
-            subtitle: 'Restaurants, groceries, handymen, gas & EV charging '
-                'around you — live map, even beyond our partners.',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const NearbyMapScreen()),
+          if (AppState.instance.featureEnabled('nearby_map'))
+            _CategoryCard(
+              icon: CupertinoIcons.map_pin_ellipse,
+              tint: LhColors.blue,
+              title: 'Nearby Now',
+              subtitle: 'Restaurants, groceries, handymen, gas & EV charging '
+                  'around you — live map, even beyond our partners.',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NearbyMapScreen()),
+              ),
             ),
-          ),
           const SizedBox(height: 28),
           InsetGroup(
             header: 'Why LocalHive',

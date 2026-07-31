@@ -398,6 +398,31 @@ class FirebaseService {
         SetOptions(merge: true));
   }
 
+  // ---- Feature flags (admin-controlled role access) ----
+
+  /// The admin's role/feature toggle overrides. Empty map when nothing has
+  /// been toggled yet — the defaults in feature_flags.dart then apply, so a
+  /// fresh install behaves exactly as before the console existed.
+  Stream<Map<String, dynamic>> featureFlagsStream() {
+    if (!ready) return Stream.value(const {});
+    return _shared(
+        'featureFlags',
+        () => _db!
+            .collection('config')
+            .doc('feature_flags')
+            .snapshots()
+            .map((doc) => doc.data() ?? const {}));
+  }
+
+  /// Flips one (role, feature) toggle. Merge-write so each flip touches only
+  /// its own key; security rules restrict this to admins.
+  Future<void> setFeatureFlag(String role, String feature, bool enabled) async {
+    if (!ready) return;
+    await _db!.collection('config').doc('feature_flags').set({
+      role: {feature: enabled}
+    }, SetOptions(merge: true));
+  }
+
   // ---- Truck arrival alerts ----
 
   /// Follow a truck to be notified when it announces arrival.
