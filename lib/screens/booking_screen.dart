@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
 import '../theme.dart';
+import '../widgets/address_field.dart';
 import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
@@ -286,12 +287,9 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
           const SizedBox(height: 24),
           _sectionLabel('Service address & contact'),
-          TextField(
+          AddressField(
             controller: _address,
-            textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-                hintText:
-                    'Street address, city, state (where the pro should come)'),
+            hintText: 'Street address, city, state (where the pro should come)',
           ),
           const SizedBox(height: 10),
           TextField(

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
+import '../widgets/address_field.dart';
 import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
@@ -223,11 +224,9 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
                             'Business or display name (e.g., "Maria\'s Cleaning")'),
                   ),
                   const SizedBox(height: 12),
-                  TextField(
+                  AddressField(
                     controller: _city,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                        hintText: 'City, State (e.g., Edison, NJ)'),
+                    hintText: 'City, State (e.g., Edison, NJ)',
                   ),
                   const SizedBox(height: 20),
                   const Text('I am available',

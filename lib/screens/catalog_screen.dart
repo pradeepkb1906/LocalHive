@@ -6,6 +6,7 @@ import 'directions_screen.dart';
 import '../services/firebase_service.dart';
 import '../services/geo.dart';
 import '../theme.dart';
+import '../widgets/address_field.dart';
 import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
@@ -202,11 +203,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
               ),
               if (_delivery) ...[
                 const SizedBox(height: 12),
-                TextField(
+                AddressField(
                   controller: _address,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                      hintText: 'Delivery address (street, city, state)'),
+                  hintText: 'Delivery address (street, city, state)',
                 ),
               ] else ...[
                 const SizedBox(height: 12),
