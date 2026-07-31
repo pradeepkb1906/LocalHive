@@ -393,9 +393,13 @@ class FirebaseService {
 
   Future<void> setRole(String role) async {
     if (!ready || currentUser == null) return;
-    await _db!.collection('users').doc(_uid).set(
-        {'role': role, 'email': currentUser?.email ?? ''},
-        SetOptions(merge: true));
+    await _db!.collection('users').doc(_uid).set({
+      'role': role,
+      'email': currentUser?.email ?? '',
+      // Display name so the admin's People list shows a person, not
+      // just an address.
+      'name': currentUser?.displayName ?? '',
+    }, SetOptions(merge: true));
   }
 
   // ---- Feature flags (admin-controlled role access) ----
@@ -421,6 +425,62 @@ class FirebaseService {
     await _db!.collection('config').doc('feature_flags').set({
       role: {feature: enabled}
     }, SetOptions(merge: true));
+  }
+
+  /// The signed-in user's own per-person overrides — the admin's answer to
+  /// "this one provider needs something different from the rest". Empty when
+  /// none exist; the role settings then apply unchanged.
+  Stream<Map<String, dynamic>> myFeatureOverridesStream() {
+    if (!ready || currentUser == null) return Stream.value(const {});
+    return _shared(
+        'myFeatureOverrides',
+        () => _db!
+            .collection('user_feature_flags')
+            .doc(_uid)
+            .snapshots()
+            .map((doc) => doc.data() ?? const {}));
+  }
+
+  /// Admin: everyone who has signed in and picked a role, for the People tab
+  /// of the Feature Access console.
+  Stream<List<Map<String, dynamic>>> adminUsersStream() {
+    if (!ready) return Stream.value(const []);
+    return _shared(
+        'adminUsers',
+        () => _db!.collection('users').snapshots().map((snap) =>
+            snap.docs.map((d) => {...d.data(), 'uid': d.id}).toList()
+              ..sort((a, b) =>
+                  '${a['email'] ?? ''}'.compareTo('${b['email'] ?? ''}'))));
+  }
+
+  /// Admin: one user's override document, live.
+  Stream<Map<String, dynamic>> userFeatureOverridesStream(String uid) {
+    if (!ready) return Stream.value(const {});
+    return _shared(
+        'userOverrides-$uid',
+        () => _db!
+            .collection('user_feature_flags')
+            .doc(uid)
+            .snapshots()
+            .map((doc) => doc.data() ?? const {}));
+  }
+
+  /// Admin: override one feature for one person. Merge-write; rules restrict
+  /// this to admins.
+  Future<void> setUserFeatureFlag(
+      String uid, String feature, bool enabled) async {
+    if (!ready) return;
+    await _db!
+        .collection('user_feature_flags')
+        .doc(uid)
+        .set({feature: enabled}, SetOptions(merge: true));
+  }
+
+  /// Admin: remove every per-person override so the user follows their role
+  /// settings again.
+  Future<void> clearUserFeatureFlags(String uid) async {
+    if (!ready) return;
+    await _db!.collection('user_feature_flags').doc(uid).delete();
   }
 
   // ---- Truck arrival alerts ----

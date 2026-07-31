@@ -42,6 +42,53 @@ void main() {
     }
   });
 
+  test('a per-user override beats the role setting, which beats the default',
+      () {
+    final roleOverrides = {
+      'provider': {'olivia': false}
+    };
+    // No user override: the role setting wins over the default.
+    expect(
+        featureEnabledFor(
+            roleOverrides: roleOverrides,
+            userOverrides: const {},
+            role: 'provider',
+            feature: 'olivia'),
+        isFalse);
+    // A user override wins over the role setting.
+    expect(
+        featureEnabledFor(
+            roleOverrides: roleOverrides,
+            userOverrides: const {'olivia': true},
+            role: 'provider',
+            feature: 'olivia'),
+        isTrue);
+    // A user override can also take away what the role grants.
+    expect(
+        featureEnabledFor(
+            roleOverrides: const {},
+            userOverrides: const {'stores': false},
+            role: 'customer',
+            feature: 'stores'),
+        isFalse);
+    // Untouched features follow the role as before.
+    expect(
+        featureEnabledFor(
+            roleOverrides: roleOverrides,
+            userOverrides: const {'olivia': true},
+            role: 'provider',
+            feature: 'provider_dashboard'),
+        isTrue);
+    // Admin stays immune even with a hostile user override.
+    expect(
+        featureEnabledFor(
+            roleOverrides: const {},
+            userOverrides: const {'stores': false},
+            role: 'admin',
+            feature: 'stores'),
+        isTrue);
+  });
+
   test('unknown roles and features fail closed', () {
     expect(featureEnabledIn(const {}, 'customer', 'no_such_feature'), isFalse);
     expect(featureEnabledIn(const {}, 'no_such_role', 'stores'), isFalse);

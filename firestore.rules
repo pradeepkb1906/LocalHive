@@ -21,8 +21,11 @@ service cloud.firestore {
     }
 
     // User profile: account type (customer | provider | delivery) and prefs.
+    // Admins read the directory to pick a person in the Feature Access
+    // console; only the person themselves may write.
     match /users/{uid} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if signedIn() && request.auth.uid == uid;
     }
 
     // Platform configuration, e.g. the admin's role/feature toggle matrix
@@ -30,6 +33,13 @@ service cloud.firestore {
     // features its role may use; only admins may change it.
     match /config/{docId} {
       allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Per-person feature overrides, layered over the role matrix. A user
+    // reads their own; admins read and write anyone's.
+    match /user_feature_flags/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow write: if isAdmin();
     }
 

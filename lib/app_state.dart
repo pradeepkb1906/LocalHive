@@ -49,11 +49,18 @@ class AppState extends ChangeNotifier {
   /// Admin-set overrides of the role/feature matrix; {} until loaded.
   Map<String, dynamic> featureFlags = const {};
 
-  /// Whether the signed-in user's role may use [feature] right now. Admins
-  /// are always allowed; everyone else follows the admin's toggles, with the
-  /// defaults in feature_flags.dart when nothing has been overridden.
-  bool featureEnabled(String feature) =>
-      featureEnabledIn(featureFlags, role, feature);
+  /// Admin-set overrides for THIS user specifically; {} when none exist.
+  Map<String, dynamic> myFeatureOverrides = const {};
+
+  /// Whether the signed-in user may use [feature] right now. Resolution is
+  /// the standard staff-permissions order: per-user override, then the
+  /// role's setting, then the built-in default. Admins are always allowed.
+  bool featureEnabled(String feature) => featureEnabledFor(
+        roleOverrides: featureFlags,
+        userOverrides: myFeatureOverrides,
+        role: role,
+        feature: feature,
+      );
 
   /// Called once after Firebase init: react to auth changes + live bookings.
   void start() {
@@ -76,12 +83,20 @@ class AppState extends ChangeNotifier {
 
   StreamSubscription<Map<String, dynamic>>? _flagsSub;
 
+  StreamSubscription<Map<String, dynamic>>? _myOverridesSub;
+
   void _resubscribeFlags() {
     _flagsSub?.cancel();
     _flagsSub = _fb.featureFlagsStream().listen((flags) {
       featureFlags = flags;
       notifyListeners();
     }, onError: (_) {}); // guests just get the defaults
+    _myOverridesSub?.cancel();
+    myFeatureOverrides = const {};
+    _myOverridesSub = _fb.myFeatureOverridesStream().listen((flags) {
+      myFeatureOverrides = flags;
+      notifyListeners();
+    }, onError: (_) {});
   }
 
   void _resubscribeBookings() {

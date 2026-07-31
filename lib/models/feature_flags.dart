@@ -95,3 +95,19 @@ bool featureEnabledIn(
   }
   return defaultFeatureMatrix[role]?[feature] ?? false;
 }
+
+/// Full resolution for one person, the way staff-permission systems in
+/// marketplace apps do it: a per-user override (user_feature_flags/{uid})
+/// beats the role setting, which beats the built-in default. No user
+/// override for a feature means "follow the role".
+bool featureEnabledFor({
+  required Map<String, dynamic> roleOverrides,
+  Map<String, dynamic>? userOverrides,
+  required String role,
+  required String feature,
+}) {
+  if (role == 'admin') return true;
+  final v = userOverrides?[feature];
+  if (v is bool) return v;
+  return featureEnabledIn(roleOverrides, role, feature);
+}
