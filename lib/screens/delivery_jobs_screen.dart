@@ -309,6 +309,20 @@ class _DeliveryCard extends StatelessWidget {
   /// The job's contents, wrapped as a booking so the shared itemised view can
   /// render it. Only the goods are filled in — this card never holds the
   /// customer's private details.
+  // The stream hands the job over as a raw map, so createdAt is still a
+  // Firestore Timestamp; unwrap it dynamically to keep cloud_firestore out
+  // of this screen's imports.
+  DateTime? get _created {
+    final v = job['createdAt'];
+    if (v is DateTime) return v;
+    if (v == null) return null;
+    try {
+      return (v as dynamic).toDate() as DateTime;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Booking get _carrying => Booking(
         (job['storeName'] ?? '') as String,
         (job['orderDetail'] ?? '') as String,
@@ -318,6 +332,7 @@ class _DeliveryCard extends StatelessWidget {
             .whereType<Map>()
             .map((e) => OrderLine.fromMap(Map<String, dynamic>.from(e)))
             .toList(),
+        createdAt: _created,
       );
 
   @override
@@ -363,6 +378,13 @@ class _DeliveryCard extends StatelessWidget {
             Text('${job['orderDetail']}',
                 style: const TextStyle(
                     fontSize: 13.5, color: LhColors.inkSecondary)),
+            if (_carrying.placedLabel.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(_carrying.placedLabel,
+                    style: const TextStyle(
+                        fontSize: 12, color: LhColors.inkSecondary)),
+              ),
             // What is in the bag, so the partner can check the handover against
             // the order before leaving the store. No prices — what the customer
             // paid is between them and the business.

@@ -4,6 +4,7 @@ import '../app_state.dart';
 import '../models/data.dart';
 import 'directions_screen.dart';
 import '../services/firebase_service.dart';
+import '../services/geo.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
@@ -144,12 +145,26 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ? LhColors.green
       : LhColors.orange;
 
+  bool _placingOrder = false;
+
   void _checkout() {
     if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please sign in to place an order.')));
       Navigator.push(
           context, MaterialPageRoute(builder: (_) => const SignInScreen()));
+      return;
+    }
+    // A closed business cannot cook or pack anything. Only enforced when the
+    // listing declares hours — unknown hours give the benefit of the doubt.
+    final prov = widget.provider;
+    if (prov.availableFrom.isNotEmpty &&
+        prov.availableTo.isNotEmpty &&
+        !isOpenAt(prov.availableFrom, prov.availableTo, DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${prov.name} is closed right now — open '
+              '${prov.availableFrom} to ${prov.availableTo}. '
+              'Come back then!')));
       return;
     }
     showModalBottomSheet(
@@ -272,36 +287,49 @@ class _CatalogScreenState extends State<CatalogScreen> {
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () {
-                  if (_delivery && _address.text.trim().length < 8) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-                        content: Text('Enter the full delivery address.')));
-                    return;
-                  }
-                  AppState.instance.addBooking(Booking(
-                    widget.provider.name,
-                    _orderSummary(),
-                    'Placed',
-                    _total,
-                    items: _orderLines(),
-                    providerId: widget.provider.id,
-                    category: widget.provider.category,
-                    address: _delivery ? _address.text.trim() : '',
-                    customerName: AppState.instance.userName ?? '',
-                    customerPhone: AppState.instance.userPhone ?? '',
-                    customerEmail: AppState.instance.userEmail ?? '',
-                    fulfillment: _delivery ? 'delivery' : 'pickup',
-                    pickupEta: _delivery ? '' : _pickupEta,
-                  ));
-                  Navigator.pop(ctx);
-                  setState(() => _cart.clear());
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(_delivery
-                          ? 'Order placed for delivery — track it in the Bookings tab.'
-                          : 'Pickup order placed — track it in the Bookings tab.')));
-                },
-                child: Text(
-                    _delivery ? 'Place Delivery Order' : 'Place Pickup Order'),
+                onPressed: _placingOrder
+                    ? null
+                    : () async {
+                        if (_delivery && _address.text.trim().length < 8) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                              content:
+                                  Text('Enter the full delivery address.')));
+                          return;
+                        }
+                        // Guarded and awaited: a double-tap here used to place
+                        // the same order twice.
+                        setSheet(() => setState(() => _placingOrder = true));
+                        await AppState.instance.addBookingAndWait(Booking(
+                          widget.provider.name,
+                          _orderSummary(),
+                          'Placed',
+                          _total,
+                          items: _orderLines(),
+                          providerId: widget.provider.id,
+                          category: widget.provider.category,
+                          address: _delivery ? _address.text.trim() : '',
+                          customerName: AppState.instance.userName ?? '',
+                          customerPhone: AppState.instance.userPhone ?? '',
+                          customerEmail: AppState.instance.userEmail ?? '',
+                          fulfillment: _delivery ? 'delivery' : 'pickup',
+                          pickupEta: _delivery ? '' : _pickupEta,
+                        ));
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (!mounted) return;
+                        setState(() {
+                          _cart.clear();
+                          _placingOrder = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(_delivery
+                                ? 'Order placed for delivery — track it in the Bookings tab.'
+                                : 'Pickup order placed — track it in the Bookings tab.')));
+                      },
+                child: Text(_placingOrder
+                    ? 'Placing…'
+                    : _delivery
+                        ? 'Place Delivery Order'
+                        : 'Place Pickup Order'),
               ),
               const SizedBox(height: 8),
             ],

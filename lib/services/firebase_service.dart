@@ -336,8 +336,10 @@ class FirebaseService {
                 ..sort((a, b) {
                   final ta = a.data()['createdAt'];
                   final tb = b.data()['createdAt'];
-                  if (ta is! Timestamp) return -1;
-                  if (tb is! Timestamp) return 1;
+                  // Rows still waiting on serverTimestamp (or legacy rows
+                  // without one) sink to the bottom of a newest-first list.
+                  if (ta is! Timestamp) return 1;
+                  if (tb is! Timestamp) return -1;
                   return tb.compareTo(ta);
                 });
               return docs.map(_bookingFromDoc).toList();
@@ -367,6 +369,7 @@ class FirebaseService {
           .whereType<Map>()
           .map((e) => OrderLine.fromMap(Map<String, dynamic>.from(e)))
           .toList(),
+      createdAt: (m['createdAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -578,13 +581,24 @@ class FirebaseService {
     if (!ready || currentUser == null) return Stream.value(const []);
     return _shared(
         'deliveryJobs',
-        () => _db!.collection('delivery_jobs').snapshots().map((snap) => snap
-            .docs
-            .map((d) => {...d.data(), 'id': d.id})
-            .where((j) =>
-                j['status'] != 'Delivered' &&
-                (j['deliveryPersonId'] == '' || j['deliveryPersonId'] == _uid))
-            .toList()));
+        () => _db!.collection('delivery_jobs').snapshots().map((snap) {
+              final jobs = snap.docs
+                  .map((d) => {...d.data(), 'id': d.id})
+                  .where((j) =>
+                      j['status'] != 'Delivered' &&
+                      (j['deliveryPersonId'] == '' ||
+                          j['deliveryPersonId'] == _uid))
+                  .toList()
+                // Newest job first, like every board a courier has used.
+                ..sort((a, b) {
+                  final ta = a['createdAt'];
+                  final tb = b['createdAt'];
+                  if (ta is! Timestamp) return 1;
+                  if (tb is! Timestamp) return -1;
+                  return tb.compareTo(ta);
+                });
+              return jobs;
+            }));
   }
 
   Future<void> claimDeliveryJob(String jobId) async {
@@ -638,8 +652,10 @@ class FirebaseService {
                 ..sort((a, b) {
                   final ta = a.data()['createdAt'];
                   final tb = b.data()['createdAt'];
-                  if (ta is! Timestamp) return -1;
-                  if (tb is! Timestamp) return 1;
+                  // Rows still waiting on serverTimestamp (or legacy rows
+                  // without one) sink to the bottom of a newest-first list.
+                  if (ta is! Timestamp) return 1;
+                  if (tb is! Timestamp) return -1;
                   return tb.compareTo(ta);
                 });
               return docs.map(_bookingFromDoc).toList();
@@ -713,8 +729,10 @@ class FirebaseService {
                 ..sort((a, b) {
                   final ta = a.data()['createdAt'];
                   final tb = b.data()['createdAt'];
-                  if (ta is! Timestamp) return -1;
-                  if (tb is! Timestamp) return 1;
+                  // Rows still waiting on serverTimestamp (or legacy rows
+                  // without one) sink to the bottom of a newest-first list.
+                  if (ta is! Timestamp) return 1;
+                  if (tb is! Timestamp) return -1;
                   return tb.compareTo(ta);
                 });
               return docs.map((d) => {...d.data(), 'id': d.id}).toList();

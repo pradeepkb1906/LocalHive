@@ -118,6 +118,10 @@ class Booking {
   /// someone's time rather than a list of goods.
   final List<OrderLine> items;
 
+  /// When this booking was placed — the server's clock, not the phone's.
+  /// Null only for mock rows and documents from before it was recorded.
+  final DateTime? createdAt;
+
   const Booking(
     this.providerName,
     this.detail,
@@ -134,7 +138,45 @@ class Booking {
     this.pickupEta = '',
     this.otp = '',
     this.items = const [],
+    this.createdAt,
   });
+
+  /// Still moving through its lifecycle, as opposed to settled history.
+  bool get isActive =>
+      !const {'Completed', 'Delivered', 'Declined'}.contains(status);
+
+  /// "Placed today 7:42 PM" / "Placed Jul 30, 7:42 PM" — every ordering app
+  /// answers "when did I order this?" without being asked.
+  String get placedLabel {
+    final t = createdAt;
+    if (t == null) return '';
+    final local = t.toLocal();
+    final now = DateTime.now();
+    final h12 = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final time = '$h12:${local.minute.toString().padLeft(2, '0')} '
+        '${local.hour < 12 ? 'AM' : 'PM'}';
+    final sameDay = local.year == now.year &&
+        local.month == now.month &&
+        local.day == now.day;
+    if (sameDay) return 'Placed today $time';
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    final date = '${months[local.month - 1]} ${local.day}'
+        '${local.year == now.year ? '' : ', ${local.year}'}';
+    return 'Placed $date, $time';
+  }
 
   /// What the goods came to, before the platform fee and any delivery charge.
   double get itemsSubtotal =>

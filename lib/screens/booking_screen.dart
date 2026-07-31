@@ -20,6 +20,7 @@ class _BookingScreenState extends State<BookingScreen> {
   int _hours = 3;
   int _dayOffset = 1;
   String _slot = '10:00 AM';
+  bool _submitting = false;
   late final _name =
       TextEditingController(text: AppState.instance.userName ?? '');
   late final _phone =
@@ -29,17 +30,57 @@ class _BookingScreenState extends State<BookingScreen> {
   final _address = TextEditingController();
 
   static const _slots = ['8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM'];
+  static const _slotHour = {
+    '8:00 AM': 8,
+    '10:00 AM': 10,
+    '1:00 PM': 13,
+    '3:00 PM': 15,
+  };
 
   double get _subtotal => widget.provider.hourlyRate * _hours;
   double get _fee => _subtotal * platformFeePct;
   double get _total => money(_subtotal + _fee);
 
-  String _dayLabel(int offset) {
-    const names = ['Today', 'Tomorrow', 'In 2 days', 'In 3 days', 'In 4 days'];
-    return names[offset];
+  /// A slot the provider could still actually make: anything today needs at
+  /// least an hour's notice. "Today 8 AM" booked at 9 PM was a real bug.
+  bool _slotAvailable(int offset, String slot) {
+    if (offset != 0) return true;
+    final now = DateTime.now();
+    return _slotHour[slot]! > now.hour + 1;
   }
 
-  void _confirm() {
+  bool _dayHasSlots(int offset) => _slots.any((s) => _slotAvailable(offset, s));
+
+  DateTime _dayFor(int offset) => DateTime.now().add(Duration(days: offset));
+
+  /// "Today, Jul 31" / "Sat, Aug 2" — a real calendar date, because this text
+  /// is stored on the booking forever. A booking that permanently says
+  /// "Tomorrow" is wrong from the next morning onwards.
+  String _dayLabel(int offset) {
+    final d = _dayFor(offset);
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final date = '${months[d.month - 1]} ${d.day}';
+    if (offset == 0) return 'Today, $date';
+    if (offset == 1) return 'Tomorrow, $date';
+    return '${days[d.weekday - 1]}, $date';
+  }
+
+  Future<void> _confirm() async {
+    if (_submitting) return;
     if (!AppState.instance.signedIn && AppState.instance.firebaseReady) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content:
@@ -60,7 +101,17 @@ class _BookingScreenState extends State<BookingScreen> {
               'Enter your name and phone so the provider can reach you.')));
       return;
     }
-    AppState.instance.addBooking(Booking(
+    if (!_slotAvailable(_dayOffset, _slot)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('That time has already passed today — pick a later '
+              'slot or another day.')));
+      return;
+    }
+    setState(() => _submitting = true);
+    // Awaited, with the button disabled meanwhile: a double-tap here used to
+    // create two identical bookings, and both showed up on the provider's
+    // dashboard.
+    await AppState.instance.addBookingAndWait(Booking(
       widget.provider.name,
       '${widget.provider.subtitle.split(' · ').first} · ${_dayLabel(_dayOffset)} $_slot · $_hours hrs',
       'Requested',
@@ -72,6 +123,8 @@ class _BookingScreenState extends State<BookingScreen> {
       customerPhone: _phone.text.trim(),
       customerEmail: _email.text.trim(),
     ));
+    if (!mounted) return;
+    setState(() => _submitting = false);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -192,7 +245,17 @@ class _BookingScreenState extends State<BookingScreen> {
               (i) => ChoiceChip(
                 label: Text(_dayLabel(i)),
                 selected: _dayOffset == i,
-                onSelected: (_) => setState(() => _dayOffset = i),
+                // A day with no bookable slots left (today, late in the
+                // evening) cannot be chosen at all.
+                onSelected: _dayHasSlots(i)
+                    ? (_) => setState(() {
+                          _dayOffset = i;
+                          if (!_slotAvailable(i, _slot)) {
+                            _slot =
+                                _slots.firstWhere((s) => _slotAvailable(i, s));
+                          }
+                        })
+                    : null,
               ),
             ),
           ),
@@ -205,7 +268,9 @@ class _BookingScreenState extends State<BookingScreen> {
                 .map((s) => ChoiceChip(
                     label: Text(s),
                     selected: _slot == s,
-                    onSelected: (_) => setState(() => _slot = s)))
+                    onSelected: _slotAvailable(_dayOffset, s)
+                        ? (_) => setState(() => _slot = s)
+                        : null))
                 .toList(),
           ),
           const SizedBox(height: 20),
@@ -285,8 +350,10 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: _confirm,
-            child: Text('Book for \$${_total.toStringAsFixed(2)}'),
+            onPressed: _submitting ? null : _confirm,
+            child: Text(_submitting
+                ? 'Booking…'
+                : 'Book for \$${_total.toStringAsFixed(2)}'),
           ),
           const SizedBox(height: 8),
           const Center(

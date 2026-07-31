@@ -254,6 +254,10 @@ class _JobCard extends StatelessWidget {
                 CupertinoIcons.person_fill,
                 '${job.customerName.isEmpty ? 'Customer' : job.customerName}'
                 '${job.customerPhone.isEmpty ? '' : ' · ${job.customerPhone}'}'),
+            if (job.placedLabel.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              _row(CupertinoIcons.clock, job.placedLabel),
+            ],
             const SizedBox(height: 6),
             _row(
                 CupertinoIcons.money_dollar_circle_fill,
