@@ -1,22 +1,46 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Detects the user's city + US state via browser/device geolocation and
-/// free OpenStreetMap reverse geocoding (no API key). Falls back to 'USA'.
+import '../models/ca_cities.dart';
+
+/// Where the app thinks the customer is standing.
+///
+/// LocalHive serves California only, so this is not a plain geolocator
+/// wrapper: it is the service-area boundary. A real fix is used when it lands
+/// inside the state and discarded when it does not. A phone in Bengaluru,
+/// London or New York gets San Francisco rather than a screen full of shops
+/// nobody here can deliver from — and the customer can pick any other
+/// California city from the chip.
 class LocationService extends ChangeNotifier {
   LocationService._();
   static final LocationService instance = LocationService._();
 
-  String label = 'USA';
+  static const _cityKey = 'lh_ca_city';
+
+  /// The city the customer is browsing. Always a California one.
+  CaCity city = defaultCaCity;
+
+  /// True when [lat]/[lng] came from the device rather than from the chosen
+  /// city — so the app can rank by real distance instead of city centre.
+  bool usingDeviceLocation = false;
+
+  /// True when the device reported a position outside California. Screens use
+  /// this to explain why they are showing San Francisco to someone who is
+  /// demonstrably somewhere else, rather than looking broken.
+  bool deviceOutsideServiceArea = false;
+
+  String label = defaultCaCity.label;
 
   /// The user's coordinates once detected, so features like "food trucks near
   /// me" can rank by real distance rather than by the city label alone. Null
   /// until [detect] resolves a position; the IP fallback fills these in coarsely.
-  double? lat;
-  double? lng;
+  double? lat = defaultCaCity.lat;
+  double? lng = defaultCaCity.lng;
 
   bool get hasPosition => lat != null && lng != null;
 
@@ -76,9 +100,56 @@ class LocationService extends ChangeNotifier {
     'District of Columbia': 'DC',
   };
 
+  /// Restores the customer's chosen city, then tries the device.
+  ///
+  /// Order matters: the stored choice is applied first so the app has a
+  /// sensible California position from the very first frame, and a slow or
+  /// refused GPS prompt never leaves the screen empty.
   Future<void> detect() async {
     if (_requested) return;
     _requested = true;
+    await _restoreCity();
+    await _tryDevice();
+  }
+
+  /// Puts the customer in [c] and remembers it. Clears any device fix: they
+  /// have said where they want to be, which outranks where the phone is.
+  Future<void> setCity(CaCity c) async {
+    city = c;
+    lat = c.lat;
+    lng = c.lng;
+    label = c.label;
+    usingDeviceLocation = false;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cityKey, c.name);
+    } catch (e) {
+      // A city that does not survive a restart is a small annoyance; a crash
+      // on a storage failure is not.
+      debugPrint('could not remember the city: $e');
+    }
+  }
+
+  Future<void> _restoreCity() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_cityKey);
+      if (saved == null) return;
+      final match = caCities.where((c) => c.name == saved);
+      if (match.isEmpty) return;
+      city = match.first;
+      lat = city.lat;
+      lng = city.lng;
+      label = city.label;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('could not read the saved city: $e');
+    }
+  }
+
+  /// Uses the device position only if it is inside California.
+  Future<void> _tryDevice() async {
     try {
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -86,20 +157,70 @@ class LocationService extends ChangeNotifier {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        await _detectFromIp(); // laptops / denied permission: IP estimate
+        await _detectFromIp();
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
           locationSettings:
               const LocationSettings(accuracy: LocationAccuracy.low));
-      lat = pos.latitude;
-      lng = pos.longitude;
-      // zoom=14 returns neighbourhood/suburb-level detail when available.
+      _applyIfInCalifornia(pos.latitude, pos.longitude);
+    } catch (e) {
+      debugPrint('Location detect failed: $e');
+      await _detectFromIp();
+    }
+  }
+
+  /// Coarse city-level location from the IP address — laptops, or when GPS
+  /// permission is refused. Free, no API key. Subject to the same boundary.
+  Future<void> _detectFromIp() async {
+    try {
+      final resp = await http
+          .get(Uri.parse('https://ipapi.co/json/'))
+          .timeout(const Duration(seconds: 6));
+      if (resp.statusCode != 200) return;
+      final d = jsonDecode(resp.body) as Map<String, dynamic>;
+      final dlat = (d['latitude'] as num?)?.toDouble();
+      final dlng = (d['longitude'] as num?)?.toDouble();
+      if (dlat == null || dlng == null) return;
+      _applyIfInCalifornia(dlat, dlng);
+    } catch (e) {
+      debugPrint('IP location failed: $e');
+    }
+  }
+
+  /// The boundary itself.
+  ///
+  /// Inside California the real position wins, because a customer in the
+  /// Mission wants shops on their street and not the city centre. Outside it
+  /// the position is discarded entirely and the chosen city stands — this is
+  /// what makes a demo in Bengaluru show San Francisco.
+  void _applyIfInCalifornia(double dlat, double dlng) {
+    if (!isInCalifornia(dlat, dlng)) {
+      deviceOutsideServiceArea = true;
+      notifyListeners();
+      return;
+    }
+    lat = dlat;
+    lng = dlng;
+    usingDeviceLocation = true;
+    deviceOutsideServiceArea = false;
+    city = nearestCaCity(dlat, dlng);
+    label = city.label;
+    notifyListeners();
+    // The neighbourhood name is a nicety, so a failure here must not undo a
+    // perfectly good position.
+    unawaited(_refineLabel(dlat, dlng));
+  }
+
+  /// Replaces the city label with a neighbourhood one where OSM has it, so a
+  /// customer in the Mission sees "Mission District, San Francisco, CA".
+  Future<void> _refineLabel(double dlat, double dlng) async {
+    try {
       final resp = await http.get(
         Uri.parse('https://nominatim.openstreetmap.org/reverse'
-            '?lat=${pos.latitude}&lon=${pos.longitude}&format=json&zoom=14'),
-        headers: {'User-Agent': 'LocalHive/0.2 (localhive app)'},
-      );
+            '?lat=$dlat&lon=$dlng&format=json&zoom=14'),
+        headers: {'User-Agent': 'LocalHive/0.3 (localhive app)'},
+      ).timeout(const Duration(seconds: 6));
       if (resp.statusCode != 200) return;
       final addr =
           (jsonDecode(resp.body) as Map<String, dynamic>)['address'] ?? {};
@@ -108,48 +229,21 @@ class LocationService extends ChangeNotifier {
           addr['quarter'] ??
           addr['hamlet'] ??
           '') as String;
-      final city = (addr['city'] ??
-          addr['town'] ??
-          addr['village'] ??
-          addr['township'] ??
-          addr['county'] ??
-          '') as String;
+      final town =
+          (addr['city'] ?? addr['town'] ?? addr['village'] ?? '') as String;
       final state = (addr['state'] ?? '') as String;
-      final abbr = _stateAbbr[state] ?? state;
+      // Belt and braces: if the geocoder disagrees that this is California,
+      // trust the geocoder and leave the label alone.
+      if (state.isNotEmpty && _stateAbbr[state] != 'CA') return;
       final parts = <String>[
-        if (area.isNotEmpty && area != city) area,
-        if (city.isNotEmpty) city,
-        if (abbr.isNotEmpty) abbr,
+        if (area.isNotEmpty && area != town) area,
+        if (town.isNotEmpty) town else city.name,
+        'CA',
       ];
-      if (parts.isNotEmpty) label = parts.join(', ');
+      label = parts.join(', ');
       notifyListeners();
     } catch (e) {
-      debugPrint('Location detect failed: $e');
-      await _detectFromIp();
-    }
-  }
-
-  /// Coarse city-level location from the IP address — used on laptops or
-  /// when GPS permission is denied. Free service, no API key.
-  Future<void> _detectFromIp() async {
-    try {
-      final resp = await http
-          .get(Uri.parse('https://ipapi.co/json/'))
-          .timeout(const Duration(seconds: 6));
-      if (resp.statusCode != 200) return;
-      final d = jsonDecode(resp.body) as Map<String, dynamic>;
-      final city = (d['city'] ?? '') as String;
-      final region = (d['region_code'] ?? d['region'] ?? '') as String;
-      // City-level accuracy only, but enough to rank nearby businesses when
-      // GPS is unavailable.
-      lat = (d['latitude'] as num?)?.toDouble() ?? lat;
-      lng = (d['longitude'] as num?)?.toDouble() ?? lng;
-      if (city.isNotEmpty) {
-        label = region.toString().isNotEmpty ? '$city, $region' : city;
-        notifyListeners();
-      }
-    } catch (e) {
-      debugPrint('IP location failed: $e');
+      debugPrint('label refine failed: $e');
     }
   }
 }

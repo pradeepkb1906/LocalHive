@@ -37,13 +37,27 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   void initState() {
     super.initState();
     _loadNearby();
+    // Changing city has to change the shops, or the picker is decoration.
+    LocationService.instance.addListener(_onLocationChanged);
   }
 
   @override
   void dispose() {
+    LocationService.instance.removeListener(_onLocationChanged);
     _places.dispose();
     super.dispose();
   }
+
+  void _onLocationChanged() {
+    final loc = LocationService.instance;
+    if (loc.lat == _loadedForLat && loc.lng == _loadedForLng) return;
+    _loadNearby();
+  }
+
+  // What the visible list was built for, so a label-only update (the
+  // neighbourhood name arriving late) does not trigger a needless refetch.
+  double? _loadedForLat;
+  double? _loadedForLng;
 
   /// Real shops around the customer that have NOT partnered with LocalHive.
   /// Shown honestly as "not a partner" — you can call them or get directions,
@@ -56,6 +70,9 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       if (mounted) setState(() => _loadingNearby = false);
       return;
     }
+    _loadedForLat = loc.lat;
+    _loadedForLng = loc.lng;
+    if (mounted) setState(() => _loadingNearby = true);
     // The mirrored directory first: it is a real, curated snapshot of every
     // grocery shop in California, and it answers instantly. Overpass is the
     // fallback for when the directory is off or has nothing near this point
@@ -128,6 +145,30 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       builder: (context) => ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Someone opening this from outside California is not lost — the
+          // app only operates here. Say so, and point at the way to change
+          // city, rather than showing San Francisco with no explanation.
+          if (LocationService.instance.deviceOutsideServiceArea)
+            Card(
+              color: LhColors.blue.withValues(alpha: 0.10),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    const Icon(CupertinoIcons.info_circle_fill,
+                        size: 18, color: LhColors.blue),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                          'LocalHive serves California. Showing '
+                          '${LocationService.instance.city.name} — tap the '
+                          'location at the top to pick another city.',
+                          style: const TextStyle(fontSize: 12.5, height: 1.3)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           // When Firestore could not be read, this catalog came from the
           // read-only standby. Say so: browsing works, ordering does not.
           if (SupabaseMirror.instance.servingFromMirror)
