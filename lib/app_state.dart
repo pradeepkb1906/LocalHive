@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'models/data.dart';
 import 'models/feature_flags.dart';
 import 'services/firebase_service.dart';
+import 'services/supabase_mirror.dart';
 
 /// App-wide state. Backed by Firebase Auth + Firestore when available;
 /// falls back to local in-memory state so the UI never breaks offline.
@@ -193,10 +194,29 @@ class AppState extends ChangeNotifier {
   /// Same write, but awaits Firestore and hands back the new booking id.
   /// Olivia uses this so she can tell the customer their order is really in
   /// and then track it; the tap-driven screens keep using [addBooking].
+  /// True when the catalog is coming from the read-only standby, which means
+  /// there is nowhere to record an order. Screens use this to disable
+  /// checkout rather than let a customer believe an order was placed.
+  bool get orderingPaused => SupabaseMirror.instance.servingFromMirror;
+
+  /// Places an order, or refuses to.
+  ///
+  /// Returns null when it could not be recorded. The optimistic local row is
+  /// only kept if the write is going somewhere real — an order that exists
+  /// solely on the customer's screen is the worst outcome available: the shop
+  /// never sees it, and the customer waits for food that is not coming.
   Future<String?> addBookingAndWait(Booking b) async {
+    if (orderingPaused) return null;
     bookings = [b, ...bookings];
     notifyListeners();
-    return _fb.addBooking(b);
+    final id = await _fb.addBooking(b);
+    if (id == null) {
+      // The write failed. Take the row back off the screen so nothing claims
+      // an order exists when it does not.
+      bookings = bookings.where((x) => !identical(x, b)).toList();
+      notifyListeners();
+    }
+    return id;
   }
 
   Future<void> submitProviderApplication(

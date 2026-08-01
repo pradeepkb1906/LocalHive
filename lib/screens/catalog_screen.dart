@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
 import '../services/geo.dart';
+import '../services/supabase_mirror.dart';
 import '../theme.dart';
 import '../widgets/address_field.dart';
 import '../widgets/location_chip.dart';
@@ -247,8 +248,36 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              // On the standby catalog there is nowhere to write an order.
+              // Saying so and disabling the button is the only honest option:
+              // an order that silently goes nowhere is worse than a customer
+              // who knows to phone the shop instead.
+              if (SupabaseMirror.instance.servingFromMirror) ...[
+                Card(
+                  color: LhColors.orange.withValues(alpha: 0.12),
+                  child: const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Icon(CupertinoIcons.exclamationmark_triangle_fill,
+                            size: 18, color: LhColors.orange),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                              'Ordering is paused while the main service is '
+                              'unreachable. Your basket is safe — or call the '
+                              'shop directly.',
+                              style: TextStyle(fontSize: 12.5, height: 1.3)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               FilledButton(
-                onPressed: _placingOrder
+                onPressed: _placingOrder ||
+                        SupabaseMirror.instance.servingFromMirror
                     ? null
                     : () async {
                         if (_delivery && _address.text.trim().length < 8) {
@@ -260,7 +289,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         // Guarded and awaited: a double-tap here used to place
                         // the same order twice.
                         setSheet(() => setState(() => _placingOrder = true));
-                        await AppState.instance.addBookingAndWait(Booking(
+                        final placedId =
+                            await AppState.instance.addBookingAndWait(Booking(
                           widget.provider.name,
                           _orderSummary(),
                           'Placed',
@@ -278,6 +308,22 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           deliveryNote:
                               _delivery ? _deliveryNote.text.trim() : '',
                         ));
+                        // Only clear the basket and claim success if the
+                        // order actually reached the backend. Telling someone
+                        // their groceries are on the way when nothing was
+                        // recorded is the one failure that cannot be walked
+                        // back later.
+                        if (placedId == null) {
+                          if (!mounted) return;
+                          setState(() => _placingOrder = false);
+                          if (!ctx.mounted) return;
+                          ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                              content: Text(
+                                  'Could not place your order — the service is '
+                                  'unreachable. Your basket is still here; '
+                                  'please try again or call the shop.')));
+                          return;
+                        }
                         if (ctx.mounted) Navigator.pop(ctx);
                         if (!mounted) return;
                         setState(() {

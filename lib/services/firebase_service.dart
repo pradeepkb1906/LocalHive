@@ -150,6 +150,18 @@ class FirebaseService {
   /// order she just placed.
   Future<String?> addBooking(Booking b) async {
     if (!ready) return null;
+    try {
+      return await _addBooking(b);
+    } catch (e) {
+      // A thrown write used to escape to the caller, which meant the
+      // optimistic row stayed on the customer's screen looking like a placed
+      // order. Report the failure instead so it can be taken back.
+      debugPrint('order write failed: $e');
+      return null;
+    }
+  }
+
+  Future<String?> _addBooking(Booking b) async {
     // 4-digit OTP the customer shares with the delivery partner on arrival.
     final otp = b.fulfillment == 'delivery'
         ? (1000 + Random().nextInt(9000)).toString()

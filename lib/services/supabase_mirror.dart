@@ -23,7 +23,7 @@ import '../supabase_config.dart';
 /// Supabase SDK: one fewer dependency, no extra weight in the web bundle,
 /// and a standby path with fewer moving parts than the thing it is standing
 /// in for.
-class SupabaseMirror {
+class SupabaseMirror extends ChangeNotifier {
   SupabaseMirror._();
   static final SupabaseMirror instance = SupabaseMirror._();
 
@@ -34,8 +34,22 @@ class SupabaseMirror {
   bool get enabled => SupabaseConfig.enabled;
 
   /// True once a read has actually fallen through to the mirror, so screens
-  /// can tell the customer what they are looking at.
-  bool servingFromMirror = false;
+  /// can tell the customer what they are looking at — and so the app can
+  /// refuse to take orders it has no way to record.
+  bool get servingFromMirror => _servingFromMirror;
+  bool _servingFromMirror = false;
+
+  /// When the app fell back, so the customer can be told how old this view
+  /// is rather than being left to assume it is live.
+  DateTime? servingSince;
+
+  @visibleForTesting
+  set servingFromMirror(bool v) {
+    if (_servingFromMirror == v) return;
+    _servingFromMirror = v;
+    servingSince = v ? DateTime.now() : null;
+    notifyListeners();
+  }
 
   Map<String, String> get _headers => {
         'apikey': SupabaseConfig.anonKey,

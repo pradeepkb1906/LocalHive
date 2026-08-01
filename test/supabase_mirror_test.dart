@@ -78,4 +78,31 @@ void main() {
         .toList();
     expect(rows.map((p) => p.name), ['Alpha Market', 'Beta Grocers']);
   });
+
+  group('standby mode never lets stale data pose as live', () {
+    test('falling back flips an observable flag and stamps the time', () {
+      var notified = 0;
+      void listener() => notified++;
+      mirror.addListener(listener);
+      addTearDown(() => mirror.removeListener(listener));
+
+      expect(mirror.servingFromMirror, isFalse);
+      expect(mirror.servingSince, isNull);
+
+      mirror.servingFromMirror = true;
+      expect(mirror.servingFromMirror, isTrue);
+      // Screens have to be able to say how old the view is, not leave the
+      // customer to assume it is current.
+      expect(mirror.servingSince, isNotNull);
+      expect(notified, 1);
+
+      // Setting the same value again must not churn listeners.
+      mirror.servingFromMirror = true;
+      expect(notified, 1);
+
+      mirror.servingFromMirror = false;
+      expect(mirror.servingSince, isNull);
+      expect(notified, 2);
+    });
+  });
 }
