@@ -50,33 +50,25 @@ const DELIVERY_FEE_CENTS = 499;
 const COURIER_BASE_CENTS = 499;
 const COURIER_HELP_BONUS_CENTS = 300;
 
-// Order size limits.
+// Order and spending limits.
 //
-// Two numbers, not one, because they answer different questions.
+// The cap is on paying BY CARD, not on ordering. A customer who reaches it
+// can still place the order and settle at the shop in person — which is how
+// LocalHive worked before cards existed, and is a perfectly good outcome. A
+// limit that blocks the order would turn a fraud control into lost business.
 //
-// SOFT is "this is a big shop" — unusual, worth recording, but a normal
-// thing a real household does. The USDA's 2026 food plans put a family of
-// four at $229 a week on the thrifty plan and $376 on the liberal one, and
-// San Francisco runs above the national figures. A hard stop at $200 would
-// refuse the weekly family shop: the largest, most loyal, most valuable
-// order on the platform, turned away at the card machine with a full
-// basket. So a large order goes through and is flagged for a human to
-// glance at, rather than blocked.
+// $200 flags rather than blocks: the USDA's 2026 food plans put a family of
+// four at $229-$376 a week and San Francisco runs above the national
+// figures, so a big shop is a normal thing a real household does, not a
+// signal of anything. It is recorded so a dispute weeks later can be looked
+// at without guesswork.
 //
-// HARD is "this is not a grocery order" — a decimal slipped, a quantity
-// field was tampered with, or a card is being tested. No household buys
-// $600 of groceries in one delivery from a corner shop.
+// $350 a day is the ceiling on card spend. It clears a weekly family shop
+// with room, and it means a compromised account is worth at most one day's
+// groceries to whoever took it.
 const SOFT_REVIEW_CENTS = 20000; // $200 — flagged, still served
-const MAX_ORDER_CENTS = 60000; // $600 — refused
-
-// What one account may spend in a rolling day, across all its orders.
-//
-// This is the control that actually limits fraud. A per-order ceiling on its
-// own is false comfort: someone testing a stolen card simply places five
-// orders under it. Capping the day, and the count, is what makes a stolen
-// card unprofitable — and it protects a shop from waking up to a morning of
-// chargebacks from one compromised account.
-const DAILY_TOTAL_CENTS = 80000; // $800 across all orders
+const MAX_ORDER_CENTS = 35000; // $350 — a single order cannot exceed the day
+const DAILY_TOTAL_CENTS = 35000; // $350 per account per rolling 24h
 const DAILY_ORDER_COUNT = 6;
 
 function corsHeaders(origin) {
@@ -282,9 +274,10 @@ function priceOrder(booking) {
   if (total > MAX_ORDER_CENTS) {
     return {
       error:
-        `This order comes to ${money(total)}, which is above the ` +
-        `${money(MAX_ORDER_CENTS)} limit for a single grocery order. ` +
-        `Please split it, or call the shop directly.`,
+        `This order comes to ${money(total)}. Card payment is limited to ` +
+        `${money(MAX_ORDER_CENTS)} a day — you can still place this order ` +
+        `and pay at the shop when you collect it.`,
+      code: 'over_order_limit',
     };
   }
 
@@ -314,6 +307,22 @@ function money(cents) {
 
 /**
  * What this account has already committed to spending in the last 24 hours.
+ *
+ * PER ACCOUNT, not per card — and the difference is worth being honest
+ * about. A checkout session is created BEFORE the customer chooses a card:
+ * they pick it on Stripe's page, moments later. At the point this decision
+ * is made, the card does not exist yet, so no amount of code here can total
+ * up "spend on that card today".
+ *
+ * Per-card velocity has to be enforced where the card IS known:
+ *   1. Stripe Radar — dashboard rule, e.g. block if
+ *      `card_velocity_24h > 350`. This is the real per-card control and it
+ *      runs inside Stripe, before the charge.
+ *   2. The fingerprint recorded on each paid booking below, which makes one
+ *      card spread across several fresh accounts findable after the fact.
+ *
+ * Claiming this function is a per-card limit would be a false assurance,
+ * so it is named and documented for what it is.
  *
  * Counts orders that are paid or mid-payment; an abandoned checkout should
  * not hold someone's daily allowance hostage. Deliberately fails OPEN on a
@@ -460,9 +469,10 @@ async function createSession(request, env, origin, now) {
       return json(
         {
           error:
-            `That is ${DAILY_ORDER_COUNT} orders in a day, which is our ` +
-            `limit. Please try again tomorrow, or call the shop directly.`,
+            `That is ${DAILY_ORDER_COUNT} card payments today, which is our ` +
+            `limit. You can still place this order and pay at the shop.`,
           code: 'daily_count',
+          payInPerson: true,
         },
         429,
         origin,
@@ -472,10 +482,12 @@ async function createSession(request, env, origin, now) {
       return json(
         {
           error:
-            `This would take today's orders past the ` +
-            `${money(DAILY_TOTAL_CENTS)} daily limit. Please try again ` +
-            `tomorrow, or call the shop directly.`,
+            `You have paid ${money(spent.cents)} by card today. The daily ` +
+            `limit is ${money(DAILY_TOTAL_CENTS)} — you can still place this ` +
+            `order and pay at the shop when you collect it.`,
           code: 'daily_total',
+          payInPerson: true,
+          spentTodayCents: spent.cents,
         },
         429,
         origin,
@@ -630,13 +642,25 @@ async function handleWebhook(request, env, origin, now) {
         {
           paymentStatus: { stringValue: 'paid' },
           paidAt: { timestampValue: new Date(now).toISOString() },
-          paymentIntentId: { stringValue: String(s.payment_intent || '') },
-          // Only ever the brand and last four, which Stripe classes as
-          // non-sensitive and which a customer needs to recognise the charge.
-          // The full number never exists anywhere in this system.
+            paymentIntentId: { stringValue: String(s.payment_intent || '') },
+          // Only ever the brand, which Stripe classes as non-sensitive and
+          // which a customer needs to recognise the charge. The card number
+          // never exists anywhere in this system.
           cardBrand: { stringValue: String((s.payment_method_types || [])[0] || 'card') },
+          // Stripe's own fingerprint for the card: a stable, opaque id for
+          // "the same physical card", carrying none of its digits. Recorded
+          // so one card spreading across several fresh accounts is visible
+          // afterwards. It cannot prevent that at checkout — see the note on
+          // per-card limits above spentToday() — but it makes it findable.
+          cardFingerprint: {
+            stringValue: String(
+              (s.payment_method_details &&
+                s.payment_method_details.card &&
+                s.payment_method_details.card.fingerprint) || ''),
+          },
         },
-        ['paymentStatus', 'paidAt', 'paymentIntentId', 'cardBrand'],
+        ['paymentStatus', 'paidAt', 'paymentIntentId', 'cardBrand',
+         'cardFingerprint'],
         now,
       );
     }

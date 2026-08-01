@@ -58,8 +58,8 @@ controls, and in practice an assessor.
 | Idempotency | `Idempotency-Key` per booking; every Stripe event id recorded before processing |
 | Client cannot self-settle | Firestore rules forbid clients writing any payment field — **verified: 403** |
 | No caching of money responses | `Cache-Control: no-store` |
-| Order ceiling | **$600** hard refusal per order; **$200** soft threshold flags rather than blocks |
-| Velocity limits | **$800 / 6 orders** per account per rolling 24h — the control that actually stops card testing, which a per-order cap alone does not |
+| Order ceiling | **$350** hard refusal per order; **$200** soft threshold flags rather than blocks |
+| Velocity limits | **$350 / 6 orders** per account per rolling 24h. Over the limit the order can still be placed and paid in person — the cap is on cards, not on trading |
 
 ### 1.3 What you must do — not doable in code
 
@@ -165,10 +165,41 @@ So there are two, plus a third that does the real work:
 
 | Limit | Value | Behaviour |
 |---|---|---|
-| Soft review | $200 | Order proceeds, `largeOrder: true` recorded |
-| Hard ceiling | $600 | Refused, with the limit named in the message |
-| Daily total | $800 / 24h | Refused with `429` |
-| Daily count | 6 orders / 24h | Refused with `429` |
+| Soft review | $200 | Card payment proceeds, `largeOrder: true` recorded |
+| Hard ceiling | $350 | Card refused; order can still be placed and paid in person |
+| Daily total | $350 / 24h per account | `429`, with the in-person route offered |
+| Daily count | 6 / 24h per account | `429`, same |
+
+**The $350 is the amount charged, not the shopping.** The 12% platform fee
+and the $4.99 delivery fee sit inside it, so the effective basket ceiling is:
+
+| | Basket | Charged |
+|---|---|---|
+| Pickup | $312.49 | $349.99 |
+| Delivery | $308.04 | $349.99 |
+
+That clears the USDA moderate plan's $311 weekly family shop for pickup, and
+lands just under it for delivery. If turning away a large delivery order
+proves to be a real problem in practice, raise `DAILY_TOTAL_CENTS` to 40000
+($400) — the basket ceiling then becomes ~$352 and the whole moderate plan
+fits comfortably.
+
+### Per card — where it actually has to happen
+
+A checkout session is created **before** the customer chooses a card; they
+pick it on Stripe's page moments later. At the point this service decides,
+the card does not exist yet, so no code here can total "spend on that card
+today". Anything claiming otherwise would be a false assurance.
+
+Per-card velocity belongs in two places:
+
+1. **Stripe Radar rule** — the real control, running inside Stripe before
+   the charge. In the dashboard: *Radar → Rules → Block if*
+   `:card_velocity_24h: > 350`. **Set this up when the keys arrive.**
+2. **Card fingerprint**, now recorded on every paid booking. Stripe's stable
+   opaque id for "the same physical card", carrying none of its digits. It
+   cannot prevent misuse at checkout, but it makes one card spread across
+   several fresh accounts findable afterwards.
 
 The velocity limits matter more than the per-order cap. Someone testing a
 stolen card does not place one $5,000 order; they place several small ones

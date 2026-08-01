@@ -133,21 +133,52 @@ test('the review threshold trips exactly at the boundary, not before', () => {
   assert.equal(over.needsReview, true);
 });
 
-test('a decimal slip is refused, and says so in dollars', () => {
-  // $8.99 fat-fingered into $899 — the failure a hard cap actually exists for.
+test('a decimal slip is refused, and offers the in-person route', () => {
+  // $8.99 fat-fingered into $899 — the failure a hard cap exists for.
   const p = priceOrder({ fulfillment: 'pickup', items: [{ qty: 1, unitPrice: 899.0 }] });
   assert.ok(p.error);
-  assert.match(p.error, /\$600\.00/, 'the customer is told the actual limit');
+  assert.match(p.error, /\$350\.00/, 'the customer is told the actual limit');
+  // The cap is on paying by card, not on ordering. Blocking the order would
+  // turn a fraud control into lost business.
+  assert.match(p.error, /pay at the shop/i);
 });
 
-test('the two limits are the right way round and far enough apart', () => {
+test('a single order can never exceed the day, and a real shop still fits', () => {
   assert.ok(SOFT_REVIEW_CENTS < MAX_ORDER_CENTS);
-  // The hard cap must clear a liberal-plan family week with room to spare,
-  // or it becomes a soft cap by accident.
-  assert.ok(MAX_ORDER_CENTS >= 50000);
-  // And the daily allowance must permit more than one real shop.
-  assert.ok(DAILY_TOTAL_CENTS > MAX_ORDER_CENTS);
+  // One order cannot be larger than a whole day's card allowance.
+  assert.equal(MAX_ORDER_CENTS, DAILY_TOTAL_CENTS);
+  // $350 must still clear a liberal-plan family week ($376/wk national is
+  // above this, but that is a week of shopping, not one delivery) and
+  // comfortably clear the moderate plan's $311.
+  assert.ok(DAILY_TOTAL_CENTS >= 31100, 'must clear a moderate family week');
   assert.ok(DAILY_ORDER_COUNT >= 3);
+});
+
+test('the $350 ceiling is the CHARGE, so the basket limit is lower', () => {
+  // Worth pinning, because it is the thing that surprises people: the 12%
+  // platform fee and the delivery fee live inside the limit, so a customer
+  // hits it at roughly $308 of actual groceries, not $350.
+  const justUnder = priceOrder({
+    fulfillment: 'delivery', items: [{ qty: 1, unitPrice: 308.0 }],
+  });
+  assert.ok(!justUnder.error, '$308 of groceries + fees must still fit');
+  assert.ok(justUnder.total <= MAX_ORDER_CENTS);
+
+  const justOver = priceOrder({
+    fulfillment: 'delivery', items: [{ qty: 1, unitPrice: 309.0 }],
+  });
+  assert.ok(justOver.error, '$309 of groceries tips past $350 once fees land');
+
+  // Pickup has no delivery fee, so it stretches a little further.
+  const pickup = priceOrder({
+    fulfillment: 'pickup', items: [{ qty: 1, unitPrice: 312.0 }],
+  });
+  assert.ok(!pickup.error);
+});
+
+test('the daily limit is $350', () => {
+  assert.equal(DAILY_TOTAL_CENTS, 35000);
+  assert.equal(money(DAILY_TOTAL_CENTS), '$350.00');
 });
 
 test('dollars render for a human, including the awkward ones', () => {
