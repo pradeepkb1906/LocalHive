@@ -37,7 +37,7 @@ class OliviaTools {
   bool raisedTicketThisTurn = false;
 
   /// The only live vertical. Anything else goes through
-  /// find_nearby_places, which never claims a shop is a LocalHive partner.
+  /// find_nearby_stores, which never claims a shop is a LocalHive partner.
   static const _categories = ['indian_store'];
 
   static const pickupEtas = [
@@ -53,36 +53,27 @@ class OliviaTools {
         {
           'type': 'function',
           'function': {
-            'name': 'find_businesses',
+            'name': 'find_stores',
             'description':
-                'Find LocalHive businesses near the customer. Use this before '
-                    'talking about any specific business — never invent one. '
-                    'Returns only businesses that can actually receive orders.',
+                'Find LocalHive partner grocery stores near the customer — '
+                    'the only businesses that can receive an order in the '
+                    'app. Call this before naming any store; never invent '
+                    'one. If it returns nothing, say no partner store has '
+                    'joined here yet and use find_nearby_stores instead.',
             'parameters': {
               'type': 'object',
               'properties': {
-                'category': {
-                  'type': 'string',
-                  'enum': _categories,
-                  'description':
-                      'food_truck for cooked food to eat now — burgers, tacos, noodles, '
-                          'vada pav, dosa, chai. indian_store for groceries and '
-                          'ingredients to cook with — rice, dal, spices, paneer. '
-                          'home_service for cleaners and handymen. If the '
-                          'customer is hungry, it is food_truck.',
-                },
                 'query': {
                   'type': 'string',
                   'description':
-                      'Optional keyword, e.g. a dish, cuisine or type of work.',
+                      'Optional keyword, e.g. a product the customer wants.',
                 },
                 'open_now': {
                   'type': 'boolean',
                   'description':
-                      'Only businesses currently inside their opening hours.',
+                      'Only stores currently inside their opening hours.',
                 },
               },
-              'required': ['category'],
             },
           },
         },
@@ -91,8 +82,8 @@ class OliviaTools {
           'function': {
             'name': 'get_menu',
             'description':
-                'List what a food truck or grocery store sells, with prices. '
-                    'Call this before drafting an order so prices are real.',
+                'List what a partner grocery store sells, with prices. Call '
+                    'this before drafting an order so prices are real.',
             'parameters': {
               'type': 'object',
               'properties': {
@@ -107,7 +98,7 @@ class OliviaTools {
           'function': {
             'name': 'draft_order',
             'description':
-                'Work out a food or grocery order and show it to the customer '
+                'Work out a grocery order and show it to the customer '
                     'for confirmation. This does NOT place the order — the '
                     'customer confirms it themselves on screen. Call it as soon '
                     'as you know the items; missing details come back in '
@@ -151,46 +142,29 @@ class OliviaTools {
         {
           'type': 'function',
           'function': {
-            'name': 'find_nearby_places',
+            'name': 'find_nearby_stores',
             'description':
-                'Search the public map for real places around the customer, '
-                    'anywhere in the world — restaurants, street food, cafes, '
-                    'grocery shops, hotels, pharmacies, gas stations, EV '
-                    'charging stations, handyman trades and hardware stores. '
-                    'Use this when '
-                    'find_businesses has nothing suitable, or when the customer '
-                    'is outside the area LocalHive covers, or when they ask '
-                    'what is around them generally. '
+                'Search the free public map for real grocery stores, '
+                    'supermarkets and food shops around the customer — '
+                    'including ones that have NOT joined LocalHive. Use this '
+                    'when find_stores returns nothing, or when the customer '
+                    'asks what grocery shops are around them. '
                     'Searches within radius_km (default 10 km). '
-                    'IMPORTANT: these are NOT LocalHive businesses. You can '
-                    'name them, give their address, say what they serve, how '
-                    'far away they are, and their publicly listed phone '
-                    'number — but you CANNOT take an order or make a booking '
-                    'at them in the app. What you CAN do: after the customer '
-                    'says yes, use offer_call to set up a phone call to the '
-                    'place (book a table at a restaurant, ring a grocery '
-                    'store or a home-service trade).',
+                    'IMPORTANT: these are NOT LocalHive partners, so you '
+                    'CANNOT take an order for them in the app. You can give '
+                    'the name, address, distance and publicly listed phone '
+                    'number, and — after the customer says yes — use '
+                    'offer_call so they can ring the shop themselves. This '
+                    'tool only covers grocery shops; restaurants, food '
+                    'trucks and every other kind of business are outside '
+                    'what LocalHive does.',
             'parameters': {
               'type': 'object',
               'properties': {
-                'kind': {
-                  'type': 'string',
-                  'enum': [
-                    'food',
-                    'street_food',
-                    'groceries',
-                    'hotel',
-                    'pharmacy',
-                    'gas_station',
-                    'ev_charging',
-                    'handyman',
-                    'hardware_store'
-                  ],
-                },
                 'query': {
                   'type': 'string',
                   'description':
-                      'Optional keyword, e.g. a dish, cuisine or shop name.',
+                      'Optional keyword, e.g. a product or shop name.',
                 },
                 'radius_km': {
                   'type': 'number',
@@ -201,7 +175,6 @@ class OliviaTools {
                           'asking the customer.',
                 },
               },
-              'required': ['kind'],
             },
           },
         },
@@ -210,12 +183,13 @@ class OliviaTools {
           'function': {
             'name': 'offer_call',
             'description':
-                'Show the customer a call card for a place found with '
-                    'find_nearby_places, using its publicly listed phone '
+                'Show the customer a call card for a grocery shop found with '
+                    'find_nearby_stores, using its publicly listed phone '
                     'number. ONLY call this AFTER the customer has said yes '
-                    'to your offer (e.g. "should I set up a call so you can '
-                    'book a table?"). The card lets them tap to dial — '
-                    'LocalHive does not place the call itself.',
+                    'to your offer (e.g. "the number is listed — should I '
+                    'set up a call so you can ask about stock?"). The card '
+                    'lets them tap to dial; LocalHive does not place the '
+                    'call itself.',
             'parameters': {
               'type': 'object',
               'properties': {
@@ -227,8 +201,8 @@ class OliviaTools {
                 'purpose': {
                   'type': 'string',
                   'description':
-                      'Why they are calling, e.g. "Book a table for 2 '
-                          'tonight" or "Ask about paneer stock".',
+                      'Why they are calling, e.g. "Ask if they have fresh '
+                          'paneer" or "Check closing time".',
                 },
               },
               'required': ['place_name', 'phone'],
@@ -273,12 +247,12 @@ class OliviaTools {
     try {
       if (name == 'create_support_ticket') raisedTicketThisTurn = true;
       switch (name) {
-        case 'find_businesses':
-          return await _findBusinesses(args);
+        case 'find_stores':
+          return await _findStores(args);
         case 'get_menu':
           return _getMenu(args);
-        case 'find_nearby_places':
-          return await _findNearbyPlaces(args);
+        case 'find_nearby_stores':
+          return await _findNearbyStores(args);
         case 'offer_call':
           return _offerCall(args);
         case 'draft_order':
@@ -311,17 +285,13 @@ class OliviaTools {
     if (owned.isNotEmpty) return owned;
 
     // No built-in fallback: if no real shop has joined here, Olivia says so
-    // and falls back to find_nearby_places rather than naming a business
+    // and falls back to find_nearby_stores rather than naming a store
     // that never signed up.
     return const <Provider>[];
   }
 
-  Future<Map<String, dynamic>> _findBusinesses(
-      Map<String, dynamic> args) async {
-    final category = (args['category'] ?? '') as String;
-    if (!_categories.contains(category)) {
-      return {'error': 'category must be one of $_categories'};
-    }
+  Future<Map<String, dynamic>> _findStores(Map<String, dynamic> args) async {
+    const category = 'indian_store';
     final query = ((args['query'] ?? '') as String).toLowerCase().trim();
     final openNow = args['open_now'] == true;
     final now = DateTime.now();
@@ -424,15 +394,8 @@ class OliviaTools {
     final id = (args['business_id'] ?? '') as String;
     final provider = await _providerById(id);
     if (provider == null) {
-      return {'error': 'No business with that id. Call find_businesses first.'};
-    }
-    if (provider.category == 'home_service') {
       return {
-        'business': provider.name,
-        'kind': 'home_service',
-        'hourly_rate': provider.hourlyRate,
-        'bookable_hours': [3, 4],
-        'note': 'Home services are booked by the hour, not from a menu.',
+        'error': 'No partner store with that id. Call find_stores first.'
       };
     }
     final items = _menuFor(provider);
@@ -446,7 +409,7 @@ class OliviaTools {
 
   /// Real places from the public map, for when LocalHive has nothing suitable
   /// or the customer is outside the area it covers.
-  Future<Map<String, dynamic>> _findNearbyPlaces(
+  Future<Map<String, dynamic>> _findNearbyStores(
       Map<String, dynamic> args) async {
     final loc = LocationService.instance;
     if (!loc.hasPosition) {
@@ -457,15 +420,16 @@ class OliviaTools {
                 'you.',
       };
     }
-    final kind = (args['kind'] ?? 'food') as String;
-    // 10 km by default, per the product spec; the model may widen it, but
-    // only after asking the customer first.
+    // Groceries only: restaurants, trucks and everything else are outside
+    // what LocalHive does, so Olivia never surfaces them.
+    const kind = 'groceries';
+    // 10 km by default; the model may widen it, but only after asking.
     final radiusKm =
         ((args['radius_km'] as num?)?.toDouble() ?? 10).clamp(1, 30).toDouble();
     final places = await _places.search(
       lat: loc.lat!,
       lng: loc.lng!,
-      kind: PlacesSearch.kinds.contains(kind) ? kind : 'food',
+      kind: kind,
       query: args['query'] as String?,
       radiusM: (radiusKm * 1000).round(),
     );
@@ -474,10 +438,9 @@ class OliviaTools {
         'area': loc.label,
         'radius_km': radiusKm,
         'count': 0,
-        'note': 'The public map has nothing of that kind listed within '
-            '$radiusKm km.',
+        'note': 'The public map lists no grocery shops within $radiusKm km.',
         'next_step': 'Ask the customer if they want you to widen the search '
-            'radius, then call find_nearby_places again with a larger '
+            'radius, then call find_nearby_stores again with a larger '
             'radius_km.',
       };
     }
@@ -486,15 +449,16 @@ class OliviaTools {
       'radius_km': radiusKm,
       'count': places.length,
       'places': places.take(6).map((p) => p.toJson()).toList(),
-      'source': 'OpenStreetMap — the public map, not LocalHive listings.',
+      'source': 'OpenStreetMap — the free public map, not LocalHive '
+          'partners.',
       'next_step':
           'Read out name, address and distance. If results look thin, offer '
               'to widen the radius. Where a phone number is listed, offer a '
-              'call: for a restaurant ask "should I set up a call so you can '
-              'book a table?"; for a grocery store or home-service trade ask '
-              '"the number is publicly listed — should I set up a call?". '
-              'Only after the customer says yes, call offer_call. No in-app '
-              'orders at these places — use find_businesses for that.',
+              'call — "the number is publicly listed, should I set up a '
+              'call so you can ask about stock?" — and only after the '
+              'customer says yes, call offer_call. These shops have not '
+              'joined LocalHive, so no in-app ordering; use find_stores for '
+              'that.',
     };
   }
 
@@ -559,7 +523,9 @@ class OliviaTools {
     final id = (args['business_id'] ?? '') as String;
     final provider = await _providerById(id);
     if (provider == null) {
-      return {'error': 'No business with that id. Call find_businesses first.'};
+      return {
+        'error': 'No partner store with that id. Call find_stores first.'
+      };
     }
     if (provider.category == 'home_service') {
       return {'error': 'That listing is not a grocery store.'};
@@ -610,7 +576,6 @@ class OliviaTools {
     final fulfillment =
         (args['fulfillment'] ?? 'pickup') == 'delivery' ? 'delivery' : 'pickup';
     final draft = OrderDraft(
-      kind: 'order',
       providerId: provider.id,
       providerName: provider.name,
       category: provider.category,

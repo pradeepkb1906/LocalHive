@@ -45,7 +45,6 @@ class OrderConfirmCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isService = draft.kind == 'home_service';
     return Card(
       color: LhColors.surface,
       child: Container(
@@ -59,22 +58,17 @@ class OrderConfirmCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                IconTile(
-                    icon: isService
-                        ? CupertinoIcons.sparkles
-                        : CupertinoIcons.bag_fill,
-                    color: isService ? LhColors.indigo : LhColors.orange,
+                const IconTile(
+                    icon: CupertinoIcons.bag_fill,
+                    color: LhColors.green,
                     size: 34),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                          isService
-                              ? 'Confirm this booking'
-                              : 'Confirm this order',
-                          style: const TextStyle(
+                      const Text('Confirm this order',
+                          style: TextStyle(
                               fontSize: 15.5, fontWeight: FontWeight.w700)),
                       Text(draft.providerName,
                           style: const TextStyle(
@@ -85,14 +79,9 @@ class OrderConfirmCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            if (isService) ...[
-              _row('When', '${draft.dayLabel} at ${draft.slot}'),
-              _row('Length', '${draft.hours} hours'),
-              _row('Rate', '\$${draft.hourlyRate.toStringAsFixed(2)} / hour'),
-            ] else
-              for (final line in draft.lines)
-                _row('${line.qty} × ${line.name}',
-                    '\$${line.lineTotal.toStringAsFixed(2)}'),
+            for (final line in draft.lines)
+              _row('${line.qty} × ${line.name}',
+                  '\$${line.lineTotal.toStringAsFixed(2)}'),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Divider(height: 1),
@@ -119,21 +108,7 @@ class OrderConfirmCard extends StatelessWidget {
                   ),
                 ],
               ),
-            if (isService && draft.address.isNotEmpty)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(CupertinoIcons.location_solid,
-                      size: 14, color: LhColors.inkSecondary),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(draft.address,
-                        style: const TextStyle(
-                            fontSize: 12.5, color: LhColors.inkSecondary)),
-                  ),
-                ],
-              ),
-            if (!isService && !draft.isDelivery && draft.pickupEta.isNotEmpty)
+            if (!draft.isDelivery && draft.pickupEta.isNotEmpty)
               Row(
                 children: [
                   const Icon(CupertinoIcons.time,
@@ -209,9 +184,8 @@ class OrderConfirmCard extends StatelessWidget {
                             height: 18,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : Text(isService
-                            ? 'Confirm booking'
-                            : 'Place order · \$${draft.total.toStringAsFixed(2)}'),
+                        : Text('Place order · '
+                            '\$${draft.total.toStringAsFixed(2)}'),
                   ),
                 ),
               ],

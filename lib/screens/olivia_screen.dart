@@ -42,13 +42,13 @@ class _OliviaScreenState extends State<OliviaScreen> {
   String? _placedMessage;
 
   static const _greeting =
-      "Hi, I'm Olivia. Tell me what groceries you need, or ask me to find "
-      'any shop or restaurant near you.';
+      "Hi, I'm Olivia. Tell me what groceries you need, or ask me which "
+      'grocery shops are near you.';
 
   static const _openers = [
     'What grocery stores are near me?',
-    'Find a pharmacy nearby',
     'Order groceries for delivery',
+    'Do they have fresh paneer?',
     'Where is my order?',
   ];
 
@@ -148,12 +148,9 @@ class _OliviaScreenState extends State<OliviaScreen> {
 
     final ok = id != null;
     final spoken = ok
-        ? (draft.kind == 'home_service'
-            ? '${draft.providerName} has your request and will confirm shortly. '
-                'You pay them directly on the day.'
-            : "That's in with ${draft.providerName}. "
-                'Pay them \$${draft.total.toStringAsFixed(2)} when you '
-                '${draft.isDelivery ? 'get it' : 'collect it'}.')
+        ? ("That's in with ${draft.providerName}. "
+            'Pay them \$${draft.total.toStringAsFixed(2)} when you '
+            '${draft.isDelivery ? 'get it' : 'collect it'}.')
         : "I couldn't save that. Please check your connection and try again.";
 
     if (ok) {
@@ -580,8 +577,8 @@ class _OliviaScreenState extends State<OliviaScreen> {
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               const Text(
-                  'She will take your grocery order by voice, or find any '
-                  'shop or restaurant near you and offer to set up a call. '
+                  'She will take your grocery order by voice, or find the '
+                  'grocery shops near you and offer to set up a call. '
                   'Everything else in LocalHive works now.',
                   textAlign: TextAlign.center,
                   style:

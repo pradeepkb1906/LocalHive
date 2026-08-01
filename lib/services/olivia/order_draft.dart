@@ -28,27 +28,19 @@ class DraftLine {
 
 /// An order Olivia has worked out but has NOT placed.
 ///
-/// This is the heart of the safety design: the language model can produce a
+/// A grocery order only — the food-truck and home-service verticals were
+/// removed. This is the heart of the safety design: the language model can produce a
 /// draft, but only a human confirmation turns one into a [Booking]. That means
 /// a misheard quantity is visible before it costs anything, and text smuggled
 /// into a business listing cannot cause a write.
 class OrderDraft {
-  /// 'order' for food/grocery, 'home_service' for a booked visit.
-  final String kind;
   final String providerId;
   final String providerName;
   final String category;
 
-  // Food and grocery orders
   final List<DraftLine> lines;
   final String fulfillment; // 'pickup' | 'delivery'
   final String pickupEta;
-
-  // Home service bookings
-  final String dayLabel;
-  final String slot;
-  final int hours;
-  final double hourlyRate;
 
   final String address;
   final String customerName;
@@ -56,17 +48,12 @@ class OrderDraft {
   final String customerEmail;
 
   const OrderDraft({
-    required this.kind,
     required this.providerId,
     required this.providerName,
     required this.category,
     this.lines = const [],
     this.fulfillment = '',
     this.pickupEta = '',
-    this.dayLabel = '',
-    this.slot = '',
-    this.hours = 0,
-    this.hourlyRate = 0,
     this.address = '',
     this.customerName = '',
     this.customerPhone = '',
@@ -79,9 +66,7 @@ class OrderDraft {
 
   bool get isDelivery => fulfillment == 'delivery';
 
-  double get subtotal => kind == 'home_service'
-      ? hourlyRate * hours
-      : lines.fold(0, (sum, l) => sum + l.lineTotal);
+  double get subtotal => lines.fold(0.0, (sum, l) => sum + l.unitPrice * l.qty);
 
   double get platformFee => subtotal * platformFeePct;
 
@@ -98,9 +83,6 @@ class OrderDraft {
   /// only record an item count; Olivia records the actual items so the
   /// business can read the order without calling the customer.
   String get detail {
-    if (kind == 'home_service') {
-      return '$dayLabel $slot · $hours hrs';
-    }
     final items = lines.map((l) => '${l.qty} × ${l.name}').join(', ');
     return '${isDelivery ? 'Delivery' : 'Pickup'} order · $items';
   }
@@ -108,14 +90,9 @@ class OrderDraft {
   /// Everything blocking confirmation, phrased so Olivia can say it aloud.
   List<String> get blockers => [
         if (providerId.isEmpty) 'I could not identify the business.',
-        if (kind != 'home_service' && lines.isEmpty)
-          'There are no items on this order yet.',
+        if (lines.isEmpty) 'There are no items on this order yet.',
         if (isDelivery && address.trim().length < 8)
           'I need a full delivery address, including the street and town.',
-        if (kind == 'home_service' && address.trim().length < 8)
-          'I need the address where the work should happen.',
-        if (kind == 'home_service' && hours <= 0)
-          'I need to know how many hours you need.',
       ];
 
   bool get isReady => blockers.isEmpty;
@@ -123,7 +100,7 @@ class OrderDraft {
   Booking toBooking() => Booking(
         providerName,
         detail,
-        kind == 'home_service' ? 'Requested' : 'Placed',
+        'Placed',
         double.parse(total.toStringAsFixed(2)),
         providerId: providerId,
         category: category,
@@ -131,8 +108,8 @@ class OrderDraft {
         customerName: customerName,
         customerPhone: customerPhone,
         customerEmail: customerEmail,
-        fulfillment: kind == 'home_service' ? '' : fulfillment,
-        pickupEta: kind == 'home_service' ? '' : pickupEta,
+        fulfillment: fulfillment,
+        pickupEta: pickupEta,
         // The same lines the customer just approved on the confirm card, so what
         // the business is shown is exactly what was agreed out loud.
         items: lines
@@ -152,14 +129,8 @@ class OrderDraft {
   /// Money is formatted as text rather than left as a number: Olivia says this
   /// out loud, and a raw 29.1 gets spoken as "twenty nine point one".
   Map<String, dynamic> toJson() => {
-        'kind': kind,
         'business': providerName,
         if (lines.isNotEmpty) 'items': lines.map((l) => l.toJson()).toList(),
-        if (kind == 'home_service') ...{
-          'when': '$dayLabel at $slot',
-          'hours': hours,
-          'hourly_rate': _money(hourlyRate),
-        },
         if (fulfillment.isNotEmpty) 'fulfillment': fulfillment,
         if (pickupEta.isNotEmpty) 'customer_arriving': pickupEta,
         if (address.isNotEmpty) 'address': address,

@@ -82,7 +82,6 @@ void main() {
   group('Olivia carries her draft onto the booking', () {
     test('the confirmed order keeps every line she read out', () {
       final draft = OrderDraft(
-        kind: 'order',
         providerId: 's1',
         providerName: 'Patel Brothers',
         category: 'indian_store',

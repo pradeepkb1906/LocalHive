@@ -54,7 +54,6 @@ void main() {
 
   group('order confirmation card', () {
     OrderDraft foodDraft({String fulfillment = 'pickup'}) => OrderDraft(
-          kind: 'order',
           providerId: 'ft1',
           providerName: 'Bombay Street Eats',
           category: 'food_truck',
@@ -109,7 +108,6 @@ void main() {
     testWidgets('confirm is disabled while the draft is incomplete', (t) async {
       var confirmed = false;
       const incomplete = OrderDraft(
-        kind: 'order',
         providerId: 'ft1',
         providerName: 'Bombay Street Eats',
         category: 'food_truck',

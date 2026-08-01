@@ -14,7 +14,6 @@ void main() {
       List<DraftLine>? lines,
     }) =>
         OrderDraft(
-          kind: 'order',
           providerId: 'ft1',
           providerName: 'Bombay Street Eats',
           category: 'food_truck',
@@ -50,29 +49,11 @@ void main() {
       expect(d.subtotal, closeTo(25.98 + 7.50, 0.001));
       expect(d.itemCount, 5);
     });
-
-    test('prices a home service by the hour', () {
-      const d = OrderDraft(
-        kind: 'home_service',
-        providerId: 'hs1',
-        providerName: 'Maria G.',
-        category: 'home_service',
-        hours: 3,
-        hourlyRate: 28,
-        dayLabel: 'Tomorrow',
-        slot: '10:00 AM',
-        address: '45 Oak Tree Rd, Edison, NJ',
-      );
-      expect(d.subtotal, closeTo(84, 0.001));
-      expect(d.total, closeTo(84 * 1.12, 0.001));
-      expect(d.deliveryCharge, 0);
-    });
   });
 
   group('a draft refuses to be confirmed while incomplete', () {
     test('delivery without an address is blocked', () {
       const d = OrderDraft(
-        kind: 'order',
         providerId: 'ft1',
         providerName: 'Bombay Street Eats',
         category: 'food_truck',
@@ -85,7 +66,6 @@ void main() {
 
     test('an order with no items is blocked', () {
       const d = OrderDraft(
-        kind: 'order',
         providerId: 'ft1',
         providerName: 'Bombay Street Eats',
         category: 'food_truck',
@@ -96,7 +76,6 @@ void main() {
 
     test('a complete pickup order is ready', () {
       const d = OrderDraft(
-        kind: 'order',
         providerId: 'ft1',
         providerName: 'Bombay Street Eats',
         category: 'food_truck',
@@ -111,7 +90,6 @@ void main() {
   group('the booking a draft produces', () {
     test('records the actual items, not just a count', () {
       const d = OrderDraft(
-        kind: 'order',
         providerId: 'ft1',
         providerName: 'Bombay Street Eats',
         category: 'food_truck',
@@ -130,28 +108,8 @@ void main() {
       expect(b.fulfillment, 'pickup');
     });
 
-    test('a home service is Requested, with no fulfillment', () {
-      const d = OrderDraft(
-        kind: 'home_service',
-        providerId: 'hs1',
-        providerName: 'Maria G.',
-        category: 'home_service',
-        hours: 3,
-        hourlyRate: 28,
-        dayLabel: 'Tomorrow',
-        slot: '10:00 AM',
-        address: '45 Oak Tree Rd, Edison, NJ',
-      );
-      final b = d.toBooking();
-      expect(b.status, 'Requested');
-      expect(b.fulfillment, isEmpty);
-      expect(b.detail, contains('Tomorrow'));
-      expect(b.detail, contains('3 hrs'));
-    });
-
     test('never claims a payment was taken', () {
       final json = OrderDraft(
-        kind: 'order',
         providerId: 'ft1',
         providerName: 'Bombay Street Eats',
         category: 'food_truck',
