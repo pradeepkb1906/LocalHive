@@ -225,6 +225,17 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
               _nearbyCard(context, n),
               const SizedBox(height: 8),
             ],
+            // These shops come from OpenStreetMap, which is ODbL-licensed:
+            // attribution is a condition of using the data, and the map
+            // screens carry it already. This list renders the same data as
+            // cards rather than pins, so it has to carry it too.
+            if (_nearby.isNotEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 6, left: 4, bottom: 4),
+                child: Text('Shop details © OpenStreetMap contributors',
+                    style:
+                        TextStyle(fontSize: 11, color: LhColors.inkSecondary)),
+              ),
           ],
           const SizedBox(height: 8),
           Card(
