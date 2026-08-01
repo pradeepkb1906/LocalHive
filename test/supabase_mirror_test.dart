@@ -105,4 +105,83 @@ void main() {
       expect(notified, 2);
     });
   });
+
+  group('the nearby directory searches tight before it searches wide', () {
+    // The server applies its row cap BEFORE anything is sorted by distance,
+    // so one wide query in a dense neighbourhood returns an arbitrary slice
+    // of the box. Downtown San Francisco reported its nearest grocery as
+    // 3.4 km away for exactly that reason, with a Safeway 300 m up the road
+    // sitting outside the truncated 200.
+    List<Map<String, dynamic>> shopsAround(double lat, double lng, int n,
+        {double spreadKm = 6}) {
+      return List.generate(n, (i) {
+        // Spread them outwards so the far ones dominate a wide box.
+        final off = (spreadKm / 111.0) * ((i % 40) + 1) / 40;
+        return {
+          'id': 's$i',
+          'name': 'Shop $i',
+          'lat': lat + off,
+          'lng': lng,
+        };
+      });
+    }
+
+    test('a dense area settles on the tight box and returns the closest',
+        () async {
+      if (!SupabaseConfig.enabled) return; // unconfigured checkout; skip
+
+      final boxesAsked = <double>[];
+      mirror.client = MockClient((req) async {
+        // The lat filter appears twice (gte + lte); queryParameters keeps
+        // only the last of a repeated key, so read them all to recover the
+        // box height.
+        final bounds = req.url.queryParametersAll['lat']!
+            .map((v) => double.parse(v.substring(v.indexOf('.') + 1)))
+            .toList();
+        boxesAsked.add((bounds[1] - bounds[0]).abs());
+        // Plenty of shops right nearby: the first, tightest query suffices.
+        return http.Response(
+            jsonEncode(shopsAround(37.7946, -122.3999, 60, spreadKm: 1)), 200);
+      });
+
+      final out =
+          await mirror.nearbyStores(lat: 37.7946, lng: -122.3999, radiusKm: 8);
+      expect(out, isNotNull);
+      expect(boxesAsked.length, 1,
+          reason: 'a dense area must not need a second, wider query');
+      // Sorted nearest-first, and nothing outside the radius sneaks in.
+      final kms = out!.map((s) => s.km).toList();
+      expect(kms, orderedEquals(List.of(kms)..sort()));
+      expect(kms.every((k) => k <= 8), isTrue);
+    });
+
+    test('a sparse area keeps widening rather than giving up', () async {
+      if (!SupabaseConfig.enabled) return;
+
+      var calls = 0;
+      mirror.client = MockClient((req) async {
+        calls++;
+        // Nothing close by; only the widest box finds anything.
+        final rows = calls < 3
+            ? <Map<String, dynamic>>[]
+            : shopsAround(37.7946, -122.3999, 5, spreadKm: 7);
+        return http.Response(jsonEncode(rows), 200);
+      });
+
+      final out =
+          await mirror.nearbyStores(lat: 37.7946, lng: -122.3999, radiusKm: 8);
+      expect(calls, 3, reason: 'must widen through every step before settling');
+      expect(out, isNotNull);
+      expect(out!.length, 5);
+    });
+
+    test('an unreachable directory returns null, not an empty street',
+        () async {
+      if (!SupabaseConfig.enabled) return;
+      mirror.client = MockClient((_) async => http.Response('down', 503));
+      // Null tells the caller to fall back to the live map search. Returning
+      // [] would claim there are no grocery shops in San Francisco.
+      expect(await mirror.nearbyStores(lat: 37.7946, lng: -122.3999), isNull);
+    });
+  });
 }

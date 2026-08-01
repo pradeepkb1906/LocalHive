@@ -97,12 +97,16 @@ def main():
     rows = json.load(open(ROWS))
 
     # Only the columns the table actually has; drop the Firestore-shaped ones.
+    #
+    # Every row must carry the identical key set: PostgREST rejects a bulk
+    # insert whose objects differ in shape ("All object keys must match"), so
+    # a missing phone has to be an explicit null rather than an absent key.
     keep = ("id", "name", "street", "city", "phone", "hours", "lat", "lng")
     clean = []
     for r in rows:
-        row = {k: r.get(k) for k in keep if r.get(k) not in (None, "")}
-        if not row.get("name") or row.get("lat") is None:
+        if not (r.get("name") or "").strip() or r.get("lat") is None:
             continue
+        row = {k: (r.get(k) if r.get(k) not in (None, "") else None) for k in keep}
         row["kind"] = r.get("subtitle") or "Grocery"
         clean.append(row)
     print(f"uploading {len(clean)} shops in batches of {BATCH}")

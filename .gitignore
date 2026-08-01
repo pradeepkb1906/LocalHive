@@ -52,3 +52,8 @@ tool/seed_providers.py
 .secrets/
 android/key.properties
 android/app/google-services.json
+
+# The stored GitHub credential has no `workflow` scope, so any push touching
+# .github/workflows/ is rejected outright. Kept on disk to paste into the
+# GitHub web UI (Actions -> New workflow) instead of fighting the push.
+.github/workflows/

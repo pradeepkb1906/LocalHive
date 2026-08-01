@@ -40,8 +40,19 @@ select 'ready to load — now run tool/load_nearby_stores.py' as status;
 
 
 -- ===========================================================================
--- STEP 2 — run this AFTER the upload finishes, to make the key read-only again
+-- STEP 2 — run this AFTER the upload finishes. Paste and run everything below.
 -- ===========================================================================
--- drop policy if exists nearby_stores_temp_load   on public.nearby_stores;
--- drop policy if exists nearby_stores_temp_update on public.nearby_stores;
--- select count(*) as shops_loaded from public.nearby_stores;
+-- Takes the write permission away again, so the key shipped in the app can
+-- only read. Also removes the single 'probe' row left behind by the check
+-- that confirmed writes were open — it could not be deleted from outside,
+-- because there is deliberately no delete policy for that key.
+
+delete from public.nearby_stores where id = 'probe';
+
+drop policy if exists nearby_stores_temp_load   on public.nearby_stores;
+drop policy if exists nearby_stores_temp_update on public.nearby_stores;
+
+select count(*) as shops_loaded,
+       count(*) filter (where city like 'San Francisco%') as in_san_francisco,
+       count(*) filter (where phone is not null)          as with_phone
+from public.nearby_stores;

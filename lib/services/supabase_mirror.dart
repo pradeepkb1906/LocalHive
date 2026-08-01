@@ -98,10 +98,29 @@ class SupabaseMirror extends ChangeNotifier {
     required double lat,
     required double lng,
     double radiusKm = 8,
+    int want = 20,
   }) async {
     if (!enabled) return null;
-    // Rough degree box around the point — cheap to index, and the exact
-    // distance filter happens below.
+    // Widen from a tight box outwards rather than asking for the full radius
+    // in one go. The row cap is applied by the server BEFORE anything is
+    // sorted by distance, so a single wide query in a dense neighbourhood
+    // returns an arbitrary 200 rows out of the box and silently drops the
+    // shop across the street. Downtown San Francisco showed its nearest
+    // grocery as 3.4 km away because of exactly that.
+    for (final km in <double>[1.5, 4, radiusKm]) {
+      if (km > radiusKm) break;
+      final found = await _storesInBox(lat: lat, lng: lng, radiusKm: km);
+      if (found == null) return null; // unreachable, not merely empty
+      if (found.length >= want || km >= radiusKm) return found;
+    }
+    return const [];
+  }
+
+  Future<List<NearbyStore>?> _storesInBox({
+    required double lat,
+    required double lng,
+    required double radiusKm,
+  }) async {
     final dLat = radiusKm / 111.0;
     final dLng = radiusKm / (111.0 * math.cos(lat * math.pi / 180).abs());
     try {
