@@ -45,7 +45,11 @@ class _HomeShellState extends State<HomeShell> {
         // almost always empty and read as "where are my orders?" confusion.
         // Each role tab also answers to the admin's feature toggles: a
         // switched-off feature disappears from the nav entirely.
-        final pages = switch (role) {
+        // Staff membership is proved against the admins collection; the role
+        // string lives on a document the user can write, so it decides
+        // customer/provider/delivery only.
+        final effectiveRole = s.isPlatformAdmin ? 'admin' : role;
+        final pages = switch (effectiveRole) {
           'admin' => const [
               HomeTab(),
               AdminReviewScreen(),
@@ -69,7 +73,7 @@ class _HomeShellState extends State<HomeShell> {
             ],
         };
         if (_tab >= pages.length) _tab = 0;
-        final roleTab = switch (role) {
+        final roleTab = switch (effectiveRole) {
           'admin' => NavigationDestination(
               icon: StreamBuilder<List<Map<String, dynamic>>>(
                 stream: FirebaseService.instance.applicationsStream(),

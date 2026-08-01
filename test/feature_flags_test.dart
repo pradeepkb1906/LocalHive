@@ -39,14 +39,18 @@ void main() {
     expect(featureEnabledIn(overrides, 'customer', 'stores'), isTrue);
   });
 
-  test('the admin role is never affected by any toggle', () {
+  test('the resolver grants nothing on the strength of a role string', () {
+    // 'admin' used to short-circuit to true here. It cannot any more: role
+    // lives on users/{uid}, which the user themselves may write, so anyone
+    // could have claimed it. Staff membership is proved against the admins
+    // collection by AppState before this is ever consulted.
     final everythingOff = {
-      for (final role in featureRoles)
-        role: {for (final f in appFeatures) f.key: false}
+      for (final r in featureRoles)
+        r: {for (final f in appFeatures) f.key: false}
     };
     for (final f in appFeatures) {
-      expect(featureEnabledIn(everythingOff, 'admin', f.key), isTrue,
-          reason: 'admin must keep ${f.key} or could lock themselves out');
+      expect(featureEnabledIn(everythingOff, 'admin', f.key), isFalse,
+          reason: 'a self-declared role must not unlock ${f.key}');
     }
   });
 
@@ -87,14 +91,17 @@ void main() {
             role: 'provider',
             feature: 'provider_dashboard'),
         isTrue);
-    // Admin stays immune even with a hostile user override.
+    // A user override applies whatever the role claims to be — including
+    // 'admin'. Real staff bypass this resolver entirely, via proved
+    // membership of the admins collection, so nothing here needs to trust a
+    // role string a user can write for themselves.
     expect(
         featureEnabledFor(
             roleOverrides: const {},
             userOverrides: const {'stores': false},
             role: 'admin',
             feature: 'stores'),
-        isTrue);
+        isFalse);
   });
 
   test('unknown roles and features fail closed', () {

@@ -82,12 +82,14 @@ const defaultFeatureMatrix = <String, Map<String, bool>>{
 };
 
 /// Whether [feature] is on for [role], given admin [overrides] (the
-/// config/feature_flags document, possibly empty). Admin is always allowed —
-/// the toggles govern the other roles, and an admin locked out of the
-/// console could never undo it.
+/// config/feature_flags document, possibly empty).
+///
+/// This resolver deliberately knows nothing about admins. Staff membership is
+/// proved against the admins collection by the caller — 'admin' arriving here
+/// as a role string would be a claim the user made about themselves on their
+/// own profile document.
 bool featureEnabledIn(
     Map<String, dynamic> overrides, String role, String feature) {
-  if (role == 'admin') return true;
   final roleOverrides = overrides[role];
   if (roleOverrides is Map && roleOverrides[feature] is bool) {
     return roleOverrides[feature] as bool;
@@ -105,7 +107,6 @@ bool featureEnabledFor({
   required String role,
   required String feature,
 }) {
-  if (role == 'admin') return true;
   final v = userOverrides?[feature];
   if (v is bool) return v;
   return featureEnabledIn(roleOverrides, role, feature);

@@ -15,9 +15,23 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
+    function isApprovedCourier() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/couriers/$(request.auth.uid));
+    }
+
     match /admins/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow write: if false; // service account only
+    }
+
+    // Approved delivery partners. Claiming a job exposes a stranger's name,
+    // phone, home address and handover code, so it cannot be self-service:
+    // an admin adds the person here after reviewing their application.
+    // Membership is never client-writable.
+    match /couriers/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
     }
 
     // User profile: account type (customer | provider | delivery) and prefs.
@@ -79,15 +93,30 @@ service cloud.firestore {
     // their listings; going live (live: true) is admin-only (console).
     match /providers/{providerId} {
       allow read: if true;
+      // Trust markers are the platform's to award, never the applicant's.
+      // Without pinning these, a shop could create itself already "Verified"
+      // with a 5.0 rating and 900 reviews, and an admin flipping live would
+      // publish the lie.
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
-        && request.resource.data.live == false;
-      // Owners edit their listing but cannot publish themselves; admins
-      // approve (flip live/verified) as part of application review.
+        && request.resource.data.live == false
+        && request.resource.data.get('verified', false) == false
+        && request.resource.data.get('rating', 0) == 0
+        && request.resource.data.get('reviews', 0) == 0;
+      // Owners edit their listing but cannot publish themselves, cannot
+      // transfer it, and cannot award themselves a badge or a rating; admins
+      // approve as part of application review.
       allow update: if isAdmin()
         || (signedIn()
             && resource.data.ownerId == request.auth.uid
-            && request.resource.data.live == resource.data.live);
+            && request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.live == resource.data.live
+            && request.resource.data.get('verified', false)
+                 == resource.data.get('verified', false)
+            && request.resource.data.get('rating', 0)
+                 == resource.data.get('rating', 0)
+            && request.resource.data.get('reviews', 0)
+                 == resource.data.get('reviews', 0));
       allow delete: if isAdmin()
         || (signedIn() && resource.data.ownerId == request.auth.uid);
     }
@@ -126,26 +155,40 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Delivery job board: store owners post Ready orders here (doc id ==
-    // booking id); any signed-in delivery partner can view and claim an
-    // unassigned job; only the assignee can update it afterwards.
+    // Delivery job board.
     //
-    // Every signed-in user can read this collection, so it must never hold
-    // customer contact details or the delivery OTP — those stay on the booking.
-    // The assignee also writes their live GPS position here for the customer's
-    // tracking map.
+    // Claiming a job unlocks the customer's name, phone, address and handover
+    // code on the booking, so the board is limited to couriers an admin has
+    // approved. It used to be readable by every signed-in account, which meant
+    // anyone could sign up and harvest the home address of every customer with
+    // an order out for delivery — and, once orders could ask for help to the
+    // door, work out which of those addresses belonged to someone frail.
+    //
+    // The board therefore carries only what a courier needs to decide whether
+    // to take the job: the shop, the goods, the fee, and the neighbourhood.
+    // The street address, the note to the courier, the phone number and the
+    // OTP all live on the booking, readable only once assigned.
     match /delivery_jobs/{jobId} {
-      allow read: if signedIn();
+      allow read: if isApprovedCourier()
+        || isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
       allow create: if signedIn()
         && request.resource.data.deliveryPersonId == ''
         && !request.resource.data.keys().hasAny(
-             ['otp', 'customerPhone', 'customerEmail']);
-      allow update: if signedIn()
+             ['otp', 'customerPhone', 'customerEmail',
+              'dropAddress', 'deliveryNote']);
+      // Only an approved courier may claim, and only the assignee may then
+      // advance it. The fee is pinned: it is what the platform owes, not
+      // something the person being paid gets to edit.
+      allow update: if isApprovedCourier()
         && (resource.data.deliveryPersonId == request.auth.uid
             || (resource.data.deliveryPersonId == ''
                 && request.resource.data.deliveryPersonId == request.auth.uid))
+        && request.resource.data.fee == resource.data.fee
+        && request.resource.data.userId == resource.data.userId
         && !request.resource.data.keys().hasAny(
-             ['otp', 'customerPhone', 'customerEmail']);
+             ['otp', 'customerPhone', 'customerEmail',
+              'dropAddress', 'deliveryNote']);
       allow delete: if false;
     }
 

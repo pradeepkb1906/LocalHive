@@ -177,7 +177,9 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              if (s.role == 'admin') ...[
+              // Proved against the admins collection, not the
+              // self-writable role field on the user's profile.
+              if (s.isPlatformAdmin) ...[
                 InsetGroup(
                   header: 'Platform',
                   children: [

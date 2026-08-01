@@ -109,6 +109,20 @@ class OrderLine {
 const double courierBaseFee = 4.99;
 const double courierHelpBonus = 3.00;
 
+/// A delivery address reduced to something safe to publish on the open job
+/// board: everything after the street line, so "550 Divisadero St, San
+/// Francisco, CA" becomes "San Francisco, CA".
+///
+/// A courier deciding whether to take a job needs to know roughly where it
+/// goes. They do not need — and should not have, before they are assigned —
+/// the door number of someone who is about to be home waiting for a delivery.
+String coarseArea(String address) {
+  final parts = address.split(',').map((p) => p.trim()).toList()
+    ..removeWhere((p) => p.isEmpty);
+  if (parts.length <= 1) return parts.isEmpty ? '' : parts.first;
+  return parts.sublist(1).join(', ');
+}
+
 double courierFeeFor({required bool needsHelp}) =>
     needsHelp ? courierBaseFee + courierHelpBonus : courierBaseFee;
 

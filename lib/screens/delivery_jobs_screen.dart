@@ -82,12 +82,12 @@ class DeliveryJobsScreen extends StatelessWidget {
           // my active deliveries are likely "on the way".
           final myWords = mine
               .expand((j) =>
-                  '${j['dropAddress']}'.toLowerCase().split(RegExp(r'[^a-z]+')))
+                  '${j['dropArea']}'.toLowerCase().split(RegExp(r'[^a-z]+')))
               .where((w) => w.length > 3)
               .toSet();
           bool onTheWay(Map<String, dynamic> j) =>
               mine.isNotEmpty &&
-              '${j['dropAddress']}'
+              '${j['dropArea']}'
                   .toLowerCase()
                   .split(RegExp(r'[^a-z]+'))
                   .any((w) => w.length > 3 && myWords.contains(w));
@@ -280,10 +280,53 @@ class _EarningsCardState extends State<_EarningsCard> {
   }
 }
 
-class _DeliveryCard extends StatelessWidget {
+class _DeliveryCard extends StatefulWidget {
   final Map<String, dynamic> job;
   final bool onTheWay;
   const _DeliveryCard({required this.job, this.onTheWay = false});
+
+  @override
+  State<_DeliveryCard> createState() => _DeliveryCardState();
+}
+
+class _DeliveryCardState extends State<_DeliveryCard> {
+  Map<String, dynamic> get job => widget.job;
+  bool get onTheWay => widget.onTheWay;
+
+  /// The street address and the customer's note. Not on the job board — the
+  /// board is browsable by every approved courier, so it carries only the
+  /// neighbourhood. These arrive from the booking once this courier is the
+  /// assigned one, which the security rules enforce server-side.
+  Map<String, dynamic>? _private;
+
+  bool get _mine => job['status'] != 'Open';
+
+  /// What to show where the address goes: the real thing once assigned, the
+  /// neighbourhood while the job is still open to anyone.
+  String get _destination {
+    final full = '${_private?['address'] ?? ''}'.trim();
+    if (full.isNotEmpty) return full;
+    final area = '${job['dropArea'] ?? ''}'.trim();
+    return area.isEmpty ? 'Address shown once you claim it' : area;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (_mine) _loadPrivate();
+  }
+
+  @override
+  void didUpdateWidget(covariant _DeliveryCard old) {
+    super.didUpdateWidget(old);
+    if (_mine && _private == null) _loadPrivate();
+  }
+
+  Future<void> _loadPrivate() async {
+    final d =
+        await FirebaseService.instance.deliveryJobPrivate(job['id'] as String);
+    if (mounted && d != null) setState(() => _private = d);
+  }
 
   Future<void> _act(BuildContext context) async {
     final fb = FirebaseService.instance;
@@ -354,7 +397,7 @@ class _DeliveryCard extends StatelessWidget {
       status,
       0,
       id: id,
-      address: (job['dropAddress'] ?? '') as String,
+      address: _destination,
       customerPhone: (private?['customerPhone'] ?? '') as String,
       customerEmail: (private?['customerEmail'] ?? '') as String,
     );
@@ -477,7 +520,7 @@ class _DeliveryCard extends StatelessWidget {
             Text('${job['orderDetail']}',
                 style: const TextStyle(
                     fontSize: 13.5, color: LhColors.inkSecondary)),
-            if ('${job['deliveryNote'] ?? ''}'.trim().isNotEmpty)
+            if ('${_private?['deliveryNote'] ?? ''}'.trim().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Row(
@@ -487,7 +530,7 @@ class _DeliveryCard extends StatelessWidget {
                         size: 14, color: LhColors.inkSecondary),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text('${job['deliveryNote']}',
+                      child: Text('${_private?['deliveryNote']}',
                           style: const TextStyle(
                               fontSize: 12.5,
                               fontStyle: FontStyle.italic,
@@ -546,14 +589,14 @@ class _DeliveryCard extends StatelessWidget {
                     size: 14, color: LhColors.inkSecondary),
                 const SizedBox(width: 6),
                 Expanded(
-                    child: Text('Deliver to: ${job['dropAddress']}',
+                    child: Text('Deliver to: $_destination',
                         style: const TextStyle(fontSize: 13.5))),
                 TextButton.icon(
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => DirectionsScreen(
-                          title: 'Drop-off', address: '${job['dropAddress']}'),
+                          title: 'Drop-off', address: _destination),
                     ),
                   ),
                   style: TextButton.styleFrom(
@@ -586,7 +629,7 @@ class _DeliveryCard extends StatelessWidget {
                         builder: (_) => TrackDeliveryScreen(
                           jobId: job['id'] as String,
                           title: '${job['storeName']}',
-                          dropAddress: '${job['dropAddress']}',
+                          dropAddress: _destination,
                         ),
                       ),
                     ),

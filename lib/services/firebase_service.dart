@@ -769,12 +769,18 @@ class FirebaseService {
       // is not private; the customer's phone, email and OTP stay on the booking
       // and are readable only once this partner is assigned.
       'items': b.items.map((l) => l.toMap()).toList(),
-      'dropAddress': b.address,
+      // Neighbourhood only. The street address is deliberately NOT here: the
+      // board is browsable by every approved courier, and a list of exact
+      // addresses with orders in flight is a shopping list for anyone who
+      // gets on it. The full address arrives with the booking once a courier
+      // is actually assigned to this job.
+      'dropArea': coarseArea(b.address),
       'fee': fee ?? courierFeeFor(needsHelp: b.needsHelp),
-      // Surfaced on the open board so a partner knows what they are taking on
-      // before they claim it — and can see the extra it pays.
+      // Kept on the open board because a courier must know what they are
+      // taking on before claiming, and it is what the job pays. On its own,
+      // "someone in this city needs a hand" identifies nobody — it is only
+      // dangerous next to a street address, which is why that moved.
       'needsHelp': b.needsHelp,
-      'deliveryNote': b.deliveryNote,
       'status': 'Open',
       'deliveryPersonId': '',
       // The customer's uid — opaque, so safe on the world-readable board —
@@ -845,6 +851,10 @@ class FirebaseService {
         'otp': (d['otp'] ?? '') as String,
         'customerPhone': (d['customerPhone'] ?? '') as String,
         'customerEmail': (d['customerEmail'] ?? '') as String,
+        // Where to actually go, and anything the customer needs the courier
+        // to know on arrival. Off the public board on purpose.
+        'address': (d['address'] ?? '') as String,
+        'deliveryNote': (d['deliveryNote'] ?? '') as String,
       };
     } catch (e) {
       debugPrint('deliveryJobPrivate failed: $e');

@@ -38,6 +38,23 @@ class AppState extends ChangeNotifier {
   Future<void> _loadRole() async {
     role = await _fb.getRole();
     notifyListeners();
+    await _loadAdmin();
+  }
+
+  /// Proven platform-staff membership, read from the admins collection, which
+  /// only the service account can write.
+  ///
+  /// [role] is NOT usable for this: it lives on users/{uid}, which the user
+  /// themselves may write, so anyone could set role to 'admin'. The security
+  /// rules were never fooled by that — every admin-only read and write checks
+  /// the admins collection — but the app would have shown them the console
+  /// and then failed every action inside it.
+  bool isPlatformAdmin = false;
+
+  Future<void> _loadAdmin() async {
+    final was = isPlatformAdmin;
+    isPlatformAdmin = await _fb.isAdmin();
+    if (was != isPlatformAdmin) notifyListeners();
   }
 
   bool get firebaseReady => _fb.ready;
@@ -56,7 +73,9 @@ class AppState extends ChangeNotifier {
   /// Whether the signed-in user may use [feature] right now. Resolution is
   /// the standard staff-permissions order: per-user override, then the
   /// role's setting, then the built-in default. Admins are always allowed.
-  bool featureEnabled(String feature) => featureEnabledFor(
+  bool featureEnabled(String feature) =>
+      isPlatformAdmin ||
+      featureEnabledFor(
         roleOverrides: featureFlags,
         userOverrides: myFeatureOverrides,
         role: role,
