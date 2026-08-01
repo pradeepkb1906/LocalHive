@@ -88,9 +88,9 @@ void main() {
   });
 
   test('demo accounts cover every persona the app still supports', () {
-    // Customer, SF store owner, delivery partner, admin. The food-truck and
+    // Customer, SF store owner, delivery partner. The food-truck and
     // home-service logins went with their verticals.
-    expect(demoAccounts.length, 4);
+    expect(demoAccounts.length, 3);
     for (final a in demoAccounts) {
       expect(a.email, contains('@'));
       expect(a.password.length, greaterThanOrEqualTo(6));
@@ -103,5 +103,19 @@ void main() {
     // Retired personas must not linger as dead logins.
     expect(emails, isNot(contains('maria@localhive.app')));
     expect(emails, isNot(contains('truck@localhive.app')));
+  });
+
+  test('the admin login is never printed on the sign-in screen', () {
+    // The demo is given to shop owners on a phone they can read. A card
+    // showing the admin password would hand each of them the ability to
+    // approve listings and change feature access afterwards.
+    final emails = demoAccounts.map((a) => a.email).toList();
+    expect(emails, isNot(contains('admin@localhive.app')));
+    for (final a in demoAccounts) {
+      expect(a.label.toLowerCase(), isNot(contains('admin')));
+    }
+    // It still exists as a named account — it just carries no password.
+    expect(adminDemoAccount.email, 'admin@localhive.app');
+    expect(adminDemoAccount.password, isEmpty);
   });
 }
