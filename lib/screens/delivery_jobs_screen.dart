@@ -94,6 +94,8 @@ class DeliveryJobsScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              const _EarningsCard(),
+              const SizedBox(height: 10),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -207,6 +209,73 @@ class _SharingBanner extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// What this partner has earned. Loaded once when the board opens rather
+/// than streamed — a courier glances at this, and every streamed document is
+/// a billed read.
+class _EarningsCard extends StatefulWidget {
+  const _EarningsCard();
+
+  @override
+  State<_EarningsCard> createState() => _EarningsCardState();
+}
+
+class _EarningsCardState extends State<_EarningsCard> {
+  ({int jobs, double total, int todayJobs, double today})? _e;
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseService.instance.myDeliveryEarnings().then((v) {
+      if (mounted) setState(() => _e = v);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final e = _e;
+    return Card(
+      color: LhColors.green.withValues(alpha: 0.10),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            const Icon(CupertinoIcons.money_dollar_circle_fill,
+                size: 26, color: LhColors.green),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                      e == null
+                          ? 'Earnings…'
+                          : '\$${e.today.toStringAsFixed(2)} today',
+                      style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: LhColors.green)),
+                  const SizedBox(height: 2),
+                  Text(
+                      e == null
+                          ? 'Adding up your delivered jobs'
+                          : e.jobs == 0
+                              ? 'Claim your first job below — every delivery '
+                                  'pays \$4.99, more when someone needs a hand.'
+                              : '${e.todayJobs} today · ${e.jobs} deliveries '
+                                  'all time · \$${e.total.toStringAsFixed(2)} '
+                                  'earned',
+                      style: const TextStyle(
+                          fontSize: 12.5, color: LhColors.inkSecondary)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -375,10 +444,58 @@ class _DeliveryCard extends StatelessWidget {
                         color: LhColors.green)),
               ],
             ),
+            // Shown before the job is claimed, so a partner knows what they
+            // are taking on. Carrying a shop up two flights for someone who
+            // cannot is the job, not an inconvenience discovered on arrival.
+            if (job['needsHelp'] == true) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: LhColors.blue.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(CupertinoIcons.hand_raised_fill,
+                        size: 15, color: LhColors.blue),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                          'Customer needs a hand to the door · pays \$3 extra',
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: LhColors.blue)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 6),
             Text('${job['orderDetail']}',
                 style: const TextStyle(
                     fontSize: 13.5, color: LhColors.inkSecondary)),
+            if ('${job['deliveryNote'] ?? ''}'.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(CupertinoIcons.text_bubble,
+                        size: 14, color: LhColors.inkSecondary),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text('${job['deliveryNote']}',
+                          style: const TextStyle(
+                              fontSize: 12.5,
+                              fontStyle: FontStyle.italic,
+                              color: LhColors.inkSecondary)),
+                    ),
+                  ],
+                ),
+              ),
             if (_carrying.placedLabel.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 2),

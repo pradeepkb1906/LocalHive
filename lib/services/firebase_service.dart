@@ -181,6 +181,8 @@ class FirebaseService {
       'customerEmail': b.customerEmail,
       'fulfillment': b.fulfillment,
       'pickupEta': b.pickupEta,
+      'needsHelp': b.needsHelp,
+      'deliveryNote': b.deliveryNote,
       'otp': otp,
       // The order contents. The business needs this to pack the order, the
       // customer to check it, and the courier to know what they are carrying —
@@ -360,6 +362,8 @@ class FirebaseService {
       customerEmail: (m['customerEmail'] ?? '') as String,
       fulfillment: (m['fulfillment'] ?? '') as String,
       pickupEta: (m['pickupEta'] ?? '') as String,
+      needsHelp: m['needsHelp'] == true,
+      deliveryNote: (m['deliveryNote'] ?? '') as String,
       otp: (m['otp'] ?? '') as String,
       userId: (m['userId'] ?? '') as String,
       providerOwnerId: (m['providerOwnerId'] ?? '') as String,
@@ -743,7 +747,7 @@ class FirebaseService {
   /// browsed, so it deliberately carries NO customer contact details and NOT
   /// the delivery OTP. Those live on the booking, which only the customer, the
   /// business owner and the *assigned* partner can read.
-  Future<void> createDeliveryJob(Booking b, {double fee = 4.99}) async {
+  Future<void> createDeliveryJob(Booking b, {double? fee}) async {
     if (!ready || b.id.isEmpty) return;
     await _db!.collection('delivery_jobs').doc(b.id).set({
       'storeName': b.providerName,
@@ -754,7 +758,11 @@ class FirebaseService {
       // and are readable only once this partner is assigned.
       'items': b.items.map((l) => l.toMap()).toList(),
       'dropAddress': b.address,
-      'fee': fee,
+      'fee': fee ?? courierFeeFor(needsHelp: b.needsHelp),
+      // Surfaced on the open board so a partner knows what they are taking on
+      // before they claim it — and can see the extra it pays.
+      'needsHelp': b.needsHelp,
+      'deliveryNote': b.deliveryNote,
       'status': 'Open',
       'deliveryPersonId': '',
       // The customer's uid — opaque, so safe on the world-readable board —
@@ -762,6 +770,55 @@ class FirebaseService {
       'userId': b.userId,
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  /// What this partner has earned, from the jobs they have actually
+  /// delivered. Read once on demand rather than streamed — a courier glances
+  /// at their earnings, and every streamed document is a billed read.
+  Future<({int jobs, double total, int todayJobs, double today})>
+      myDeliveryEarnings() async {
+    const empty = (jobs: 0, total: 0.0, todayJobs: 0, today: 0.0);
+    // 'guest' is the signed-out placeholder; it owns no jobs.
+    if (!ready || _uid == 'guest') return empty;
+    try {
+      final snap = await _db!
+          .collection('delivery_jobs')
+          .where('deliveryPersonId', isEqualTo: _uid)
+          .where('status', isEqualTo: 'Delivered')
+          .limit(200)
+          .get();
+      final now = DateTime.now();
+      var total = 0.0, today = 0.0;
+      var todayJobs = 0;
+      for (final d in snap.docs) {
+        final m = d.data();
+        final fee = ((m['fee'] ?? 0) as num).toDouble();
+        total += fee;
+        final ts = m['deliveredAt'] ?? m['createdAt'];
+        DateTime? when;
+        try {
+          when = (ts as dynamic)?.toDate() as DateTime?;
+        } catch (_) {
+          when = null;
+        }
+        if (when != null &&
+            when.year == now.year &&
+            when.month == now.month &&
+            when.day == now.day) {
+          today += fee;
+          todayJobs++;
+        }
+      }
+      return (
+        jobs: snap.docs.length,
+        total: total,
+        todayJobs: todayJobs,
+        today: today
+      );
+    } catch (e) {
+      debugPrint('earnings lookup failed: $e');
+      return empty;
+    }
   }
 
   /// The private half of a delivery job: customer phone/email and the OTP.
@@ -857,10 +914,11 @@ class FirebaseService {
   /// 'Delivered' → booking 'Delivered'. Queues customer notifications.
   Future<void> advanceDeliveryJob(
       String jobId, String jobStatus, Booking? bookingForNotify) async {
-    await _db!
-        .collection('delivery_jobs')
-        .doc(jobId)
-        .update({'status': jobStatus});
+    await _db!.collection('delivery_jobs').doc(jobId).update({
+      'status': jobStatus,
+      // Stamped so the partner's earnings can be split into today and total.
+      if (jobStatus == 'Delivered') 'deliveredAt': FieldValue.serverTimestamp(),
+    });
     final bookingStatus =
         jobStatus == 'PickedUp' ? 'Out for delivery' : 'Delivered';
     await _db!

@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/data.dart';
+import 'geo.dart';
+import 'olivia/places_search.dart';
 import '../supabase_config.dart';
 
 /// A read-only standby copy of the public store catalog, held in Supabase.
@@ -69,6 +72,65 @@ class SupabaseMirror {
     }
   }
 
+  /// Real grocery shops around [lat]/[lng] that have NOT joined LocalHive,
+  /// from the directory mirrored out of OpenStreetMap.
+  ///
+  /// Served from here rather than queried live so a sales demo does not
+  /// depend on a third-party map API answering in the moment — and so the
+  /// list appears instantly instead of after a round trip to Overpass.
+  /// Returns null when the mirror is off or unreachable; the caller then
+  /// falls back to the live map search.
+  Future<List<NearbyStore>?> nearbyStores({
+    required double lat,
+    required double lng,
+    double radiusKm = 8,
+  }) async {
+    if (!enabled) return null;
+    // Rough degree box around the point — cheap to index, and the exact
+    // distance filter happens below.
+    final dLat = radiusKm / 111.0;
+    final dLng = radiusKm / (111.0 * math.cos(lat * math.pi / 180).abs());
+    try {
+      final uri = Uri.parse('${SupabaseConfig.url}/rest/v1/nearby_stores'
+          '?select=*'
+          '&lat=gte.${(lat - dLat).toStringAsFixed(4)}'
+          '&lat=lte.${(lat + dLat).toStringAsFixed(4)}'
+          '&lng=gte.${(lng - dLng).toStringAsFixed(4)}'
+          '&lng=lte.${(lng + dLng).toStringAsFixed(4)}'
+          '&limit=200');
+      final resp = await client
+          .get(uri, headers: _headers)
+          .timeout(const Duration(seconds: 8));
+      if (resp.statusCode != 200) return null;
+      final rows = jsonDecode(resp.body) as List;
+      final out = <NearbyStore>[];
+      for (final r in rows.whereType<Map<String, dynamic>>()) {
+        final slat = (r['lat'] as num?)?.toDouble();
+        final slng = (r['lng'] as num?)?.toDouble();
+        final name = '${r['name'] ?? ''}'.trim();
+        if (slat == null || slng == null || name.isEmpty) continue;
+        final km = distanceKm(lat, lng, slat, slng);
+        if (km > radiusKm) continue;
+        out.add(NearbyStore(
+          name: name,
+          kind: '${r['kind'] ?? 'Grocery'}',
+          street: '${r['street'] ?? ''}',
+          city: '${r['city'] ?? ''}',
+          phone: '${r['phone'] ?? ''}',
+          hours: '${r['hours'] ?? ''}',
+          lat: slat,
+          lng: slng,
+          km: km,
+        ));
+      }
+      out.sort((a, b) => a.km.compareTo(b.km));
+      return out;
+    } catch (e) {
+      debugPrint('nearby_stores lookup failed: $e');
+      return null;
+    }
+  }
+
   /// A quick liveness probe, for the System check screen.
   Future<bool> reachable() async {
     if (!enabled) return false;
@@ -103,3 +165,44 @@ Provider providerFromMirrorRow(Map<String, dynamic> m) => Provider(
       availableFrom: '${m['available_from'] ?? ''}',
       availableTo: '${m['available_to'] ?? ''}',
     );
+
+/// A real shop from the public map that has not joined LocalHive. Findable
+/// and callable; not orderable, and the UI says so.
+class NearbyStore {
+  final String name;
+  final String kind;
+  final String street;
+  final String city;
+  final String phone;
+  final String hours;
+  final double lat;
+  final double lng;
+  final double km;
+
+  const NearbyStore({
+    required this.name,
+    required this.lat,
+    required this.lng,
+    required this.km,
+    this.kind = 'Grocery',
+    this.street = '',
+    this.city = '',
+    this.phone = '',
+    this.hours = '',
+  });
+
+  String get address => [street, city].where((s) => s.isNotEmpty).join(', ');
+
+  /// The directory and the live map search feed the same cards, so a shop
+  /// looks identical whether it came from here or from Overpass.
+  NearbyPlace toPlace() => NearbyPlace(
+        name: name,
+        kind: kind,
+        km: km,
+        address: address,
+        lat: lat,
+        lng: lng,
+        openingHours: hours,
+        phone: phone,
+      );
+}

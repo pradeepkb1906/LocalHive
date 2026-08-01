@@ -8,6 +8,7 @@ import '../widgets/location_chip.dart';
 import 'admin_review_screen.dart';
 import 'delivery_jobs_screen.dart';
 import 'demo_tour_screen.dart';
+import 'become_courier_screen.dart';
 import 'nearby_map_screen.dart';
 import 'olivia_screen.dart';
 import 'provider_dashboard_screen.dart';
@@ -443,6 +444,20 @@ class HomeTab extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (_) => const NearbyMapScreen()),
                 ),
+              ),
+            const SizedBox(height: 12),
+            // The one role a neighbour can take on today without owning a
+            // business. Hidden from people who already deliver — they have
+            // the job board instead.
+            if (AppState.instance.featureEnabled('delivery_jobs') &&
+                AppState.instance.role != 'delivery')
+              _CategoryCard(
+                icon: CupertinoIcons.cube_box_fill,
+                tint: LhColors.blue,
+                title: 'Deliver for your neighbours',
+                subtitle: 'Free for an hour? Earn \$4.99 a run — \$7.99 when '
+                    'someone needs the bags brought to their door.',
+                onTap: () => BecomeCourierScreen.open(context),
               ),
             const SizedBox(height: 28),
             InsetGroup(

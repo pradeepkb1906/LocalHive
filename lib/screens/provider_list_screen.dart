@@ -56,13 +56,28 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       if (mounted) setState(() => _loadingNearby = false);
       return;
     }
-    final results = await _places.search(
-      lat: loc.lat!,
-      lng: loc.lng!,
-      kind: _nearbyKind,
-      radiusM: 8000,
-      limit: 20,
-    );
+    // The mirrored directory first: it is a real, curated snapshot of every
+    // grocery shop in California, and it answers instantly. Overpass is the
+    // fallback for when the directory is off or has nothing near this point
+    // — a customer outside California, say.
+    var results = (await SupabaseMirror.instance.nearbyStores(
+          lat: loc.lat!,
+          lng: loc.lng!,
+          radiusKm: 8,
+        ))
+            ?.take(20)
+            .map((s) => s.toPlace())
+            .toList() ??
+        const <NearbyPlace>[];
+    if (results.isEmpty) {
+      results = await _places.search(
+        lat: loc.lat!,
+        lng: loc.lng!,
+        kind: _nearbyKind,
+        radiusM: 8000,
+        limit: 20,
+      );
+    }
     if (!mounted) return;
     setState(() {
       _nearby = results;

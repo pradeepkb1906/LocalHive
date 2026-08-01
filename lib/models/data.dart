@@ -102,6 +102,16 @@ class OrderLine {
       );
 }
 
+/// What a delivery partner is paid for one run, and the extra they earn when
+/// the customer has asked for help to the door. The helping hand is paid for
+/// by the platform's cut, not added to the customer's bill: the people most
+/// likely to need it are the least able to pay more for it.
+const double courierBaseFee = 4.99;
+const double courierHelpBonus = 3.00;
+
+double courierFeeFor({required bool needsHelp}) =>
+    needsHelp ? courierBaseFee + courierHelpBonus : courierBaseFee;
+
 class Booking {
   final String providerName;
   final String detail;
@@ -127,6 +137,15 @@ class Booking {
   /// someone's time rather than a list of goods.
   final List<OrderLine> items;
 
+  /// The customer has asked for help getting the order to their door —
+  /// a senior, someone with limited mobility, or simply a heavy shop. The
+  /// delivery partner sees this before claiming, and is paid extra for it.
+  final bool needsHelp;
+
+  /// Anything the partner needs to know on arrival: a gate code, "ring twice,
+  /// I am slow to the door", "leave with the neighbour". Shown on the job.
+  final String deliveryNote;
+
   /// When this booking was placed — the server's clock, not the phone's.
   /// Null only for mock rows and documents from before it was recorded.
   final DateTime? createdAt;
@@ -149,6 +168,8 @@ class Booking {
     this.userId = '',
     this.providerOwnerId = '',
     this.items = const [],
+    this.needsHelp = false,
+    this.deliveryNote = '',
     this.createdAt,
   });
 

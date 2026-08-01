@@ -24,6 +24,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
   bool _delivery = false;
 
   final _address = TextEditingController();
+  final _deliveryNote = TextEditingController();
+  bool _needsHelp = false;
   static const _deliveryFee = 4.99;
   String _pickupEta = 'In 30 min';
   static const _etaOptions = [
@@ -32,6 +34,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
     'In 45 min',
     'In 1 hour'
   ];
+
+  @override
+  void dispose() {
+    _address.dispose();
+    _deliveryNote.dispose();
+    super.dispose();
+  }
 
   double get _subtotal =>
       _cart.entries.fold(0, (sum, e) => sum + e.key.price * e.value);
@@ -129,6 +138,36 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 AddressField(
                   controller: _address,
                   hintText: 'Delivery address (street, city, state)',
+                ),
+                const SizedBox(height: 4),
+                // Asking for help is free to the customer — the extra goes to
+                // the partner out of the platform's cut. Someone who struggles
+                // with a heavy bag should not have to pay more to say so.
+                CheckboxListTile(
+                  value: _needsHelp,
+                  onChanged: (v) =>
+                      setSheet(() => setState(() => _needsHelp = v ?? false)),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: const Text('I need a hand to the door',
+                      style: TextStyle(
+                          fontSize: 14.5, fontWeight: FontWeight.w600)),
+                  subtitle: const Text(
+                      'Heavy bags, stairs, limited mobility. Free for you — '
+                      'your delivery partner is paid extra for it.',
+                      style: TextStyle(
+                          fontSize: 12.5, color: LhColors.inkSecondary)),
+                ),
+                TextField(
+                  controller: _deliveryNote,
+                  maxLength: 140,
+                  decoration: const InputDecoration(
+                    hintText: 'Note for your delivery partner (optional)',
+                    helperText: 'Gate code, buzzer, "ring twice — I am slow '
+                        'to the door"',
+                    counterText: '',
+                  ),
                 ),
               ] else ...[
                 const SizedBox(height: 12),
@@ -235,12 +274,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           customerEmail: AppState.instance.userEmail ?? '',
                           fulfillment: _delivery ? 'delivery' : 'pickup',
                           pickupEta: _delivery ? '' : _pickupEta,
+                          needsHelp: _delivery && _needsHelp,
+                          deliveryNote:
+                              _delivery ? _deliveryNote.text.trim() : '',
                         ));
                         if (ctx.mounted) Navigator.pop(ctx);
                         if (!mounted) return;
                         setState(() {
                           _cart.clear();
                           _placingOrder = false;
+                          _needsHelp = false;
+                          _deliveryNote.clear();
                         });
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(_delivery
