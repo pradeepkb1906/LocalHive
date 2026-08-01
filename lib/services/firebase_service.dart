@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,6 +9,7 @@ import '../firebase_config.dart';
 import '../models/chat.dart';
 import '../models/data.dart';
 import 'courier_beacon.dart';
+import 'supabase_mirror.dart';
 
 /// Thin wrapper around Firebase. The app degrades gracefully: if
 /// initialization fails (offline, missing config), everything falls back to
@@ -1131,38 +1133,63 @@ class FirebaseService {
     }
   }
 
+  /// The public catalog, with a read-only standby.
+  ///
+  /// Firestore is the system of record. If it cannot be read — an outage, or
+  /// the free tier's daily read quota running out, which has already cost a
+  /// full day of downtime — the stream falls through to the Supabase mirror
+  /// so customers still see which stores exist. Ordering needs Firestore, so
+  /// the UI says the catalog is standby-only rather than pretending.
   Stream<List<Provider>> providersStream(String category) {
-    if (!ready) return const Stream.empty();
-    return _shared(
-        'providers-$category',
-        () => _db!
-                .collection('providers')
-                .where('category', isEqualTo: category)
-                .where('live', isEqualTo: true)
-                .snapshots()
-                .map((snap) {
-              final list = snap.docs.map((d) {
-                final m = d.data();
-                return Provider(
-                  id: d.id,
-                  name: (m['name'] ?? '') as String,
-                  category: category,
-                  subtitle: (m['subtitle'] ?? '') as String,
-                  rating: ((m['rating'] ?? 0) as num).toDouble(),
-                  reviews: ((m['reviews'] ?? 0) as num).toInt(),
-                  hourlyRate: ((m['hourlyRate'] ?? 0) as num).toDouble(),
-                  city: (m['city'] ?? '') as String,
-                  verified: (m['verified'] ?? false) as bool,
-                  emoji: '',
-                  lat: ((m['lat'] ?? 0) as num).toDouble(),
-                  lng: ((m['lng'] ?? 0) as num).toDouble(),
-                  availableFrom: (m['availableFrom'] ?? '') as String,
-                  availableTo: (m['availableTo'] ?? '') as String,
-                  cuisine: (m['cuisine'] ?? '') as String,
-                );
-              }).toList()
-                ..sort((a, b) => b.rating.compareTo(a.rating));
-              return list;
-            }));
+    if (!ready) return _mirrorOnce(category);
+    return _shared('providers-$category', () => _firestoreProviders(category))
+        .handleError((Object e) {
+      debugPrint('providers stream failed, trying the mirror: $e');
+    }).transform(
+      StreamTransformer<List<Provider>, List<Provider>>.fromHandlers(
+        handleError: (e, st, sink) async {
+          final standby = await SupabaseMirror.instance.providers(category);
+          if (standby != null) sink.add(standby);
+        },
+      ),
+    );
+  }
+
+  /// A one-shot read from the standby, for when Firebase never came up at all.
+  Stream<List<Provider>> _mirrorOnce(String category) async* {
+    final standby = await SupabaseMirror.instance.providers(category);
+    yield standby ?? const <Provider>[];
+  }
+
+  Stream<List<Provider>> _firestoreProviders(String category) {
+    return _db!
+        .collection('providers')
+        .where('category', isEqualTo: category)
+        .where('live', isEqualTo: true)
+        .snapshots()
+        .map((snap) {
+      final list = snap.docs.map((d) {
+        final m = d.data();
+        return Provider(
+          id: d.id,
+          name: (m['name'] ?? '') as String,
+          category: category,
+          subtitle: (m['subtitle'] ?? '') as String,
+          rating: ((m['rating'] ?? 0) as num).toDouble(),
+          reviews: ((m['reviews'] ?? 0) as num).toInt(),
+          hourlyRate: ((m['hourlyRate'] ?? 0) as num).toDouble(),
+          city: (m['city'] ?? '') as String,
+          verified: (m['verified'] ?? false) as bool,
+          emoji: '',
+          lat: ((m['lat'] ?? 0) as num).toDouble(),
+          lng: ((m['lng'] ?? 0) as num).toDouble(),
+          availableFrom: (m['availableFrom'] ?? '') as String,
+          availableTo: (m['availableTo'] ?? '') as String,
+          cuisine: (m['cuisine'] ?? '') as String,
+        );
+      }).toList()
+        ..sort((a, b) => b.rating.compareTo(a.rating));
+      return list;
+    });
   }
 }

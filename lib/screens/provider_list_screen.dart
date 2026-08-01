@@ -6,6 +6,7 @@ import '../services/firebase_service.dart';
 import '../services/geo.dart';
 import '../services/location_service.dart';
 import '../services/olivia/places_search.dart';
+import '../services/supabase_mirror.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
 import 'catalog_screen.dart';
@@ -112,6 +113,28 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       builder: (context) => ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // When Firestore could not be read, this catalog came from the
+          // read-only standby. Say so: browsing works, ordering does not.
+          if (SupabaseMirror.instance.servingFromMirror)
+            Card(
+              color: LhColors.orange.withValues(alpha: 0.10),
+              child: const Padding(
+                padding: EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.exclamationmark_triangle_fill,
+                        size: 18, color: LhColors.orange),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                          'Showing the standby catalog — ordering is '
+                          'unavailable until the main service is back.',
+                          style: TextStyle(fontSize: 12.5)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           if (providers.isNotEmpty) ...[
             _sectionLabel('Order in the app'),
             for (final p in providers) ...[

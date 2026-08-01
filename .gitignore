@@ -46,6 +46,8 @@ app.*.map.json
 lib/firebase_config.dart
 # Holds a real Groq API key — never commit. See lib/olivia_config.example.dart.
 lib/olivia_config.dart
+# Public client keys, but the secret scanner flags them. See the .example.
+lib/supabase_config.dart
 tool/seed_providers.py
 .secrets/
 android/key.properties
