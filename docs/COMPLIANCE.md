@@ -58,7 +58,8 @@ controls, and in practice an assessor.
 | Idempotency | `Idempotency-Key` per booking; every Stripe event id recorded before processing |
 | Client cannot self-settle | Firestore rules forbid clients writing any payment field — **verified: 403** |
 | No caching of money responses | `Cache-Control: no-store` |
-| Order ceiling | $1,000 per order, so a pricing bug cannot become a five-figure charge |
+| Order ceiling | **$600** hard refusal per order; **$200** soft threshold flags rather than blocks |
+| Velocity limits | **$800 / 6 orders** per account per rolling 24h — the control that actually stops card testing, which a per-order cap alone does not |
 
 ### 1.3 What you must do — not doable in code
 
@@ -149,6 +150,35 @@ Two now matter more, because money is involved.
 | 6 | No backups of Firestore | MEDIUM | Spark has no scheduled export |
 
 **Do not switch payments on until 2 and 4 are done.**
+
+---
+
+## 5a. Why the order limits are two numbers
+
+A single hard cap has to be either too low or too useless. Set at $200 it
+refuses a weekly family shop — the USDA's 2026 plans put a family of four at
+$229–$376 a week, and San Francisco runs above the national figures, so the
+best customer on the platform hits a wall with a full basket. Set high enough
+to serve that customer, it stops being a fraud control.
+
+So there are two, plus a third that does the real work:
+
+| Limit | Value | Behaviour |
+|---|---|---|
+| Soft review | $200 | Order proceeds, `largeOrder: true` recorded |
+| Hard ceiling | $600 | Refused, with the limit named in the message |
+| Daily total | $800 / 24h | Refused with `429` |
+| Daily count | 6 orders / 24h | Refused with `429` |
+
+The velocity limits matter more than the per-order cap. Someone testing a
+stolen card does not place one $5,000 order; they place several small ones
+under whatever ceiling exists. Capping the day is what makes that
+unprofitable, and it is what stops a shop waking up to a morning of
+chargebacks from one compromised account.
+
+The velocity check **fails open** if Firestore cannot be queried. A database
+hiccup should not stop an honest customer buying milk, and the per-order
+ceiling still applies.
 
 ---
 

@@ -4,7 +4,10 @@
 // screen: one decides what a customer is charged, the other decides whether
 // a "you have been paid" message is genuine. Run: node worker/payments/test.mjs
 import assert from 'node:assert';
-import { priceOrder, verifyStripeSignature, timingSafeEqual } from './src/index.js';
+import {
+  priceOrder, verifyStripeSignature, timingSafeEqual, money,
+  SOFT_REVIEW_CENTS, MAX_ORDER_CENTS, DAILY_TOTAL_CENTS, DAILY_ORDER_COUNT,
+} from './src/index.js';
 import { createHmac } from 'node:crypto';
 
 let passed = 0;
@@ -97,6 +100,61 @@ test('nonsense quantities and prices are refused, not rounded away', () => {
 
 test('an implausibly large order is capped rather than charged', () => {
   assert.ok(priceOrder({ items: [{ qty: 99, unitPrice: 999 }] }).error);
+});
+
+console.log('\norder limits — big enough for a real shop, small enough to be safe');
+
+test('a weekly family shop goes through', () => {
+  // The USDA's 2026 plans put a family of four at $229/week (thrifty) to
+  // $376 (liberal), and San Francisco runs above the national figures. A
+  // limit that refuses this is refusing the best customer on the platform.
+  const p = priceOrder({
+    fulfillment: 'delivery',
+    items: [{ qty: 1, unitPrice: 280.0 }],
+  });
+  assert.ok(!p.error, 'a $280 family shop must not be refused');
+  assert.ok(p.total > SOFT_REVIEW_CENTS);
+  assert.equal(p.needsReview, true, 'but it should be flagged for a look');
+});
+
+test('an everyday order is neither refused nor flagged', () => {
+  const p = priceOrder({ fulfillment: 'pickup', items: [{ qty: 1, unitPrice: 45.0 }] });
+  assert.ok(!p.error);
+  assert.equal(p.needsReview, false);
+});
+
+test('the review threshold trips exactly at the boundary, not before', () => {
+  // $200 total means subtotal + 12% >= 20000c. Just under must stay quiet.
+  const under = priceOrder({ fulfillment: 'pickup', items: [{ qty: 1, unitPrice: 178.0 }] });
+  assert.equal(under.total < SOFT_REVIEW_CENTS, true);
+  assert.equal(under.needsReview, false);
+  const over = priceOrder({ fulfillment: 'pickup', items: [{ qty: 1, unitPrice: 179.0 }] });
+  assert.equal(over.total >= SOFT_REVIEW_CENTS, true);
+  assert.equal(over.needsReview, true);
+});
+
+test('a decimal slip is refused, and says so in dollars', () => {
+  // $8.99 fat-fingered into $899 — the failure a hard cap actually exists for.
+  const p = priceOrder({ fulfillment: 'pickup', items: [{ qty: 1, unitPrice: 899.0 }] });
+  assert.ok(p.error);
+  assert.match(p.error, /\$600\.00/, 'the customer is told the actual limit');
+});
+
+test('the two limits are the right way round and far enough apart', () => {
+  assert.ok(SOFT_REVIEW_CENTS < MAX_ORDER_CENTS);
+  // The hard cap must clear a liberal-plan family week with room to spare,
+  // or it becomes a soft cap by accident.
+  assert.ok(MAX_ORDER_CENTS >= 50000);
+  // And the daily allowance must permit more than one real shop.
+  assert.ok(DAILY_TOTAL_CENTS > MAX_ORDER_CENTS);
+  assert.ok(DAILY_ORDER_COUNT >= 3);
+});
+
+test('dollars render for a human, including the awkward ones', () => {
+  assert.equal(money(20000), '$200.00');
+  assert.equal(money(60000), '$600.00');
+  assert.equal(money(5), '$0.05');
+  assert.equal(money(1904), '$19.04');
 });
 
 console.log('\nwebhook signature — the only thing that says money arrived');

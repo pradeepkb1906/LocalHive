@@ -50,9 +50,34 @@ const DELIVERY_FEE_CENTS = 499;
 const COURIER_BASE_CENTS = 499;
 const COURIER_HELP_BONUS_CENTS = 300;
 
-// A single order can never legitimately be this large. A cap is the cheapest
-// insurance against a pricing bug becoming a five-figure charge.
-const MAX_ORDER_CENTS = 100000; // $1,000
+// Order size limits.
+//
+// Two numbers, not one, because they answer different questions.
+//
+// SOFT is "this is a big shop" — unusual, worth recording, but a normal
+// thing a real household does. The USDA's 2026 food plans put a family of
+// four at $229 a week on the thrifty plan and $376 on the liberal one, and
+// San Francisco runs above the national figures. A hard stop at $200 would
+// refuse the weekly family shop: the largest, most loyal, most valuable
+// order on the platform, turned away at the card machine with a full
+// basket. So a large order goes through and is flagged for a human to
+// glance at, rather than blocked.
+//
+// HARD is "this is not a grocery order" — a decimal slipped, a quantity
+// field was tampered with, or a card is being tested. No household buys
+// $600 of groceries in one delivery from a corner shop.
+const SOFT_REVIEW_CENTS = 20000; // $200 — flagged, still served
+const MAX_ORDER_CENTS = 60000; // $600 — refused
+
+// What one account may spend in a rolling day, across all its orders.
+//
+// This is the control that actually limits fraud. A per-order ceiling on its
+// own is false comfort: someone testing a stolen card simply places five
+// orders under it. Capping the day, and the count, is what makes a stolen
+// card unprofitable — and it protects a shop from waking up to a morning of
+// chargebacks from one compromised account.
+const DAILY_TOTAL_CENTS = 80000; // $800 across all orders
+const DAILY_ORDER_COUNT = 6;
 
 function corsHeaders(origin) {
   const allow =
@@ -254,7 +279,14 @@ function priceOrder(booking) {
   const total = subtotal + platformFee + delivery;
 
   if (total <= 0) return { error: 'nothing to charge' };
-  if (total > MAX_ORDER_CENTS) return { error: 'order exceeds the single-order limit' };
+  if (total > MAX_ORDER_CENTS) {
+    return {
+      error:
+        `This order comes to ${money(total)}, which is above the ` +
+        `${money(MAX_ORDER_CENTS)} limit for a single grocery order. ` +
+        `Please split it, or call the shop directly.`,
+    };
+  }
 
   // What the courier earns. Paid out of the platform's commission, not added
   // to the customer's bill — a customer who needs help to the door must not
@@ -263,7 +295,72 @@ function priceOrder(booking) {
     ? COURIER_BASE_CENTS + (booking.needsHelp ? COURIER_HELP_BONUS_CENTS : 0)
     : 0;
 
-  return { subtotal, platformFee, delivery, total, courierPay };
+  return {
+    subtotal,
+    platformFee,
+    delivery,
+    total,
+    courierPay,
+    // Served, but recorded: someone should be able to see at a glance which
+    // orders were unusually large when a dispute arrives three weeks later.
+    needsReview: total >= SOFT_REVIEW_CENTS,
+  };
+}
+
+/** Dollars, for a message a customer reads. Cents in, "$12.34" out. */
+function money(cents) {
+  return `$${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`;
+}
+
+/**
+ * What this account has already committed to spending in the last 24 hours.
+ *
+ * Counts orders that are paid or mid-payment; an abandoned checkout should
+ * not hold someone's daily allowance hostage. Deliberately fails OPEN on a
+ * query error — a Firestore hiccup should not stop an honest customer
+ * buying milk, and the per-order ceiling still applies.
+ */
+async function spentToday(env, uid, now) {
+  try {
+    const tok = await googleAccessToken(env, now);
+    const since = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+    const r = await fetch(`${FS}:runQuery`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: 'bookings' }],
+          where: {
+            compositeFilter: {
+              op: 'AND',
+              filters: [
+                { fieldFilter: { field: { fieldPath: 'userId' }, op: 'EQUAL',
+                                 value: { stringValue: uid } } },
+                { fieldFilter: { field: { fieldPath: 'createdAt' },
+                                 op: 'GREATER_THAN',
+                                 value: { timestampValue: since } } },
+              ],
+            },
+          },
+          limit: 50,
+        },
+      }),
+    });
+    if (!r.ok) return { cents: 0, count: 0, unknown: true };
+    const rows = await r.json();
+    let cents = 0;
+    let count = 0;
+    for (const row of rows) {
+      if (!row.document) continue;
+      const d = plain(row.document.fields);
+      if (!['paid', 'pending'].includes(d.paymentStatus)) continue;
+      cents += Number(d.amountCents) || 0;
+      count++;
+    }
+    return { cents, count, unknown: false };
+  } catch {
+    return { cents: 0, count: 0, unknown: true };
+  }
 }
 
 /* ─────────────────── Stripe webhook signature ─────────────────── */
@@ -354,6 +451,38 @@ async function createSession(request, env, origin, now) {
   const price = priceOrder(booking);
   if (price.error) return json({ error: price.error }, 400, origin);
 
+  // What this account has already committed today. A per-order ceiling on
+  // its own is easily walked around by placing several orders; this is the
+  // limit that makes a stolen card unprofitable.
+  const spent = await spentToday(env, caller.uid, now);
+  if (!spent.unknown) {
+    if (spent.count >= DAILY_ORDER_COUNT) {
+      return json(
+        {
+          error:
+            `That is ${DAILY_ORDER_COUNT} orders in a day, which is our ` +
+            `limit. Please try again tomorrow, or call the shop directly.`,
+          code: 'daily_count',
+        },
+        429,
+        origin,
+      );
+    }
+    if (spent.cents + price.total > DAILY_TOTAL_CENTS) {
+      return json(
+        {
+          error:
+            `This would take today's orders past the ` +
+            `${money(DAILY_TOTAL_CENTS)} daily limit. Please try again ` +
+            `tomorrow, or call the shop directly.`,
+          code: 'daily_total',
+        },
+        429,
+        origin,
+      );
+    }
+  }
+
   // Where the shop's money goes. A connected account means Stripe moves the
   // funds and is the money transmitter; without one, we would be taking
   // custody of other people's money, which is a licensing question rather
@@ -422,8 +551,12 @@ async function createSession(request, env, origin, now) {
       paymentSessionId: { stringValue: out.id },
       amountCents: { integerValue: String(price.total) },
       currency: { stringValue: 'usd' },
+      // Large but legitimate. Recorded rather than refused, so a dispute
+      // three weeks from now can be looked at without guesswork.
+      largeOrder: { booleanValue: !!price.needsReview },
     },
-    ['paymentStatus', 'paymentSessionId', 'amountCents', 'currency'],
+    ['paymentStatus', 'paymentSessionId', 'amountCents', 'currency',
+     'largeOrder'],
     now,
   );
 
@@ -536,7 +669,9 @@ async function handleWebhook(request, env, origin, now) {
 // Exported for the test suite. Pricing and signature verification are the
 // two pieces where a mistake costs real money, so they are tested directly
 // rather than only through a live request.
-export { priceOrder, verifyStripeSignature, timingSafeEqual };
+export { priceOrder, verifyStripeSignature, timingSafeEqual, money,
+         SOFT_REVIEW_CENTS, MAX_ORDER_CENTS, DAILY_TOTAL_CENTS,
+         DAILY_ORDER_COUNT };
 
 export default {
   async fetch(request, env) {
