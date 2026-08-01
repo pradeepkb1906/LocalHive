@@ -16,89 +16,12 @@ import '../widgets/order_items_view.dart';
 class ProviderDashboardScreen extends StatelessWidget {
   const ProviderDashboardScreen({super.key});
 
-  Future<void> _announceArrival(BuildContext context) async {
-    final fb = FirebaseService.instance;
-    final trucks = await fb.myListings(category: 'food_truck');
-    if (!context.mounted) return;
-    if (trucks.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'No food-truck listing on your account yet — apply via "Become a provider".')));
-      return;
-    }
-    final followerCounts = await fb.myTruckFollowerCounts();
-    if (!context.mounted) return;
-    Provider truck = trucks.first;
-    final locCtl = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        icon: const Icon(CupertinoIcons.speaker_2_fill,
-            color: LhColors.orange, size: 40),
-        title: const Text('Announce arrival'),
-        content: StatefulBuilder(
-          builder: (ctx, setDlg) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (trucks.length > 1)
-                DropdownButton<Provider>(
-                  value: truck,
-                  isExpanded: true,
-                  items: trucks
-                      .map((t) =>
-                          DropdownMenuItem(value: t, child: Text(t.name)))
-                      .toList(),
-                  onChanged: (t) => setDlg(() => truck = t ?? truck),
-                ),
-              Text(
-                  '${followerCounts[truck.name] ?? 0} customer(s) follow '
-                  '${truck.name} and will be texted instantly.',
-                  style: const TextStyle(
-                      fontSize: 13, color: LhColors.inkSecondary)),
-              const SizedBox(height: 12),
-              TextField(
-                controller: locCtl,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                    hintText: 'Where are you? (e.g., Oak Tree Rd & Wood Ave)'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          FilledButton(
-              style: dialogButtonStyle(),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Announce')),
-        ],
-      ),
-    );
-    if (ok != true || locCtl.text.trim().isEmpty) return;
-    final n = await fb.announceArrival(truck, locCtl.text.trim());
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              'Arrival announced — $n follower(s) are being notified now.')));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Provider Dashboard'),
-        actions: [
-          IconButton(
-            tooltip: 'Announce truck arrival',
-            icon: const Icon(CupertinoIcons.speaker_2_fill, size: 20),
-            onPressed: () => _announceArrival(context),
-          ),
-          const LocationChip(),
-        ],
+        actions: const [LocationChip()],
       ),
       body: StreamBuilder<List<Booking>>(
         stream: FirebaseService.instance.providerJobsStream(),

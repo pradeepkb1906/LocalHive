@@ -42,12 +42,12 @@ class _OliviaScreenState extends State<OliviaScreen> {
   String? _placedMessage;
 
   static const _greeting =
-      "Hi, I'm Olivia. Tell me what you need — food from a truck nearby, "
-      'groceries from a local store, or a cleaner for a few hours.';
+      "Hi, I'm Olivia. Tell me what groceries you need, or ask me to find "
+      'any shop or restaurant near you.';
 
   static const _openers = [
-    'Any tacos near me right now?',
-    'I need a cleaner tomorrow morning',
+    'What grocery stores are near me?',
+    'Find a pharmacy nearby',
     'Order groceries for delivery',
     'Where is my order?',
   ];
@@ -580,9 +580,9 @@ class _OliviaScreenState extends State<OliviaScreen> {
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               const Text(
-                  'She will take your order by voice — a food truck nearby, '
-                  'groceries from a local store, or a cleaner for a few '
-                  'hours. Everything else in LocalHive works now.',
+                  'She will take your grocery order by voice, or find any '
+                  'shop or restaurant near you and offer to set up a call. '
+                  'Everything else in LocalHive works now.',
                   textAlign: TextAlign.center,
                   style:
                       TextStyle(fontSize: 13.5, color: LhColors.inkSecondary)),

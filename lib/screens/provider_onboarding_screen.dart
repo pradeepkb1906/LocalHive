@@ -50,25 +50,11 @@ class _ProviderOnboardingScreenState extends State<ProviderOnboardingScreen> {
 
   static const _types = [
     (
-      'home_service',
-      CupertinoIcons.sparkles,
-      LhColors.indigo,
-      'Home services',
-      'Cleaning, handyman work, and other in-home services'
-    ),
-    (
       'indian_store',
       CupertinoIcons.cart_fill,
       LhColors.green,
       'Grocery store',
       'Grocery or retail store with pickup / delivery orders'
-    ),
-    (
-      'food_truck',
-      CupertinoIcons.car_detailed,
-      LhColors.orange,
-      'Food truck',
-      'Mobile food business with live location and pre-orders'
     ),
     (
       'delivery',

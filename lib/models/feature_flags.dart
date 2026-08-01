@@ -16,11 +16,8 @@ class AppFeature {
 }
 
 const appFeatures = [
-  AppFeature('home_services', 'Home Services',
-      'Browse and book cleaners and handymen.'),
-  AppFeature('stores', 'Stores',
-      'Order groceries and essentials for pickup or delivery.'),
-  AppFeature('food_trucks', 'Food Trucks', 'Pre-order from local food trucks.'),
+  AppFeature(
+      'stores', 'Grocery Stores', 'Order groceries for pickup or delivery.'),
   AppFeature('nearby_map', 'Nearby Now map',
       'Live map of places around you, even beyond partners.'),
   AppFeature('olivia', 'Olivia voice assistant',
@@ -48,15 +45,12 @@ const featureRoleLabels = {
 
 /// What each role can do today, with no overrides — the initial position of
 /// every toggle.
+///
+/// Groceries are the only storefront: the food-truck and home-service
+/// verticals were removed when LocalHive narrowed to San Francisco.
 const defaultFeatureMatrix = <String, Map<String, bool>>{
   'customer': {
-    // LocalHive is focused on one market and one vertical: San Francisco
-    // grocery stores. Home services and food trucks stay off until there
-    // is real supply behind them — the admin console can flip either on
-    // per role or per person the day that changes.
-    'home_services': false,
     'stores': true,
-    'food_trucks': false,
     'nearby_map': true,
     'olivia': true,
     'bookings': true,
@@ -66,9 +60,7 @@ const defaultFeatureMatrix = <String, Map<String, bool>>{
     'messages': true,
   },
   'provider': {
-    'home_services': true,
     'stores': true,
-    'food_trucks': true,
     'nearby_map': true,
     'olivia': true,
     'bookings': false,
@@ -78,9 +70,7 @@ const defaultFeatureMatrix = <String, Map<String, bool>>{
     'messages': true,
   },
   'delivery': {
-    'home_services': true,
     'stores': true,
-    'food_trucks': true,
     'nearby_map': true,
     'olivia': true,
     'bookings': false,

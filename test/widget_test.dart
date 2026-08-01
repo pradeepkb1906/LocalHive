@@ -52,7 +52,7 @@ void main() {
 
     // LocalHive is focused on one vertical — SF groceries. Olivia and the
     // storefront that has real supply behind it are on the feed.
-    for (final label in const ['Just talk to Olivia', 'Stores']) {
+    for (final label in const ['Just talk to Olivia', 'Grocery Stores']) {
       await tester.scrollUntilVisible(
         find.text(label),
         150,

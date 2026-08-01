@@ -8,10 +8,8 @@ import '../services/location_service.dart';
 import '../services/olivia/places_search.dart';
 import '../theme.dart';
 import '../widgets/location_chip.dart';
-import 'booking_screen.dart';
 import 'catalog_screen.dart';
 import 'nearby_map_screen.dart';
-import 'truck_map_screen.dart';
 
 class ProviderListScreen extends StatefulWidget {
   final String category;
@@ -19,17 +17,7 @@ class ProviderListScreen extends StatefulWidget {
   const ProviderListScreen(
       {super.key, required this.category, required this.title});
 
-  List<Provider> get _mock => switch (category) {
-        'home_service' => homeServiceProviders,
-        'indian_store' => indianStores,
-        _ => foodTrucks,
-      };
-
-  Color get _tint => switch (category) {
-        'home_service' => LhColors.indigo,
-        'indian_store' => LhColors.green,
-        _ => LhColors.orange,
-      };
+  Color get _tint => LhColors.green;
 
   @override
   State<ProviderListScreen> createState() => _ProviderListScreenState();
@@ -42,7 +30,6 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
 
   String get category => widget.category;
   String get title => widget.title;
-  List<Provider> get _mock => widget._mock;
   Color get _tint => widget._tint;
 
   @override
@@ -89,22 +76,14 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
     return StreamBuilder<List<Provider>>(
       stream: FirebaseService.instance.providersStream(category),
       builder: (context, snap) {
-        final providers =
-            (snap.hasData && snap.data!.isNotEmpty) ? snap.data! : _mock;
+        // No invented fallback: if no real shop has signed up here yet, the
+        // partner section is simply empty and the map section carries the
+        // screen.
+        final providers = snap.data ?? const <Provider>[];
         return Scaffold(
           appBar: AppBar(
             title: Text(title),
             actions: [
-              if (category == 'food_truck')
-                TextButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => TruckMapScreen(trucks: providers)),
-                  ),
-                  icon: const Icon(CupertinoIcons.map, size: 18),
-                  label: const Text('Map'),
-                ),
               const LocationChip(),
             ],
           ),
@@ -116,11 +95,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
 
   /// Which live-map category answers this screen's question when the partner
   /// list does not.
-  String get _nearbyKind => switch (category) {
-        'home_service' => 'handyman',
-        'indian_store' => 'groceries',
-        _ => 'food',
-      };
+  String get _nearbyKind => 'groceries';
 
   Widget _sectionLabel(String text) => Padding(
         padding: const EdgeInsets.only(left: 4, top: 6, bottom: 8),
@@ -263,23 +238,11 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
         return Card(
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              if (category == 'home_service') {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => BookingScreen(provider: p)));
-              } else {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => CatalogScreen(
-                            provider: p,
-                            items: category == 'indian_store'
-                                ? storeCatalog
-                                : truckMenuFor(p.cuisine))));
-              }
-            },
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        CatalogScreen(provider: p, items: storeCatalog))),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(

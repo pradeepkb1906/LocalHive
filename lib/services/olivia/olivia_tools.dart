@@ -36,16 +36,10 @@ class OliviaTools {
   /// question. Used to catch Olivia promising a follow-up she never filed.
   bool raisedTicketThisTurn = false;
 
-  static const _categories = ['food_truck', 'home_service', 'indian_store'];
+  /// The only live vertical. Anything else goes through
+  /// find_nearby_places, which never claims a shop is a LocalHive partner.
+  static const _categories = ['indian_store'];
 
-  static const homeServiceSlots = ['8:00 AM', '10:00 AM', '1:00 PM', '3:00 PM'];
-  static const homeServiceDays = [
-    'Today',
-    'Tomorrow',
-    'In 2 days',
-    'In 3 days',
-    'In 4 days'
-  ];
   static const pickupEtas = [
     'In 15 min',
     'In 30 min',
@@ -151,33 +145,6 @@ class OliviaTools {
                 },
               },
               'required': ['business_id', 'items', 'fulfillment'],
-            },
-          },
-        },
-        {
-          'type': 'function',
-          'function': {
-            'name': 'draft_home_service',
-            'description':
-                'Work out a home-service booking and show it to the customer '
-                    'for confirmation. This does NOT book it — the customer '
-                    'confirms on screen.',
-            'parameters': {
-              'type': 'object',
-              'properties': {
-                'business_id': {'type': 'string'},
-                'day': {'type': 'string', 'enum': homeServiceDays},
-                'slot': {'type': 'string', 'enum': homeServiceSlots},
-                'hours': {
-                  'type': 'integer',
-                  'enum': [3, 4]
-                },
-                'address': {
-                  'type': 'string',
-                  'description': 'Where the work should happen.',
-                },
-              },
-              'required': ['business_id', 'day', 'slot', 'hours', 'address'],
             },
           },
         },
@@ -316,8 +283,6 @@ class OliviaTools {
           return _offerCall(args);
         case 'draft_order':
           return await _draftOrder(args);
-        case 'draft_home_service':
-          return await _draftHomeService(args);
         case 'list_my_orders':
           return _listMyOrders();
         case 'create_support_ticket':
@@ -345,12 +310,10 @@ class OliviaTools {
         .toList();
     if (owned.isNotEmpty) return owned;
 
-    return switch (category) {
-      'home_service' => homeServiceProviders,
-      'indian_store' => indianStores,
-      'food_truck' => foodTrucks,
-      _ => const <Provider>[],
-    };
+    // No built-in fallback: if no real shop has joined here, Olivia says so
+    // and falls back to find_nearby_places rather than naming a business
+    // that never signed up.
+    return const <Provider>[];
   }
 
   Future<Map<String, dynamic>> _findBusinesses(
@@ -443,13 +406,9 @@ class OliviaTools {
   /// than as evidence that nothing is nearby.
   static const _serviceRadiusKm = 300.0;
 
-  /// Every store shares one grocery list; a truck's menu depends on its
-  /// cuisine, so a taco truck reads back tacos and not biryani.
-  List<CatalogItem> _menuFor(Provider p) => switch (p.category) {
-        'indian_store' => storeCatalog,
-        'food_truck' => truckMenuFor(p.cuisine),
-        _ => const <CatalogItem>[],
-      };
+  /// Every grocery store shares one catalog.
+  List<CatalogItem> _menuFor(Provider p) =>
+      p.category == 'indian_store' ? storeCatalog : const <CatalogItem>[];
 
   Future<Provider?> _providerById(String id) async {
     for (final category in _categories) {
@@ -473,8 +432,6 @@ class OliviaTools {
         'kind': 'home_service',
         'hourly_rate': provider.hourlyRate,
         'bookable_hours': [3, 4],
-        'days': homeServiceDays,
-        'start_times': homeServiceSlots,
         'note': 'Home services are booked by the hour, not from a menu.',
       };
     }
@@ -605,10 +562,7 @@ class OliviaTools {
       return {'error': 'No business with that id. Call find_businesses first.'};
     }
     if (provider.category == 'home_service') {
-      return {
-        'error':
-            'That is a home-service provider — use draft_home_service instead.'
-      };
+      return {'error': 'That listing is not a grocery store.'};
     }
 
     final menu = _menuFor(provider);
@@ -678,40 +632,6 @@ class OliviaTools {
       ...draft.toJson(),
       if (unmatched.isNotEmpty) 'could_not_find': unmatched,
     };
-  }
-
-  Future<Map<String, dynamic>> _draftHomeService(
-      Map<String, dynamic> args) async {
-    final id = (args['business_id'] ?? '') as String;
-    final provider = await _providerById(id);
-    if (provider == null) {
-      return {'error': 'No business with that id. Call find_businesses first.'};
-    }
-    if (provider.category != 'home_service') {
-      return {'error': 'That business is not a home-service provider.'};
-    }
-
-    final hours = ((args['hours'] ?? 3) as num).toInt();
-    final draft = OrderDraft(
-      kind: 'home_service',
-      providerId: provider.id,
-      providerName: provider.name,
-      category: 'home_service',
-      dayLabel: homeServiceDays.contains(args['day'])
-          ? args['day'] as String
-          : 'Tomorrow',
-      slot: homeServiceSlots.contains(args['slot'])
-          ? args['slot'] as String
-          : '10:00 AM',
-      hours: hours == 4 ? 4 : 3,
-      hourlyRate: provider.hourlyRate,
-      address: ((args['address'] ?? '') as String).trim(),
-      customerName: _app.userName ?? '',
-      customerPhone: _app.userPhone ?? '',
-      customerEmail: _app.userEmail ?? '',
-    );
-    pendingDraft = draft;
-    return draft.toJson();
   }
 
   // ---------------------------------------------------------------- account

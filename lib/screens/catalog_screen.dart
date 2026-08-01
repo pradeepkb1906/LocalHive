@@ -2,16 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/data.dart';
-import 'directions_screen.dart';
-import '../services/firebase_service.dart';
 import '../services/geo.dart';
 import '../theme.dart';
 import '../widgets/address_field.dart';
 import '../widgets/location_chip.dart';
 import 'profile_screen.dart';
 
-/// Order-ahead catalog for stores and food trucks. Placing an order
-/// records a real booking in AppState.
+/// Order-ahead catalog for a grocery store. Placing an order records a real
+/// booking in AppState.
 class CatalogScreen extends StatefulWidget {
   final Provider provider;
   final List<CatalogItem> items;
@@ -24,79 +22,6 @@ class CatalogScreen extends StatefulWidget {
 class _CatalogScreenState extends State<CatalogScreen> {
   final Map<CatalogItem, int> _cart = {};
   bool _delivery = false;
-  bool _following = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.provider.category == 'food_truck') {
-      FirebaseService.instance
-          .isFollowingTruck(widget.provider.id)
-          .then((v) => mounted ? setState(() => _following = v) : null);
-    }
-  }
-
-  Future<void> _toggleFollow() async {
-    if (!AppState.instance.signedIn) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Sign in to get arrival alerts for this truck.')));
-      Navigator.push(
-          context, MaterialPageRoute(builder: (_) => const SignInScreen()));
-      return;
-    }
-    if (_following) {
-      await FirebaseService.instance.unfollowTruck(widget.provider.id);
-      if (mounted) {
-        setState(() => _following = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Arrival alerts turned off.')));
-      }
-      return;
-    }
-    final phoneCtl =
-        TextEditingController(text: AppState.instance.userPhone ?? '');
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        icon: const Icon(CupertinoIcons.bell_fill,
-            color: LhColors.orange, size: 40),
-        title: Text('Alert me when ${widget.provider.name} arrives'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-                'We\'ll text you the moment the truck announces it has arrived nearby.',
-                style: TextStyle(fontSize: 14, color: LhColors.inkSecondary)),
-            const SizedBox(height: 14),
-            TextField(
-              controller: phoneCtl,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                  hintText: 'Mobile number for the alert'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          FilledButton(
-              style: dialogButtonStyle(),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Notify Me')),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    await FirebaseService.instance.followTruck(widget.provider,
-        phone: phoneCtl.text.trim(), email: AppState.instance.userEmail ?? '');
-    if (mounted) {
-      setState(() => _following = true);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              'You\'ll be alerted when ${widget.provider.name} arrives!')));
-    }
-  }
 
   final _address = TextEditingController();
   static const _deliveryFee = 4.99;
@@ -142,9 +67,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     return '$kind order · $named${rest > 0 ? ' +$rest more' : ''}';
   }
 
-  Color get _tint => widget.provider.category == 'indian_store'
-      ? LhColors.green
-      : LhColors.orange;
+  Color get _tint => LhColors.green;
 
   bool _placingOrder = false;
 
@@ -344,31 +267,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
       appBar: AppBar(
         title: Text(widget.provider.name),
         actions: [
-          if (widget.provider.category == 'food_truck')
-            IconButton(
-              tooltip:
-                  _following ? 'Arrival alerts on' : 'Notify me on arrival',
-              icon: Icon(
-                  _following ? CupertinoIcons.bell_fill : CupertinoIcons.bell,
-                  size: 20,
-                  color: _following ? LhColors.orange : null),
-              onPressed: _toggleFollow,
-            ),
-          IconButton(
-            tooltip: 'Get directions',
-            icon: const Icon(CupertinoIcons.arrow_turn_up_right, size: 20),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => DirectionsScreen(
-                  title: widget.provider.name,
-                  address: widget.provider.city,
-                  lat: widget.provider.lat,
-                  lng: widget.provider.lng,
-                ),
-              ),
-            ),
-          ),
           const LocationChip(),
         ],
         bottom: PreferredSize(

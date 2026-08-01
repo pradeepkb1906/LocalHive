@@ -1,11 +1,17 @@
-// Mock data layer for the LocalHive MVP.
-// In production this is replaced by Firestore queries; keeping the shapes
-// identical to the planned Firestore documents makes that swap mechanical.
+// Shared models and the grocery catalog.
+//
+// The demo catalogs for food trucks and home services were deleted when
+// LocalHive narrowed to one market and one vertical — San Francisco
+// groceries. Listings now come from Firestore and belong to real shops
+// that opted in; nothing is invented in the client.
 
 class Provider {
   final String id;
   final String name;
-  final String category; // 'home_service' | 'indian_store' | 'food_truck'
+
+  /// Only 'indian_store' (grocery) is live. The other category values
+  /// remain readable so historic bookings still render.
+  final String category;
   final String subtitle;
   final double rating;
   final int reviews;
@@ -18,9 +24,8 @@ class Provider {
   final String availableFrom; // e.g. '9 AM'
   final String availableTo; // e.g. '6 PM'
 
-  /// Food trucks only: what kind of food this truck serves. One of
-  /// 'american' | 'mexican' | 'chinese' | 'italian' | 'indian'; empty means
-  /// unknown, which gets the American menu — the safe default for a US truck.
+  /// Kept for historic listings; unused now that groceries are the only
+  /// live vertical.
   final String cuisine;
 
   const Provider({
@@ -211,118 +216,6 @@ const platformFeePct =
 /// over goes through here first.
 double money(double amount) => (amount * 100).round() / 100;
 
-const homeServiceProviders = [
-  Provider(
-      id: 'hs1',
-      name: 'Maria G.',
-      category: 'home_service',
-      subtitle: 'House cleaning · deep clean specialist',
-      rating: 4.9,
-      reviews: 212,
-      hourlyRate: 28,
-      city: 'Edison, NJ',
-      emoji: '🧹'),
-  Provider(
-      id: 'hs2',
-      name: 'Dave R.',
-      category: 'home_service',
-      subtitle: 'Handyman · furniture, mounting, small repairs',
-      rating: 4.8,
-      reviews: 158,
-      hourlyRate: 45,
-      city: 'Edison, NJ',
-      emoji: '🔧'),
-  Provider(
-      id: 'hs3',
-      name: 'Lakshmi P.',
-      category: 'home_service',
-      subtitle: 'House cleaning · move-in / move-out',
-      rating: 4.7,
-      reviews: 96,
-      hourlyRate: 30,
-      city: 'Iselin, NJ',
-      emoji: '🧼'),
-  Provider(
-      id: 'hs4',
-      name: 'Tom W.',
-      category: 'home_service',
-      subtitle: 'Handyman · painting & drywall',
-      rating: 4.6,
-      reviews: 74,
-      hourlyRate: 40,
-      city: 'Woodbridge, NJ',
-      emoji: '🎨'),
-];
-
-const indianStores = [
-  Provider(
-      id: 'st1',
-      name: 'Patel Brothers Express',
-      category: 'indian_store',
-      subtitle: 'Groceries · spices · fresh produce',
-      rating: 4.8,
-      reviews: 431,
-      city: 'Edison, NJ',
-      emoji: '🛒'),
-  Provider(
-      id: 'st2',
-      name: 'Desi Bazaar',
-      category: 'indian_store',
-      subtitle: 'Snacks · sweets · pooja items',
-      rating: 4.6,
-      reviews: 189,
-      city: 'Iselin, NJ',
-      emoji: '🪔'),
-  Provider(
-      id: 'st3',
-      name: 'Chennai Cash & Carry',
-      category: 'indian_store',
-      subtitle: 'South Indian groceries · fresh dosa batter',
-      rating: 4.7,
-      reviews: 240,
-      city: 'Parsippany, NJ',
-      emoji: '🥥'),
-];
-
-const foodTrucks = [
-  Provider(
-      id: 'ft1',
-      name: 'Bombay Street Eats',
-      category: 'food_truck',
-      cuisine: 'indian',
-      subtitle: 'Vada pav · pav bhaji · open till 9 PM',
-      rating: 4.9,
-      reviews: 310,
-      city: 'Near Oak Tree Rd, Edison',
-      emoji: '🚚',
-      lat: 40.5629,
-      lng: -74.3390),
-  Provider(
-      id: 'ft2',
-      name: 'Hyderabad House on Wheels',
-      category: 'food_truck',
-      cuisine: 'indian',
-      subtitle: 'Biryani · haleem · open till 10 PM',
-      rating: 4.8,
-      reviews: 275,
-      city: 'Downtown Iselin',
-      emoji: '🍛',
-      lat: 40.5754,
-      lng: -74.3223),
-  Provider(
-      id: 'ft3',
-      name: 'Chaat Chowk Truck',
-      category: 'food_truck',
-      cuisine: 'indian',
-      subtitle: 'Pani puri · bhel · sev puri',
-      rating: 4.7,
-      reviews: 142,
-      city: 'Menlo Park Mall lot',
-      emoji: '🥟',
-      lat: 40.5478,
-      lng: -74.3355),
-];
-
 /// Everyday groceries any US store carries. Kept brand-free and cuisine-free
 /// so one catalog serves every store in every city.
 const storeCatalog = [
@@ -335,70 +228,6 @@ const storeCatalog = [
   CatalogItem('Olive Oil', 9.99, '500 ml', '🫒'),
   CatalogItem('Fresh Produce Box', 14.99, 'box', '🥬'),
 ];
-
-/// One menu per cuisine, so a taco truck sells tacos and a noodle truck sells
-/// noodles. Chosen per provider via [truckMenuFor].
-const _americanMenu = [
-  CatalogItem('Classic Cheeseburger', 9.99, 'each', '🍔'),
-  CatalogItem('BBQ Pulled Pork Sandwich', 10.49, 'each', '🥪'),
-  CatalogItem('All-Beef Hot Dog', 5.49, 'each', '🌭'),
-  CatalogItem('Loaded Fries', 6.99, 'basket', '🍟'),
-  CatalogItem('Vanilla Milkshake', 5.49, 'cup', '🥤'),
-  CatalogItem('Apple Pie Slice', 3.99, 'slice', '🥧'),
-];
-
-const _mexicanMenu = [
-  CatalogItem('Tacos al Pastor', 9.49, '3 pc', '🌮'),
-  CatalogItem('Chicken Quesadilla', 9.99, 'each', '🫓'),
-  CatalogItem('Carne Asada Burrito', 11.49, 'each', '🌯'),
-  CatalogItem('Chips & Guacamole', 5.99, 'basket', '🥑'),
-  CatalogItem('Street Corn (Elote)', 4.49, 'each', '🌽'),
-  CatalogItem('Horchata', 3.99, 'cup', '🥤'),
-];
-
-const _chineseMenu = [
-  CatalogItem('Chicken Fried Rice', 10.49, 'box', '🍚'),
-  CatalogItem('Vegetable Chow Mein', 9.49, 'box', '🍜'),
-  CatalogItem('Kung Pao Chicken', 11.99, 'box', '🌶️'),
-  CatalogItem('Pork Dumplings', 7.99, '6 pc', '🥟'),
-  CatalogItem('Spring Rolls', 5.49, '4 pc', '🥢'),
-  CatalogItem('Bubble Tea', 5.49, 'cup', '🧋'),
-];
-
-const _italianMenu = [
-  CatalogItem('Margherita Slice', 4.99, 'slice', '🍕'),
-  CatalogItem('Pepperoni Slice', 5.49, 'slice', '🍕'),
-  CatalogItem('Chicken Parm Sandwich', 10.99, 'each', '🥖'),
-  CatalogItem('Penne Alfredo', 11.49, 'box', '🍝'),
-  CatalogItem('Garlic Knots', 4.99, '6 pc', '🧄'),
-  CatalogItem('Cannoli', 4.49, 'each', '🍰'),
-];
-
-const _indianMenu = [
-  CatalogItem('Vada Pav', 4.50, 'each', '🍔'),
-  CatalogItem('Pav Bhaji', 8.99, 'plate', '🍲'),
-  CatalogItem('Chicken Biryani', 12.99, 'box', '🍛'),
-  CatalogItem('Pani Puri', 6.99, '8 pc', '🥟'),
-  CatalogItem('Masala Chai', 2.50, 'cup', '☕'),
-  CatalogItem('Mango Lassi', 4.99, 'cup', '🥭'),
-];
-
-/// The menu a given truck actually serves.
-///
-/// American is the default for a truck with no recorded cuisine: every truck
-/// seeded before cuisines existed was Indian, so those carry
-/// cuisine: 'indian' explicitly, and an unknown truck in a US city is more
-/// likely burgers than biryani.
-List<CatalogItem> truckMenuFor(String cuisine) => switch (cuisine) {
-      'mexican' => _mexicanMenu,
-      'chinese' => _chineseMenu,
-      'italian' => _italianMenu,
-      'indian' => _indianMenu,
-      _ => _americanMenu,
-    };
-
-/// The historic single truck menu — the demo trucks are all Indian.
-const truckMenu = _indianMenu;
 
 final myBookings = <Booking>[
   const Booking(

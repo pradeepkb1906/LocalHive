@@ -243,12 +243,12 @@ class HomeTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 2),
-            const Text('Trusted local services, stores & food.',
+            const Text('Your neighbourhood grocery stores, in one app.',
                 style: TextStyle(color: LhColors.inkSecondary, fontSize: 15)),
             const SizedBox(height: 16),
             TextField(
               decoration: const InputDecoration(
-                hintText: 'Search cleaners, groceries, tacos',
+                hintText: 'Search groceries',
                 prefixIcon: Icon(CupertinoIcons.search,
                     color: LhColors.inkSecondary, size: 20),
               ),
@@ -417,33 +417,16 @@ class HomeTab extends StatelessWidget {
               },
             ),
             const SizedBox(height: 8),
-            if (AppState.instance.featureEnabled('home_services'))
-              _CategoryCard(
-                icon: CupertinoIcons.sparkles,
-                tint: LhColors.indigo,
-                title: 'Home Services',
-                subtitle:
-                    'Cleaners & handymen, background-checked. Book 3–4 hour visits.',
-                onTap: () => _open(context, 'home_service', 'Home Services'),
-              ),
-            const SizedBox(height: 12),
+            // The one live vertical: grocery stores in San Francisco.
             if (AppState.instance.featureEnabled('stores'))
               _CategoryCard(
                 icon: CupertinoIcons.cart_fill,
                 tint: LhColors.green,
-                title: 'Stores',
+                title: 'Grocery Stores',
                 subtitle:
-                    'Groceries & essentials. Order ahead for pickup or delivery.',
-                onTap: () => _open(context, 'indian_store', 'Stores'),
-              ),
-            const SizedBox(height: 12),
-            if (AppState.instance.featureEnabled('food_trucks'))
-              _CategoryCard(
-                icon: CupertinoIcons.car_detailed,
-                tint: LhColors.orange,
-                title: 'Food Trucks',
-                subtitle: 'Live locations. Skip the line with pre-orders.',
-                onTap: () => _open(context, 'food_truck', 'Food Trucks'),
+                    'Order ahead for pickup or delivery — plus every other '
+                    'grocer near you.',
+                onTap: () => _open(context, 'indian_store', 'Grocery Stores'),
               ),
             const SizedBox(height: 12),
             // Everything genuinely around the customer, partnered or not — live
