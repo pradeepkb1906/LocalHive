@@ -439,7 +439,7 @@ class FirebaseService {
     if (!ready) return Stream.value(const []);
     return _shared(
         'adminUsers',
-        () => _db!.collection('users').snapshots().map((snap) =>
+        () => _db!.collection('users').limit(200).snapshots().map((snap) =>
             snap.docs.map((d) => {...d.data(), 'uid': d.id}).toList()
               ..sort((a, b) =>
                   '${a['email'] ?? ''}'.compareTo('${b['email'] ?? ''}'))));
@@ -817,13 +817,20 @@ class FirebaseService {
     if (!ready || currentUser == null) return Stream.value(const []);
     return _shared(
         'deliveryJobs',
-        () => _db!.collection('delivery_jobs').snapshots().map((snap) {
+        // Filtered and capped server-side. Downloading the whole board on
+        // every snapshot and filtering in Dart billed a read per job ever
+        // created — the fastest way to burn a daily quota with no users.
+        () => _db!
+                .collection('delivery_jobs')
+                .where('status', isNotEqualTo: 'Delivered')
+                .limit(60)
+                .snapshots()
+                .map((snap) {
               final jobs = snap.docs
                   .map((d) => {...d.data(), 'id': d.id})
                   .where((j) =>
-                      j['status'] != 'Delivered' &&
-                      (j['deliveryPersonId'] == '' ||
-                          j['deliveryPersonId'] == _uid))
+                      j['deliveryPersonId'] == '' ||
+                      j['deliveryPersonId'] == _uid)
                   .toList()
                 // Newest job first, like every board a courier has used.
                 ..sort((a, b) {
