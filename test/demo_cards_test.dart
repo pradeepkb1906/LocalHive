@@ -87,11 +87,21 @@ void main() {
     expect(find.text('Use'), findsOneWidget);
   });
 
-  test('demo accounts cover every persona the app supports', () {
-    expect(demoAccounts.length, 6);
+  test('demo accounts cover every persona the app still supports', () {
+    // Customer, SF store owner, delivery partner, admin. The food-truck and
+    // home-service logins went with their verticals.
+    expect(demoAccounts.length, 4);
     for (final a in demoAccounts) {
       expect(a.email, contains('@'));
       expect(a.password.length, greaterThanOrEqualTo(6));
     }
+    // The store owner is the account a shopkeeper is shown, so it has to be
+    // on the list and near the top.
+    final emails = demoAccounts.map((a) => a.email).toList();
+    expect(emails, contains('sfstore@localhive.app'));
+    expect(emails.indexOf('sfstore@localhive.app'), lessThan(2));
+    // Retired personas must not linger as dead logins.
+    expect(emails, isNot(contains('maria@localhive.app')));
+    expect(emails, isNot(contains('truck@localhive.app')));
   });
 }

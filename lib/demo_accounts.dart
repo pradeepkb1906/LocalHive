@@ -21,30 +21,16 @@ class DemoAccount {
 const demoAccounts = <DemoAccount>[
   DemoAccount(
       'Customer',
-      'Book services, order from stores & trucks',
+      'Browse SF grocery stores and place an order',
       'demo@localhive.app',
       'demo@123',
       CupertinoIcons.person_fill,
       LhColors.blue),
   DemoAccount(
-      'Home service pro',
-      'Maria G. — cleaning jobs to accept',
-      'maria@localhive.app',
-      'maria@123',
-      CupertinoIcons.sparkles,
-      LhColors.indigo),
-  DemoAccount(
-      'Food truck owner',
-      'Bombay Street Eats — orders & arrival alerts',
-      'truck@localhive.app',
-      'truck@123',
-      CupertinoIcons.car_detailed,
-      LhColors.orange),
-  DemoAccount(
-      'Store owner',
-      'Patel Brothers — grocery orders & delivery',
-      'store@localhive.app',
-      'store@123',
+      'SF store owner',
+      'Three demo shops — take orders, mark them ready',
+      'sfstore@localhive.app',
+      'sfstore@123',
       CupertinoIcons.cart_fill,
       LhColors.green),
   DemoAccount(
@@ -56,7 +42,7 @@ const demoAccounts = <DemoAccount>[
       LhColors.orange),
   DemoAccount(
       'Admin',
-      'Review and approve provider applications',
+      'Approve stores and control feature access',
       'admin@localhive.app',
       'admin@123',
       CupertinoIcons.checkmark_shield_fill,
