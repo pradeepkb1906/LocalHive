@@ -57,3 +57,7 @@ android/app/google-services.json
 # .github/workflows/ is rejected outright. Kept on disk to paste into the
 # GitHub web UI (Actions -> New workflow) instead of fighting the push.
 .github/workflows/
+
+# Points at the deployed payment worker. No Stripe keys live here — the
+# secret key is a Worker secret — but keep the deployment URL out of git.
+lib/payment_config.dart

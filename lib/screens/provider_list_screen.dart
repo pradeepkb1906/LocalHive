@@ -376,16 +376,27 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
                         const SizedBox(height: 5),
                         Row(
                           children: [
-                            const Icon(CupertinoIcons.star_fill,
-                                size: 13, color: LhColors.amber),
-                            const SizedBox(width: 3),
-                            Text('${p.rating}',
-                                style: const TextStyle(
-                                    fontSize: 13, fontWeight: FontWeight.w600)),
-                            Text(' (${p.reviews})',
-                                style: const TextStyle(
-                                    fontSize: 13,
-                                    color: LhColors.inkSecondary)),
+                            // A shop nobody has reviewed says so, rather than
+                            // wearing a star rating it has not earned.
+                            if (p.reviews == 0)
+                              const Text('New',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: LhColors.blue))
+                            else ...[
+                              const Icon(CupertinoIcons.star_fill,
+                                  size: 13, color: LhColors.amber),
+                              const SizedBox(width: 3),
+                              Text('${p.rating}',
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600)),
+                              Text(' (${p.reviews})',
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      color: LhColors.inkSecondary)),
+                            ],
                             const SizedBox(width: 10),
                             const Icon(CupertinoIcons.location_solid,
                                 size: 12, color: LhColors.inkSecondary),

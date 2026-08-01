@@ -1,0 +1,12 @@
+{
+  "name": "localhive-payments",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Stripe Checkout + webhook for LocalHive. Card data never reaches this service.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "node test.mjs"
+  },
+  "type": "module"
+}

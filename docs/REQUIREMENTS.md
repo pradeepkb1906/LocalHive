@@ -22,11 +22,11 @@ app serves one vertical in one state. Everything below assumes that.
 
 | Not built | Why |
 |---|---|
-| In-app payment | The customer pays the shop directly. No card data, no PCI scope, no money transmission. |
+| In-app card handling | Built via Stripe hosted Checkout and **switched off** until keys are supplied. The card is typed on Stripe's domain — it never reaches this app, these servers or this database. See docs/COMPLIANCE.md. |
 | Ride-hailing / taxi | TNC regulation. Explicitly out of scope. |
 | Operating outside California | No partners, no directory, no delivery coverage. Enforced in code (§4.1). |
 | SMS / WhatsApp notification | Removed. Per-message cost dominated the infrastructure bill. In-app only. |
-| Automated courier payouts | No money moves. Fees are recorded, not disbursed (§7.3). |
+| Automated courier payouts | Fees are computed and recorded; disbursing them is manual until Stripe Connect onboarding is done (docs/COMPLIANCE.md §2). |
 
 ---
 
@@ -147,7 +147,7 @@ one service, so all inherit this.
 | `chats/{id}/messages` | 1:1 text | Participants | Participants; immutable |
 | `users` | Role + prefs | Self, admin | Self |
 | `config`, `user_feature_flags` | Feature access | Signed-in / self | Admin |
-| `notifications` | In-app feed | Addressee | Any signed-in *(**GAP** §6.3)* |
+| `notifications` | In-app feed | Addressee | Only the other party of a shared booking (§6.3) |
 
 **PII is split on purpose.** Name, phone, email, street address, delivery note
 and OTP live on `bookings`, readable by the two parties and — only once
@@ -177,15 +177,17 @@ could be created already Verified, 5.0, 900 reviews; an admin flipping `live`
 would publish it. Now pinned server-side, along with `ownerId` and courier
 `fee`. Re-tested: `403`.
 
-### 6.3 Open — anyone can write to anyone's notification feed `MEDIUM`
+### 6.3 Fixed — anyone could write to anyone's notification feed `MEDIUM`
 
 `notifications` allows `create: if signedIn()` with an arbitrary `userId`, so
 a user can put arbitrary text in a stranger's feed — a phishing surface
 ("your order needs payment, call this number").
 
-*Why it is still open:* the client writes these because Cloud Functions
-require the Blaze plan. **Fix before real users:** move to a Function, or
-restrict `userId` to a counterparty of a shared booking.
+Fixed by proving the pairing in the rules: a notification may only be
+addressed to the other party of a booking the sender is on, capped at 500
+characters and forced to arrive unread. Verified — stranger `403`, third
+party via a real order `403`, genuine customer→shop `200`. A server-side
+function is still the better home, but that needs the Blaze plan.
 
 ### 6.4 Fixed — admin was read from a self-writable field `LOW`
 

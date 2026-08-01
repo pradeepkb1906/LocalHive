@@ -1,0 +1,12 @@
+name = "localhive-payments"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+# Secrets are set with `wrangler secret put`, never written here:
+#   STRIPE_SECRET_KEY       sk_live_... / sk_test_...
+#   STRIPE_WEBHOOK_SECRET   whsec_...
+#   FIREBASE_API_KEY        verifies the caller's ID token
+#   FIREBASE_SA_JSON        service account, to write Firestore
+#
+# wrangler.toml is committed; anything secret in here would be in git history
+# forever, and a leaked Stripe secret key can move real money.

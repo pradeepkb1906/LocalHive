@@ -133,8 +133,17 @@ service cloud.firestore {
       function isProviderOwner() {
         return signedIn() && resource.data.providerOwnerId == request.auth.uid;
       }
+      // Money fields are written by the payment worker with the service
+      // account, which bypasses these rules. A client must never be able to
+      // assert its own order is paid — that is free groceries.
+      function noMoneyFields(d) {
+        return !d.keys().hasAny(['paymentStatus', 'paidAt', 'paymentIntentId',
+                                 'amountCents', 'paymentSessionId',
+                                 'stripeAccountId', 'cardBrand']);
+      }
       allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && noMoneyFields(request.resource.data);
       // The delivery partner assigned via delivery_jobs/{bookingId} may
       // advance the order status (Out for delivery / Delivered).
       function isAssignedDeliveryPerson() {
@@ -148,6 +157,10 @@ service cloud.firestore {
       // every signed-in partner can browse.
       allow read: if isCustomer() || isProviderOwner()
         || isAssignedDeliveryPerson();
+      // Only the fulfilment status, and only by the three parties to the
+      // order. Everything to do with money is absent from this list on
+      // purpose, so no client can move an order to paid, refunded or
+      // disputed however it is signed in.
       allow update: if (isCustomer() || isProviderOwner()
             || isAssignedDeliveryPerson())
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -244,13 +257,46 @@ service cloud.firestore {
     // In-app update feed. Each doc is addressed to one uid, who may read it
     // and mark it read. Delivered in the app — no SMS, no per-message cost.
     match /notifications/{noteId} {
-      allow create: if signedIn();
+      // A notification may only be addressed to the other side of an order
+      // the sender is actually party to.
+      //
+      // This used to be `create: if signedIn()` with a free choice of
+      // userId, which meant anyone could drop arbitrary text into a
+      // stranger's feed. Harmless-looking until money is involved, at which
+      // point it is a phishing channel: "your payment failed, call this
+      // number" arriving inside the real app, in the real notification list.
+      //
+      // The proper home for this is a server-side function, which needs a
+      // paid Firebase plan. Until then the pairing is proved here, against
+      // the booking itself.
+      function partyToBooking() {
+        let b = get(/databases/$(database)/documents/bookings/
+                    $(request.resource.data.bookingId)).data;
+        return (b.userId == request.auth.uid
+                || b.providerOwnerId == request.auth.uid)
+          && (request.resource.data.userId == b.userId
+              || request.resource.data.userId == b.providerOwnerId);
+      }
+      allow create: if signedIn()
+        && request.resource.data.bookingId is string
+        && request.resource.data.bookingId.size() > 0
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 500
+        && request.resource.data.read == false
+        && partyToBooking();
       allow read: if signedIn() && resource.data.userId == request.auth.uid;
       allow update: if signedIn()
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['read']);
       allow delete: if false;
+    }
+
+    // Stripe webhook receipts, kept so a retried or replayed event is
+    // processed exactly once. Written by the payment worker through the
+    // service account; no client has any business reading or writing them.
+    match /stripe_events/{eventId} {
+      allow read, write: if false;
     }
 
     match /{document=**} {

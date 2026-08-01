@@ -1005,7 +1005,11 @@ class FirebaseService {
       'name': businessName,
       'category': type,
       'subtitle': type == 'delivery' ? 'Delivery partner' : 'New on LocalHive',
-      'rating': 5.0,
+      // A shop with no customers yet has no rating. It used to open at a
+      // flat 5.0, which is a review nobody wrote — and the security rules
+      // now refuse it, because a listing that could arrive pre-rated could
+      // arrive pre-rated at anything. The UI shows "New" for zero.
+      'rating': 0.0,
       'reviews': 0,
       'hourlyRate': type == 'home_service' ? 30.0 : 0.0,
       'city': city,
